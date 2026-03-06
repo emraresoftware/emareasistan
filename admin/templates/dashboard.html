@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+  .dashboard-card-grid { grid-template-columns: 1fr !important; }
+  .dashboard-card .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .dashboard-card table { width: 100%; }
+  .dashboard-card table th:nth-child(3), .dashboard-card table td:nth-child(3) { white-space: nowrap; }
+  .dashboard-card .empty-state { padding: 2.5rem 1.5rem; }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a></div>
+{% endblock %}
+{% block content %}
+{% if request.query_params.get('module_disabled') %}
+<div class="msg msg-warning">⚠️ Bu özellik firmanız için etkin değil. Super admin ile modül ayarlarınızı kontrol edin.</div>
+{% endif %}
+{% if ai_key_error == 'gemini_invalid' %}
+<div class="msg msg-error" style="display:flex;align-items:center;gap:.75rem;">
+  <span style="font-size:1.3rem;">🔴</span>
+  <div>
+    <strong>Gemini API anahtarı geçersiz veya süresi dolmuş.</strong>
+    Yapay zeka yanıt veremiyor.
+    <a href="/admin/settings/ai" style="margin-left:.5rem;text-decoration:underline;">Şimdi güncelle →</a>
+  </div>
+</div>
+{% elif ai_key_error == 'gemini_quota' %}
+<div class="msg msg-warning" style="display:flex;align-items:center;gap:.75rem;">
+  <span style="font-size:1.3rem;">⚠️</span>
+  <div>
+    <strong>Gemini API kota limitine ulaşıldı.</strong>
+    Biraz bekleyin veya farklı bir anahtar girin.
+    <a href="/admin/settings/ai" style="margin-left:.5rem;text-decoration:underline;">Ayarlar →</a>
+  </div>
+</div>
+{% elif ai_key_error %}
+<div class="msg msg-warning">
+  ⚠️ AI bağlantısında sorun var (<code>{{ ai_key_error }}</code>). <a href="/admin/settings/ai">Kontrol et →</a>
+</div>
+{% endif %}
+<div class="page-header">
+  <h1 class="page-title">Dashboard</h1>
+  <p class="page-subtitle">Siparişler, sohbetler ve kurallar tek panelden yönetilir.</p>
+</div>
+
+<div class="stats">
+  <div class="stat-card">
+    <h3>{{ monthly_revenue_str }} ₺</h3>
+    <p>{{ month_name }} Satış</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ weekly_revenue_str }} ₺</h3>
+    <p>Son 7 Gün</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ weekly_orders }}</h3>
+    <p>Bu Hafta Sipariş</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ order_count }}</h3>
+    <p>Toplam Sipariş</p>
+  </div>
+  <div class="stat-card {% if pending_orders %}alert{% endif %}">
+    <h3>{{ pending_orders }}</h3>
+    <p>Bekleyen</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ conversation_count }}</h3>
+    <p>Sohbet</p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ rule_count }}</h3>
+    <p>Kural</p>
+  </div>
+  <div class="stat-card" title="Müşteri memnuniyeti (1-5): Temsilci AI'a devrettikten sonra gönderilen anket">
+    <h3>{% if csat_avg_7 is not none %}{{ csat_avg_7 }}{% else %}—{% endif %}</h3>
+    <p>CSAT (7 gün) <small>{{ csat_count_7 }} yanıt</small></p>
+  </div>
+  <div class="stat-card">
+    <h3>{{ album_count }}</h3>
+    <p>Albüm</p>
+  </div>
+  <a href="/admin/settings/ai" class="stat-card stat-card-link" title="Yapay Zeka ayarları">
+    <h3 class="local-ai-status status-{{ local_llm_status.status }}">
+      {% if local_llm_status.status == 'online' %}
+      <span class="status-dot online"></span> Online
+      {% elif local_llm_status.status == 'disabled' %}
+      <span class="status-dot disabled"></span> Kapalı
+      {% else %}
+      <span class="status-dot missing"></span> {{ local_llm_status.label }}
+      {% endif %}
+    </h3>
+    <p>Lokal AI</p>
+  </a>
+</div>
+
+<div class="card-grid dashboard-card-grid">
+  <div class="card dashboard-card">
+    <h3>Son Siparişler</h3>
+    {% if recent_orders %}
+    <div class="table-wrapper"><table style="font-size:0.85rem;">
+      <thead><tr><th>No</th><th>Müşteri</th><th>Tutar</th><th>Durum</th><th></th></tr></thead>
+      <tbody>
+      {% for o in recent_orders %}
+      <tr>
+        <td>{{ o.order_number }}</td>
+        <td>{{ o.customer_name }}<br><small style="color:#64748b;">{{ o.customer_phone }}</small></td>
+        <td>{{ o.total_amount }} TL</td>
+        <td><span class="badge {% if o.status == 'delivered' %}badge-success{% elif o.status == 'cancelled' %}badge-danger{% elif o.status == 'pending' %}badge-warning{% else %}badge-info{% endif %}">
+          {% if o.status == 'pending' %}Beklemede{% elif o.status == 'confirmed' %}Onaylandı{% elif o.status == 'processing' %}Hazırlanıyor{% elif o.status == 'shipped' %}Kargoda{% elif o.status == 'delivered' %}Teslim{% elif o.status == 'cancelled' %}İptal{% else %}{{ o.status }}{% endif %}
+        </span></td>
+        <td><a href="/admin/orders/{{ o.id }}" class="btn btn-sm">Detay</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <p style="margin:0.75rem 0 0;"><a href="/admin/orders" class="btn btn-sm btn-secondary">Tümünü Gör</a></p>
+    {% else %}
+    <div class="empty-state">
+      <p>Henüz sipariş yok.</p>
+      <a href="/admin/orders" class="btn btn-sm">Siparişler</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card dashboard-card">
+    <h3>Son Sohbetler</h3>
+    {% if recent_conversations %}
+    <div class="table-wrapper"><table style="font-size:0.85rem;">
+      <thead><tr><th>Platform</th><th>Müşteri</th><th>Son</th><th></th></tr></thead>
+      <tbody>
+      {% for c in recent_conversations %}
+      <tr>
+        <td><span class="badge badge-info">{{ c.platform }}</span></td>
+        <td>{{ c.customer_name or c.platform_user_id or '-' }}<br><small style="color:#64748b;">{{ c.customer_phone or '' }}</small></td>
+        <td>{{ c.last_message_at|to_turkey('%d.%m %H:%M') if c.last_message_at else '-' }}</td>
+        <td><a href="/admin/conversations/{{ c.id }}" class="btn btn-sm">Detay</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <p style="margin:0.75rem 0 0;"><a href="/admin/conversations" class="btn btn-sm btn-secondary">Tümünü Gör</a></p>
+    {% else %}
+    <div class="empty-state">
+      <p>Henüz sohbet yok.</p>
+      <p style="font-size:0.85rem;">WhatsApp/Telegram mesajları burada görünecek.</p>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card dashboard-card">
+    <h3>Bekleyen Hatırlatıcılar</h3>
+    {% if pending_reminders %}
+    <div class="table-wrapper"><table style="font-size:0.85rem;">
+      <thead><tr><th>Müşteri</th><th>Tarih</th><th>Not</th><th></th></tr></thead>
+      <tbody>
+      {% for r in pending_reminders %}
+      <tr>
+        <td>{{ r.customer_name or '-' }}<br><small style="color:#64748b;">{{ r.customer_phone or '' }}</small></td>
+        <td>{{ r.due_at|to_turkey('%d.%m %H:%M') if r.due_at else '-' }}</td>
+        <td><small>{{ (r.note or '-')[:40] }}{% if r.note and r.note|length > 40 %}…{% endif %}</small></td>
+        <td>
+          {% if r.conversation_id %}<a href="/admin/agent/chat/{{ r.conversation_id }}" class="btn btn-sm">Sohbet</a>{% endif %}
+          <form method="post" action="/admin/reminders/{{ r.id }}/complete" style="display:inline;"><button type="submit" class="btn btn-sm btn-success">Tamamla</button></form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    <p style="margin:0.75rem 0 0;"><a href="/admin/reminders" class="btn btn-sm btn-secondary">Tümünü Gör</a></p>
+    {% else %}
+    <div class="empty-state">
+      <p>Bekleyen hatırlatıcı yok.</p>
+      <a href="/admin/reminders/new" class="btn btn-sm">+ Hatırlatıcı Ekle</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

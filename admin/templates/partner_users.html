@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kullanıcılar | {{ partner.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --primary: #1e3a5f; --primary-light: #2d5a87; --accent: #c59b3d; --muted: #64748b; --bg: #f1f5f9; --card: #fff; }
+    body { font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; min-height: 100vh; background: var(--bg); color: #334155; line-height: 1.5; }
+    .header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(30,58,95,0.2); }
+    .header-brand { font-weight: 700; font-size: 1.15rem; }
+    .header-badge { background: rgba(255,255,255,0.2); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+    .header-links a { color: rgba(255,255,255,0.95); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: background 0.2s; }
+    .header-links a:hover { background: rgba(255,255,255,0.15); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .page-subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 0.25rem; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); overflow: hidden; }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+    th { background: #f8fafc; color: var(--primary); font-weight: 600; }
+    tr:hover { background: #fafafa; }
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 600; }
+    .badge-admin { background: #dbeafe; color: #1d4ed8; }
+    .badge-agent { background: #e0e7ff; color: #4338ca; }
+    .badge-partner { background: #fef3c7; color: #92400e; }
+    .badge-online { background: #dcfce7; color: #166534; }
+    .badge-offline { background: #f1f5f9; color: #64748b; }
+    .empty-state { padding: 2rem; text-align: center; color: var(--muted); }
+    .btn { display: inline-flex; align-items: center; padding: 0.4rem 0.85rem; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none; font-family: inherit; }
+    .btn:hover { background: var(--primary-light); }
+    .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.8rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="header-brand">
+      {% if partner_logo_url %}
+      <img src="{{ partner_logo_url }}" alt="{{ partner.name }}" style="height:32px;max-width:140px;object-fit:contain;vertical-align:middle;margin-right:0.5rem;">
+      {% endif %}
+      {{ partner.name }} <span class="header-badge">Partner Yönetimi</span>
+    </h1>
+    <div class="header-links">
+      <a href="/admin/partner/panel">Panelim</a>
+      <a href="/admin/partner">Firmalarım</a>
+      <a href="/admin/partner/users" style="background:rgba(255,255,255,0.2);">Kullanıcılar</a>
+      <a href="/admin/partner/settings/branding">Kurumsal Logo</a>
+      <a href="/admin/logout">Çıkış</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Kullanıcılar</h1>
+      <p class="page-subtitle">Tüm firmalarınızdaki kullanıcılar. Kullanıcı eklemek veya düzenlemek için ilgili firmaya "Panele gir" ile gidin.</p>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Durum</th>
+              <th>Firma</th>
+              <th>Ad</th>
+              <th>E-posta</th>
+              <th>Rol</th>
+              <th>Son giriş</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u, is_online in users_with_status %}
+            <tr>
+              <td>
+                {% if is_online %}
+                <span class="badge badge-online" title="Çevrimiçi">● Çevrimiçi</span>
+                {% else %}
+                <span class="badge badge-offline" title="Çevrimdışı">○ Çevrimdışı</span>
+                {% endif %}
+              </td>
+              <td>{{ tenants_map.get(u.tenant_id) or 'Partner Yönetimi' }}</td>
+              <td><strong>{{ u.name }}</strong></td>
+              <td>{{ u.email or '-' }}</td>
+              <td>
+                {% if u.is_partner_admin %}
+                <span class="badge badge-partner">Partner Admin</span>
+                {% elif u.role == 'admin' %}
+                <span class="badge badge-admin">Admin</span>
+                {% else %}
+                <span class="badge badge-agent">Temsilci</span>
+                {% endif %}
+              </td>
+              <td>{{ u.last_login|to_turkey('%d.%m.%Y %H:%M') if u.last_login else '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="empty-state">Henüz kullanıcı yok. Firmalarınıza "Panele gir" ile girerek kullanıcı ekleyebilirsiniz.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

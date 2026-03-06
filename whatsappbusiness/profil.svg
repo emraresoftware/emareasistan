@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="640" height="640">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d9e91"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2ad8c2" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#10b8a6" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Arka plan -->
+  <rect width="640" height="640" fill="url(#bg)" rx="0"/>
+
+  <!-- Dekoratif daireler -->
+  <circle cx="560" cy="80" r="160" fill="white" fill-opacity="0.04"/>
+  <circle cx="80" cy="560" r="200" fill="white" fill-opacity="0.04"/>
+  <circle cx="320" cy="320" r="280" fill="url(#glow)"/>
+
+  <!-- Merkez kart -->
+  <rect x="160" y="160" width="320" height="320" rx="60" fill="white" fill-opacity="0.15" filter="url(#shadow)"/>
+  <rect x="168" y="168" width="304" height="304" rx="56" fill="white" fill-opacity="0.08"/>
+
+  <!-- EA Harfleri -->
+  <text x="320" y="355" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="148" fill="white" text-anchor="middle" letter-spacing="-4">EA</text>
+
+  <!-- Alt yazı -->
+  <text x="320" y="420" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="26" fill="white" fill-opacity="0.85" text-anchor="middle" letter-spacing="4">ASISTAN</text>
+
+  <!-- Alt dekoratif çizgi -->
+  <rect x="260" y="436" width="120" height="3" rx="2" fill="white" fill-opacity="0.5"/>
+</svg>

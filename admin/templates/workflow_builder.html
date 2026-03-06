@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Görsel Akış Builder — {{ workflow.workflow_name }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/workflows">İş Akışları</a> <span>›</span> <a href="/admin/workflows/{{ workflow_id }}">{{ workflow.workflow_name }}</a> <span>›</span> <span>Görsel Düzenleyici</span></div>
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/drawflow@0.0.55/dist/drawflow.min.css">
+<style>
+  #drawflow { height: 70vh; min-height: 400px; background: var(--primary-soft, #f8fafc); border-radius: var(--radius); border: 1px solid var(--border); }
+  .drawflow-node { min-width: 180px; }
+  .drawflow-node.step-trigger { border-left: 4px solid #0ea5e9; }
+  .drawflow-node.step-action { border-left: 4px solid #22c55e; }
+  .drawflow-node.step-condition { border-left: 4px solid #f59e0b; }
+  .drawflow-node .badge { font-size: 0.7rem; padding: 0.2rem 0.4rem; }
+  .drawflow-node strong { display: block; margin: 0.25rem 0; }
+  .drawflow-node small { display: block; color: var(--text-muted); font-size: 0.75rem; word-break: break-all; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Görsel Akış Builder</h1>
+    <p class="page-subtitle">{{ workflow.workflow_name }} — Sürükle-bırak ile adımları düzenleyin.</p>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <a href="/admin/workflows/{{ workflow_id }}" class="btn btn-secondary">← Forma Dön</a>
+    <button type="button" id="btn-save" class="btn">Kaydet</button>
+  </div>
+</div>
+
+<div class="card" style="padding:0.5rem;">
+  <div id="drawflow"></div>
+</div>
+
+<p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.75rem;">
+  💡 Adımları sürükleyerek sıralayın. Bağlantıları çıktı noktasından sürükleyip diğer adımın girişine bırakın. Yeni adım eklemek için <a href="/admin/workflows/{{ workflow_id }}">form sayfasını</a> kullanın.
+</p>
+
+<script src="https://cdn.jsdelivr.net/npm/drawflow@0.0.55/dist/drawflow.min.js"></script>
+<script>
+(function() {
+  const workflowId = {{ workflow_id }};
+  const container = document.getElementById('drawflow');
+  const editor = new Drawflow(container);
+  editor.reroute = true;
+  editor.reroute_fix_curvature = true;
+  editor.start();
+
+  function stepHtml(step) {
+    const badgeClass = step.step_type === 'trigger' ? 'badge-info' : (step.step_type === 'action' ? 'badge-success' : 'badge-warning');
+    const cfg = (step.config || '{}').substring(0, 50);
+    return '<div class="drawflow-node-step"><span class="badge ' + badgeClass + '">' + step.step_type + '</span><strong>' + (step.step_name || 'Adım') + '</strong><small>' + cfg + '</small></div>';
+  }
+
+  async function load() {
+    const r = await fetch('/admin/workflows/' + workflowId + '/graph');
+    const data = await r.json();
+    if (data.graph_layout && data.graph_layout.drawflow) {
+      editor.import(data.graph_layout);
+    } else if (data.steps && data.steps.length > 0) {
+      editor.clear();
+      const steps = data.steps.sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+      const nodeIds = [];
+      for (let i = 0; i < steps.length; i++) {
+        const s = steps[i];
+        const x = 250;
+        const y = 80 + i * 110;
+        const id = editor.addNode(
+          s.step_name || 'Adım',
+          1, 1,
+          x, y,
+          'step-' + s.step_type,
+          { step_id: s.id, step_name: s.step_name, step_type: s.step_type, config: s.config || '{}' },
+          stepHtml(s)
+        );
+        nodeIds.push(id);
+        if (i > 0) {
+          editor.addConnection(nodeIds[i - 1], nodeIds[i], 'output_1', 'input_1');
+        }
+      }
+    }
+  }
+
+  document.getElementById('btn-save').addEventListener('click', async function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Kaydediliyor...';
+    try {
+      const exportData = editor.export();
+      const r = await fetch('/admin/workflows/' + workflowId + '/graph', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(exportData)
+      });
+      if (r.ok) {
+        btn.textContent = 'Kaydedildi ✓';
+        setTimeout(function() { btn.textContent = 'Kaydet'; btn.disabled = false; }, 1500);
+      } else {
+        btn.textContent = 'Hata';
+        btn.disabled = false;
+      }
+    } catch (e) {
+      btn.textContent = 'Hata';
+      btn.disabled = false;
+    }
+  });
+
+  load();
+})();
+</script>
+{% endblock %}

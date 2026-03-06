@@ -1,0 +1,29 @@
+[Unit]
+Description=Emare Asistan WhatsApp Bridge (kesintisiz bağlantı)
+After=network-online.target asistan-api.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/asistan/whatsapp-bridge
+Environment=ASISTAN_API_URL=http://127.0.0.1:8000
+Environment=WA_HEARTBEAT_SEC=60
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/npm start
+
+# Kesintisiz çalışma — her durumda yeniden başlat
+Restart=always
+RestartSec=10
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+# Bellek / kaynak koruması
+MemoryMax=1G
+TasksMax=100
+
+# Güncelleme sırasında bu servisi RESTART ETMEYİN (WhatsApp kopmasın)
+# Sadece bridge kodu değiştiyse: systemctl restart asistan-whatsapp
+
+[Install]
+WantedBy=multi-user.target

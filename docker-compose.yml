@@ -1,0 +1,67 @@
+# Emare Asistan - Docker Compose (Production)
+# Kullanım: docker compose up -d
+# .env dosyasında GEMINI_API_KEY, APP_BASE_URL vb. tanımlayın
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://emare:emare123@postgres:5432/emare_asistan
+      - REDIS_URL=redis://redis:6379/0
+      - APP_BASE_URL=${APP_BASE_URL:-http://localhost:8000}
+      - WHATSAPP_BRIDGE_URL=http://whatsapp-bridge:3100
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./data:/app/data
+      - ./uploads:/app/uploads
+    restart: unless-stopped
+
+  whatsapp-bridge:
+    build: ./whatsapp-bridge
+    ports:
+      - "3100:3100"
+    environment:
+      - ASISTAN_API_URL=http://api:8000
+      - QR_PORT=3100
+    depends_on:
+      - api
+    volumes:
+      - whatsapp_auth:/app/.wwebjs_auth
+    restart: unless-stopped
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: emare
+      POSTGRES_PASSWORD: emare123
+      POSTGRES_DB: emare_asistan
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U emare -d emare_asistan"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  whatsapp_auth:

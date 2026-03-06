@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#0d2a27"/>
+    </linearGradient>
+    <linearGradient id="grd1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b8a6"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10b8a6" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#10b8a6" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#10b8a6" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Arka plan -->
+  <rect width="800" height="800" fill="url(#bg)"/>
+
+  <!-- Dekoratif halkalar -->
+  <circle cx="400" cy="400" r="380" fill="none" stroke="#10b8a6" stroke-width="1" stroke-opacity="0.08"/>
+  <circle cx="400" cy="400" r="300" fill="none" stroke="#10b8a6" stroke-width="1" stroke-opacity="0.06"/>
+  <circle cx="400" cy="400" r="220" fill="none" stroke="#10b8a6" stroke-width="1" stroke-opacity="0.05"/>
+
+  <!-- Parlaklık efekti -->
+  <ellipse cx="400" cy="200" rx="360" ry="120" fill="url(#shine)"/>
+
+  <!-- Üst rozet -->
+  <rect x="270" y="80" width="260" height="48" rx="24" fill="#10b8a6" fill-opacity="0.15" stroke="#10b8a6" stroke-width="1"/>
+  <text x="400" y="111" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="18" fill="#10b8a6" text-anchor="middle">🎉 SINIRLI SÜRELİ TEKLİF</text>
+
+  <!-- Ana rakam -->
+  <text x="400" y="280" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="180" fill="url(#grd1)" text-anchor="middle" filter="url(#glow)">14</text>
+
+  <!-- GÜN yazısı -->
+  <text x="400" y="355" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="60" fill="white" text-anchor="middle" letter-spacing="12">GÜN</text>
+
+  <!-- Alt açıklama -->
+  <text x="400" y="420" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="28" fill="#94a3b8" text-anchor="middle">tamamen ücretsiz kullanın</text>
+
+  <!-- Divider -->
+  <rect x="240" y="448" width="320" height="2" rx="1" fill="url(#grd1)" fill-opacity="0.4"/>
+
+  <!-- Özellikler listesi -->
+  <text x="400" y="496" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="20" fill="#34d399" text-anchor="middle">✓ Tüm özellikler açık</text>
+  <text x="400" y="532" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="20" fill="#34d399" text-anchor="middle">✓ Kredi kartı gerekmez</text>
+  <text x="400" y="568" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="600" font-size="20" fill="#34d399" text-anchor="middle">✓ İstediğinde iptal et</text>
+
+  <!-- CTA Butonu -->
+  <rect x="160" y="608" width="480" height="72" rx="36" fill="url(#grd1)" filter="url(#glow)"/>
+  <text x="400" y="652" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="26" fill="white" text-anchor="middle">Hemen Başla →</text>
+
+  <!-- Domain -->
+  <text x="400" y="726" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="500" font-size="20" fill="#475569" text-anchor="middle">asistan.emarecloud.tr</text>
+
+  <!-- Alt dekoratif noktalar -->
+  <circle cx="200" cy="760" r="4" fill="#10b8a6" fill-opacity="0.3"/>
+  <circle cx="230" cy="760" r="4" fill="#10b8a6" fill-opacity="0.2"/>
+  <circle cx="260" cy="760" r="4" fill="#10b8a6" fill-opacity="0.1"/>
+  <circle cx="600" cy="760" r="4" fill="#10b8a6" fill-opacity="0.1"/>
+  <circle cx="570" cy="760" r="4" fill="#10b8a6" fill-opacity="0.2"/>
+  <circle cx="540" cy="760" r="4" fill="#10b8a6" fill-opacity="0.3"/>
+</svg>

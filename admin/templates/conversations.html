@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Sohbetler{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Sohbetler</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Müşteri Sohbetleri</h1>
+  <p class="page-subtitle">WhatsApp, Telegram, Web sohbet vb. platformlardan gelen sohbet geçmişi. Toplam {{ total }} sohbet.</p>
+</div>
+{% if cleared and cleared > 0 %}
+<div class="msg msg-success">✓ {{ cleared }} sohbet temizlendi.</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:1.25rem;">
+  <form method="get" style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap;">
+    <input type="search" name="q" placeholder="Müşteri adı veya telefon ara..." value="{{ search_q }}" class="search-box" style="width:260px;">
+    <label style="font-size:0.9rem;font-weight:500;color:var(--text-muted);">Platform:</label>
+    <select name="platform" onchange="this.form.submit()" style="padding:0.55rem 0.9rem;border:1px solid var(--border);border-radius:8px;font-size:0.9rem;font-family:inherit;">
+      <option value="">Tümü</option>
+      <option value="whatsapp" {% if platform_filter == 'whatsapp' %}selected{% endif %}>WhatsApp</option>
+      <option value="telegram" {% if platform_filter == 'telegram' %}selected{% endif %}>Telegram</option>
+      <option value="instagram" {% if platform_filter == 'instagram' %}selected{% endif %}>Instagram</option>
+      <option value="web" {% if platform_filter == 'web' %}selected{% endif %}>Web Sohbet</option>
+    </select>
+    <input type="hidden" name="page" value="1">
+    <button type="submit" class="btn btn-sm">Ara</button>
+  </form>
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;align-items:center;">
+    <span style="font-size:0.9rem;color:var(--text-muted);">İndir:</span>
+    <a href="#" id="btn-export-selected" class="btn btn-sm" style="display:none;">Seçilenleri İndir (CSV)</a>
+    <a href="#" id="btn-export-selected-txt" class="btn btn-sm" style="display:none;">Seçilenleri İndir (TXT)</a>
+    <a href="/admin/conversations/export?scope=page&format=csv&page={{ page }}&platform={{ platform_filter }}&q={{ search_q }}" class="btn btn-sm">Bu Sayfayı İndir (CSV)</a>
+    <a href="/admin/conversations/export?scope=page&format=txt&page={{ page }}&platform={{ platform_filter }}&q={{ search_q }}" class="btn btn-sm">Bu Sayfayı İndir (TXT)</a>
+    <a href="/admin/conversations/export?scope=filtered&format=csv&page=1&platform={{ platform_filter }}&q={{ search_q }}" class="btn btn-sm btn-secondary">Filtredekilerin Tümünü (CSV)</a>
+    <span style="width:1px;height:1.2rem;background:var(--border);margin:0 0.25rem;"></span>
+    <form method="post" action="/admin/conversations/clear" onsubmit="return confirm('Bu sayfadaki filtreye göre görünen sohbetleri temizlemek istediğinize emin misiniz?');" style="display:inline;">
+      <input type="hidden" name="q" value="{{ search_q }}">
+      <input type="hidden" name="platform" value="{{ platform_filter }}">
+      <input type="hidden" name="page" value="{{ page }}">
+      <input type="hidden" name="scope" value="page">
+      <button type="submit" class="btn btn-sm btn-secondary">Bu Sayfayi Temizle</button>
+    </form>
+    <form method="post" action="/admin/conversations/clear" onsubmit="return confirm('Filtreye uyan tum sohbetler temizlenecek. Emin misiniz?');">
+      <input type="hidden" name="q" value="{{ search_q }}">
+      <input type="hidden" name="platform" value="{{ platform_filter }}">
+      <input type="hidden" name="page" value="{{ page }}">
+      <input type="hidden" name="scope" value="filtered">
+      <button type="submit" class="btn btn-sm btn-danger">Filtredekileri Temizle</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:2.5rem;"><input type="checkbox" id="select-all" title="Tümünü seç"></th>
+        <th>Platform</th>
+        <th>Müşteri</th>
+        <th>Telefon</th>
+        <th>Son mesaj önizlemesi</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in conversations %}
+      <tr>
+        <td><input type="checkbox" class="conv-check" value="{{ c.id }}" data-id="{{ c.id }}"></td>
+        <td><span class="badge badge-info">{{ c.platform }}</span></td>
+        <td><strong>{{ c.customer_name or c.platform_user_id or '-' }}</strong></td>
+        <td>{% if c.customer_phone %}<a href="tel:{{ c.customer_phone }}">{{ c.customer_phone }}</a>{% else %}-{% endif %}</td>
+        <td><small style="color:#64748b;">{{ c.last_message_preview }}</small><br>{{ c.last_message_at|to_turkey if c.last_message_at else '-' }}{% if c.order_info %} · <a href="/admin/orders/{{ c.order_info.id }}">{{ c.order_info.order_number }}</a>{% endif %}</td>
+        <td style="display:flex;gap:0.35rem;flex-wrap:wrap;">
+          <a href="/admin/conversations/{{ c.id }}" class="btn btn-sm">Detay</a>
+          <form method="post" action="/admin/conversations/{{ c.id }}/delete" onsubmit="return confirm('Bu sohbet tamamen silinecek. Devam edilsin mi?');" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henüz sohbet yok.</p><p style="font-size:0.85rem;">WhatsApp/Telegram üzerinden gelen mesajlar burada görünecek.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination">
+    <span class="pagination-info">Sayfa {{ page }}/{{ total_pages }}</span>
+    {% set qs = ('q=' ~ search_q ~ '&' if search_q else '') ~ ('platform=' ~ platform_filter ~ '&' if platform_filter else '') %}
+    {% if page > 1 %}<a href="?{{ qs }}page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?{{ qs }}page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+(function(){
+  var selectAll = document.getElementById('select-all');
+  var checkboxes = document.querySelectorAll('.conv-check');
+  var btnCsv = document.getElementById('btn-export-selected');
+  var btnTxt = document.getElementById('btn-export-selected-txt');
+
+  function updateExportButtons(){
+    var ids = Array.from(document.querySelectorAll('.conv-check:checked')).map(function(c){ return c.value; });
+    if (ids.length > 0) {
+      btnCsv.style.display = 'inline-block';
+      btnTxt.style.display = 'inline-block';
+      btnCsv.href = '/admin/conversations/export?ids=' + ids.join(',') + '&format=csv';
+      btnTxt.href = '/admin/conversations/export?ids=' + ids.join(',') + '&format=txt';
+    } else {
+      btnCsv.style.display = 'none';
+      btnTxt.style.display = 'none';
+    }
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', function(){
+      checkboxes.forEach(function(cb){ cb.checked = selectAll.checked; });
+      updateExportButtons();
+    });
+  }
+  checkboxes.forEach(function(cb){
+    cb.addEventListener('change', updateExportButtons);
+  });
+})();
+</script>
+{% endblock %}

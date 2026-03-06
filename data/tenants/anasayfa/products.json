@@ -1,0 +1,52 @@
+[
+  {
+    "name": "ÇÖZÜMLER",
+    "slug": "Cozumler",
+    "description": "ÇÖZÜMLER",
+    "price": 0,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "https://mnsbilisim.com/tr-TR/Cozumler/Cozumler",
+    "vehicle_compatibility": []
+  },
+  {
+    "name": "MARKALAR",
+    "slug": "Referanslar",
+    "description": "MARKALAR",
+    "price": 0,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "https://mnsbilisim.com/tr-TR/Referans/Referanslar",
+    "vehicle_compatibility": []
+  },
+  {
+    "name": "Devamı",
+    "slug": "205",
+    "description": "Devamı",
+    "price": 0,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "https://mnsbilisim.com/tr-TR/bloglar/ruijie-firewall-temel-kurulumu-nasil-yapilir/205",
+    "vehicle_compatibility": []
+  },
+  {
+    "name": "Devamı",
+    "slug": "204",
+    "description": "Devamı",
+    "price": 0,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "https://mnsbilisim.com/tr-TR/bloglar/ruijie-firewallda-policy-based-routing-pbr-yapilandirmasi/204",
+    "vehicle_compatibility": []
+  },
+  {
+    "name": "Devamı",
+    "slug": "index",
+    "description": "Devamı",
+    "price": 0,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "https://mnsbilisim.com/tr-TR/BlogDetail/index",
+    "vehicle_compatibility": []
+  }
+]

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Web Sohbet Embed{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/settings">Ayarlar</a> <span>›</span> <a href="/admin/settings/api">Entegrasyonlar</a> <span>›</span> <span>Web Sohbet</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Web Sohbet</h1>
+  <p class="page-subtitle">Web sitenize AI destekli sohbet widget'ını gömün. Ziyaretçiler soru sorup ürün bilgisi alabilir.</p>
+</div>
+
+{% if no_tenant or not tenant %}
+<div class="card" style="background:#fef3c7;border:1px solid #f59e0b;">
+  <p style="margin:0;color:#92400e;">Önce bir firma seçmeniz gerekiyor. Dashboard veya Firmalar sayfasından firma seçin.</p>
+  <a href="/admin/dashboard" class="btn" style="margin-top:1rem;">Dashboard'a Git</a>
+</div>
+{% else %}
+
+<div class="card" style="margin-bottom:1.5rem;">
+  <h3>Embed Kodu</h3>
+  <p style="color:#64748b;font-size:0.9rem;margin:0 0 1rem;">Bu kodu web sitenizin HTML'ine ekleyin. Sohbet penceresi iframe olarak görüntülenir.</p>
+  <pre id="embed-code" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:1rem 1.25rem;overflow-x:auto;font-size:0.85rem;margin:0;">{{ embed_code }}</pre>
+  <button type="button" class="btn" onclick="copyEmbed()">Kodu Kopyala</button>
+  <span id="copy-ok" style="margin-left:0.5rem;font-size:0.9rem;color:#16a34a;display:none;">Kopyalandı!</span>
+</div>
+
+<div class="card" style="margin-bottom:1.5rem;">
+  <h3>Önizleme</h3>
+  <p style="color:#64748b;font-size:0.9rem;margin:0 0 1rem;">Aşağıdaki pencerede canlı sohbeti test edebilirsiniz.</p>
+  <iframe src="{{ api_base }}/chat/{{ tenant_slug }}" width="100%" height="450" frameborder="0" style="border-radius:12px;max-width:420px;min-height:400px;box-shadow:0 4px 20px rgba(0,0,0,0.08);"></iframe>
+</div>
+
+<div class="card">
+  <h3>Modül Etkinleştirme</h3>
+  <p style="color:#64748b;font-size:0.9rem;margin:0 0 0.5rem;">Web sohbetin çalışması için <strong>Web Sohbet</strong> modülünün firma için etkin olması gerekir.</p>
+  <p style="color:#64748b;font-size:0.9rem;margin:0;">Modüller, Super Admin veya Partner panelinden yönetilir. Web Sohbet modülünün etkin olduğundan emin olun.</p>
+</div>
+
+<script>
+function copyEmbed() {
+  const pre = document.getElementById('embed-code');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(function() {
+    const ok = document.getElementById('copy-ok');
+    ok.style.display = 'inline';
+    setTimeout(function() { ok.style.display = 'none'; }, 2000);
+  });
+}
+</script>
+{% endif %}
+{% endblock %}

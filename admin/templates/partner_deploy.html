@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2><i class="bi bi-cloud-upload"></i> Sunucu Yönetimi</h2>
+
+{# ── Hata mesajı ── #}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+{# ── Deploy başlatıldı ── #}
+{% if started %}
+<div class="alert alert-success">
+  <strong>{{ tenant }}</strong> deploy başlatıldı → <code>{{ host }}</code>
+  {% if key_installed %}<br><small class="text-muted">🔑
+    {% if key_method == 'generated' %}SSH anahtarı otomatik üretilip yüklendi — sonraki güncellemelerde şifre gerekmez.
+    {% elif key_method == 'uploaded' %}Yüklenen anahtar dosyası kaydedildi.
+    {% elif key_method == 'pasted' %}Yapıştırılan anahtar kaydedildi.
+    {% elif key_method == 'existing' %}Mevcut anahtar kullanıldı.
+    {% endif %}</small>{% endif %}
+</div>
+<div class="card mb-3">
+  <div class="card-body">
+    <p class="mb-1"><strong>PID:</strong> {{ pid }}</p>
+    <div class="d-flex gap-2 mt-2">
+      <a class="btn btn-sm btn-outline-secondary" href="/admin/partner/deploy/log/{{ tenant }}" target="_blank">📋 Log</a>
+      <a class="btn btn-sm btn-outline-secondary" href="/admin/partner/deploy/status/{{ tenant }}" target="_blank">🔄 Durum</a>
+      <a class="btn btn-sm btn-outline-primary" href="/admin/partner/deploy">↻ Yeni Deploy</a>
+      <a class="btn btn-sm btn-outline-info" href="/admin/partner/servers">📡 Sunucular</a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# ── Kayıtlı sunucular ── #}
+{% if servers is defined and servers %}
+<div class="card mb-4">
+  <div class="card-header"><strong>Kayıtlı Sunucular</strong></div>
+  <div class="table-responsive">
+    <table class="table table-sm table-hover mb-0">
+      <thead><tr><th>Tenant</th><th>Host</th><th>User</th><th>Port</th><th>API</th><th>Bridge</th><th>Anahtar</th><th>Son Deploy</th><th></th></tr></thead>
+      <tbody>
+      {% for s in servers %}
+        <tr>
+          <td><strong>{{ s.tenant_slug }}</strong></td>
+          <td><code>{{ s.host }}</code></td>
+          <td>{{ s.user }}</td>
+          <td>{{ s.ssh_port | default(22) }}</td>
+          <td>{{ s.api_port }}</td>
+          <td>{{ s.bridge_port }}</td>
+          <td>{% if s.key_ok %}✅{% else %}❌{% endif %}</td>
+          <td>{{ s.last_deploy | default(s.created_at | default('-')) }}</td>
+          <td>
+            <a class="btn btn-xs btn-outline-success" href="/admin/partner/deploy?prefill={{ s.tenant_slug }}">Güncelle</a>
+            <a class="btn btn-xs btn-outline-secondary" href="/admin/partner/deploy/log/{{ s.tenant_slug }}" target="_blank">Log</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── Deploy formu ── #}
+{% if not started %}
+<div class="card">
+  <div class="card-header"><strong>Yeni Deploy / Güncelleme</strong></div>
+  <div class="card-body">
+    <p class="text-muted small mb-3">
+      SSH bağlantısı için 3 seçenek: <b>A)</b> şifre girin → otomatik anahtar üretilip yüklenir,
+      <b>B)</b> mevcut private key dosyanızı yükleyin, <b>C)</b> key metnini yapıştırın.<br>
+      Bir kez anahtar kaydedildikten sonra güncellemelerde şifre/anahtar gerekmez.
+    </p>
+    <form method="post" enctype="multipart/form-data">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="form-label">Sunucu IP / Hostname <span class="text-danger">*</span></label>
+            <input name="host" class="form-control" placeholder="192.168.1.100" required />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">Kullanıcı Adı <span class="text-danger">*</span></label>
+            <input name="user" class="form-control" value="root" required />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">SSH Port</label>
+            <input name="ssh_port" class="form-control" value="22" type="number" />
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Tenant Slug <span class="text-danger">*</span></label>
+        <input name="tenant_slug" class="form-control" placeholder="firma-adi" required />
+      </div>
+
+      <hr>
+      <p class="fw-bold mb-2">🔑 SSH Kimlik Doğrulama <small class="text-muted fw-normal">(birini seçin)</small></p>
+
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h6 class="card-title">A) Şifre ile Otomatik</h6>
+              <p class="text-muted small">Şifreyi girin, sistem otomatik anahtar üretip yükler. Sonraki güncellemelerde şifre gerekmez.</p>
+              <input name="ssh_password" type="password" class="form-control" placeholder="SSH şifresi" autocomplete="new-password" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h6 class="card-title">B) Anahtar Dosyası Yükle</h6>
+              <p class="text-muted small">Mevcut private key dosyanızı (.pem / id_rsa) yükleyin.</p>
+              <input name="key_file" type="file" class="form-control" accept=".pem,.key,.pub,.txt" />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body">
+              <h6 class="card-title">C) Anahtar Yapıştır</h6>
+              <p class="text-muted small">Private key metnini yapıştırın.</p>
+              <textarea name="key_text" class="form-control" rows="4" placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mt-3">
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">API Port</label>
+            <input name="api_port" class="form-control" value="8000" type="number" />
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="mb-3">
+            <label class="form-label">Bridge Port</label>
+            <input name="bridge_port" class="form-control" value="3100" type="number" />
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary"><i class="bi bi-cloud-upload"></i> Deploy Başlat</button>
+      <a class="btn btn-outline-secondary ms-2" href="/admin/partner/servers">📡 Sunucu Listesi</a>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

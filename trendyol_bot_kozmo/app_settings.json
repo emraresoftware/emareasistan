@@ -1,0 +1,19 @@
+{
+  "work_hours_start": "10:00",
+  "work_hours_end": "18:00",
+  "work_days": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "poll_interval": 300,
+  "notifications_enabled": true,
+  "notification_sound": true,
+  "dark_mode": false,
+  "auto_categorize": true,
+  "max_response_length": 500,
+  "backup_interval_hours": 24,
+  "language": "tr"
+}

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Super Admin | Emare Asistan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2d5a87;
+      --accent: #c59b3d;
+      --success: #16a34a;
+      --warning: #d97706;
+      --muted: #64748b;
+      --bg: #f1f5f9;
+      --card: #fff;
+    }
+    body {
+      font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      background: var(--bg);
+      color: #334155;
+      line-height: 1.5;
+    }
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 12px rgba(30,58,95,0.2);
+    }
+    .header-brand { font-weight: 700; font-size: 1.15rem; letter-spacing: 0.3px; }
+    .header-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-left: 0.5rem;
+    }
+    .header-links { display: flex; gap: 1rem; align-items: center; }
+    .header-links a {
+      color: rgba(255,255,255,0.95);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    .header-links a:hover { background: rgba(255,255,255,0.15); }
+    .header-links a.cta { background: var(--accent); color: #1a1a1a; }
+    .header-links a.cta:hover { background: #d4ab4a; color: #0f0f0f; }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+
+    .page-header { margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .page-subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 0.25rem; }
+
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .stat-card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 1.25rem;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: box-shadow 0.2s;
+    }
+    .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .stat-card h3 { font-size: 1.75rem; font-weight: 700; color: var(--primary); }
+    .stat-card p { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+    .stat-card.revenue { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; border: none; }
+    .stat-card.revenue h3 { color: #fff; }
+    .stat-card.revenue p { color: rgba(255,255,255,0.9); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      overflow: hidden;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #cbd5e1; }
+    .card-header { padding: 1.25rem 1.25rem 0.75rem; border-bottom: 1px solid #f1f5f9; }
+    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--primary); }
+    .card-meta { font-size: 0.85rem; color: var(--muted); margin-top: 0.35rem; }
+    .card-body { padding: 1rem 1.25rem; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem 1rem;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    .btn:hover { background: var(--primary-light); }
+    .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.85rem; }
+    .btn-block { width: 100%; }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-suspended { background: #fee2e2; color: #b91c1c; }
+    .badge-trial { background: #fef3c7; color: #92400e; }
+
+    .section { margin-bottom: 1.5rem; }
+    .section-title { font-size: 1.1rem; font-weight: 600; color: var(--primary); margin-bottom: 1rem; }
+
+    .empty-state { text-align: center; padding: 2.5rem; color: var(--muted); }
+    .empty-state p { margin: 0.5rem 0; }
+    .empty-state a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .empty-state a:hover { text-decoration: underline; }
+    .msg { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem; }
+    .msg-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="header-brand">Emare Asistan <span class="header-badge">Super Admin</span></h1>
+    <div class="header-links">
+      <a href="/admin/dashboard">Normal Panel</a>
+      <a href="/admin/chat-audits">Sohbet Denetimi</a>
+      <a href="/admin/super/login-logs">Giriş Logu</a>
+      <a href="/admin/super/user-status">Kullanıcı Durumları</a>
+      <a href="/admin/settings/account">Hesap Sahibi</a>
+      <a href="/admin/logout">Çıkış</a>
+    </div>
+  </div>
+
+  <div class="container">
+    {% if request.query_params.get('audit_toggled') %}
+    <div class="msg msg-success" style="margin-bottom:1rem;">✓ Sohbet denetimi durumu güncellendi.</div>
+    {% endif %}
+    {% if request.query_params.get('partner_created') %}
+    <div class="msg msg-success" style="margin-bottom:1rem;">✓ Partner oluşturuldu.{% if request.query_params.get('with_admin') %} İlk admin kullanıcısı da eklendi.{% endif %}</div>
+    {% endif %}
+    {% if request.query_params.get('partner_admin_created') %}
+    <div class="msg msg-success" style="margin-bottom:1rem;">✓ Partner admin kullanıcısı oluşturuldu.</div>
+    {% endif %}
+    {% if request.query_params.get('partner_admin_updated') %}
+    <div class="msg msg-success" style="margin-bottom:1rem;">✓ Partner admin şifresi güncellendi.</div>
+    {% endif %}
+    {% if request.query_params.get('tenant_deleted') %}
+    <div class="msg msg-success" style="margin-bottom:1rem;">✓ Firma silindi.</div>
+    {% endif %}
+    {% if request.query_params.get('partner_deleted') %}
+    <div class="msg msg-success" style="margin-bottom:1rem;">✓ Partner silindi. Firmalar partner'dan çıkarıldı.</div>
+    {% endif %}
+    {% if request.query_params.get('assigned') %}
+    <div class="msg msg-success" style="margin-bottom:1rem;">✓ Firma partner'a atandı.</div>
+    {% endif %}
+    {% if request.query_params.get('error') %}
+    <div class="msg" style="margin-bottom:1rem;background:#fee2e2;color:#b91c1c;border:1px solid #fecaca;">{{ request.query_params.get('error') }}</div>
+    {% endif %}
+    <div class="page-header">
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Tüm firmaları tek panelden yönetin.</p>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Sistem Yönetimi</h2>
+      <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr));">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Sohbet Denetimi</div>
+            <div class="card-meta">AI yanıt kalite kontrolü • Müşteriye gecikme yok</div>
+          </div>
+          <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+            <span class="badge {% if audit_enabled %}badge-active{% else %}badge-suspended{% endif %}">
+              {{ 'Açık' if audit_enabled else 'Kapalı' }} ({{ audit_sample_rate }}% örnekleme)
+            </span>
+            <form method="post" action="/admin/chat-audits/toggle" style="display:inline;">
+              <input type="hidden" name="next" value="/admin/super">
+              {% if audit_enabled %}
+              <input type="hidden" name="enabled" value="off">
+              <button type="submit" class="btn btn-sm" style="background:#64748b;">Kapat</button>
+              {% else %}
+              <input type="hidden" name="enabled" value="on">
+              <button type="submit" class="btn btn-sm" style="background:var(--success);">Aç</button>
+              {% endif %}
+            </form>
+          </div>
+          <div class="card-footer">
+            <a href="/admin/chat-audits" class="btn btn-sm btn-block" style="background:#64748b;">Denetim Sonuçları →</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">WhatsApp Bridge</div>
+            <div class="card-meta">QR ile bağlı hesap durumu</div>
+          </div>
+          <div class="card-body">
+            <span class="badge {% if whatsapp_connected %}badge-active{% else %}badge-suspended{% endif %}">
+              {{ 'Bağlı' if whatsapp_connected else 'Bağlı değil' }}
+            </span>
+            {% if wa_connections %}
+            <div style="margin-top:0.75rem;font-size:0.85rem;color:var(--muted);">
+              {{ wa_connections|length }} bağlantı &nbsp;·&nbsp;
+              {{ wa_connections|map(attribute='tenant_id')|select|unique|list|length }} firma
+            </div>
+            {% endif %}
+          </div>
+          <div class="card-footer">
+            <a href="/admin/whatsapp" class="btn btn-sm btn-block" style="background:#64748b;">WhatsApp Ayarları →</a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Hızlı Erişim</div>
+            <div class="card-meta">Sistem sayfaları</div>
+          </div>
+          <div class="card-body" style="display:flex;flex-direction:column;gap:0.5rem;">
+            <a href="/admin/chat-audits" style="color:var(--primary);text-decoration:none;font-weight:500;">📋 Sohbet Denetimi</a>
+            <a href="/admin/super/login-logs" style="color:var(--primary);text-decoration:none;font-weight:500;">🔐 Giriş Logu</a>
+            <a href="/admin/super/user-status" style="color:var(--primary);text-decoration:none;font-weight:500;">🟢 Kullanıcı Durumları</a>
+            <a href="/admin/settings/account" style="color:var(--primary);text-decoration:none;font-weight:500;">👤 Hesap Sahibi</a>
+            <a href="/admin/whatsapp" style="color:var(--primary);text-decoration:none;font-weight:500;">📱 WhatsApp</a>
+            <a href="/admin/process-config" style="color:var(--primary);text-decoration:none;font-weight:500;">⚙️ Süreç Yapılandırma</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <h3>{{ total_tenants }}</h3>
+        <p>Toplam Firma</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ active_tenants }}</h3>
+        <p>Aktif Firma</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ total_orders }}</h3>
+        <p>Toplam Sipariş</p>
+      </div>
+      <div class="stat-card">
+        <h3>{{ total_conversations }}</h3>
+        <p>Toplam Sohbet</p>
+      </div>
+      <div class="stat-card revenue">
+        <h3>{{ "%.0f"|format(monthly_revenue) }} ₺</h3>
+        <p>{{ month_name }} Satış (Tüm Firmalar)</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2 class="section-title">Partnerlar (Alt Markalar)</h2>
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="card-header">
+          <div class="card-title">Yeni partner ekle</div>
+          <div class="card-meta">Kendi müşteri firmalarını yönetecek alt marka / bayi • Otomatik Panelim firması oluşturulur</div>
+        </div>
+        <div class="card-body">
+          <form method="post" action="/admin/super/partners" style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;">
+            <div style="display:flex;flex-direction:column;gap:0.25rem;">
+              <label style="font-size:0.8rem;color:var(--muted);">Ad</label>
+              <input type="text" name="name" placeholder="Örn: ABC Bayi" required style="padding:0.5rem 0.8rem;border:1px solid #e2e8f0;border-radius:8px;min-width:180px;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.25rem;">
+              <label style="font-size:0.8rem;color:var(--muted);">Slug (URL)</label>
+              <input type="text" name="slug" placeholder="ornek-bayi" style="padding:0.5rem 0.8rem;border:1px solid #e2e8f0;border-radius:8px;min-width:150px;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.25rem;border-left:2px solid var(--primary);padding-left:0.75rem;">
+              <label style="font-size:0.8rem;color:var(--muted);">İlk admin e-posta</label>
+              <input type="email" name="admin_email" placeholder="admin@firma.com" style="padding:0.5rem 0.8rem;border:1px solid #e2e8f0;border-radius:8px;min-width:180px;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.25rem;">
+              <label style="font-size:0.8rem;color:var(--muted);">İlk admin şifre</label>
+              <input type="password" name="admin_password" placeholder="Min 6 karakter" autocomplete="new-password" style="padding:0.5rem 0.8rem;border:1px solid #e2e8f0;border-radius:8px;min-width:140px;">
+            </div>
+            <button type="submit" class="btn btn-sm">Ekle</button>
+          </form>
+        </div>
+      </div>
+      {% if partners %}
+      <div class="card" style="margin-bottom:1rem;">
+          <div class="card-header">
+          <div class="card-title">Mevcut partnerlar</div>
+          <div class="card-meta">Partner admin ekleme, kullanıcı adı/şifre değiştirme, silme</div>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1.25rem;">
+          {% for p in partners %}
+          <div style="padding:1rem;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:0.75rem;">
+              <strong style="font-size:1.05rem;">{{ p.name }}</strong>
+              <span style="font-size:0.8rem;color:var(--muted);">({{ p.slug }})</span>
+              <a href="/admin/p/{{ p.slug }}" target="_blank" style="font-size:0.8rem;color:var(--primary);">Giriş: /admin/p/{{ p.slug }}</a>
+              <form method="post" action="/admin/super/partners/{{ p.id }}/delete" style="display:inline;" onsubmit="return confirm('Bu partner silinsin mi? Firmalar partner\'dan çıkarılacak.');">
+                <button type="submit" class="btn btn-sm" style="background:#dc2626;color:#fff;">Sil</button>
+              </form>
+            </div>
+            {% set admins = partner_admins.get(p.id, []) %}
+            {% if admins %}
+            <div style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;">
+              Mevcut adminler: {% for u in admins %}{{ u.email }}{% if u.last_login %} <span style="color:#64748b;">(son: {{ u.last_login|to_turkey if u.last_login else '-' }})</span>{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}
+            </div>
+            {% endif %}
+            <form method="post" action="/admin/super/partners/{{ p.id }}/admin-user" style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+              <input type="email" name="email" placeholder="E-posta (yeni veya mevcut)" required style="padding:0.4rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;font-size:0.9rem;min-width:180px;">
+              <input type="email" name="new_email" placeholder="Yeni e-posta (opsiyonel)" style="padding:0.4rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;font-size:0.9rem;min-width:180px;">
+              <input type="password" name="password" placeholder="Şifre (min 6)" required style="padding:0.4rem 0.7rem;border:1px solid #e2e8f0;border-radius:6px;font-size:0.9rem;min-width:130px;">
+              <button type="submit" class="btn btn-sm" style="background:var(--success);">Ekle / Güncelle</button>
+            </form>
+            <p style="font-size:0.75rem;color:var(--muted);margin-top:0.25rem;">Yeni e-posta: admin eklenir. Mevcut e-posta: şifre (ve isteğe bağlı yeni e-posta) güncellenir.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <div class="card">
+        <div class="empty-state">
+          <p>Henüz partner yok. Yukarıdaki form ile yeni partner ekleyin.</p>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="section">
+        <h2 class="section-title">Firmalar</h2>
+        {% if tenants %}
+        <div class="grid">
+          {% for t in tenants %}
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">{{ t.name or t.slug }}</div>
+              <div class="card-meta">{{ t.sector or '-' }} • {{ (t.website_url or '-')[:40] }}{% if t.website_url and t.website_url|length > 40 %}…{% endif %}</div>
+            </div>
+            <div class="card-body">
+              <span class="badge {% if (t.status or 'active') == 'active' %}badge-active{% elif (t.status or '') == 'suspended' %}badge-suspended{% else %}badge-trial{% endif %}">
+                {{ t.status or 'active' }}
+              </span>
+              <form method="post" action="/admin/super/tenants/{{ t.id }}/partner" style="display:inline-flex;align-items:center;gap:0.5rem;margin-top:0.5rem;">
+                <label style="font-size:0.8rem;">Partner:</label>
+                <select name="partner_id" style="padding:0.3rem 0.5rem;font-size:0.85rem;border:1px solid #e2e8f0;border-radius:6px;">
+                  <option value="">— Yok —</option>
+                  {% for p in partners %}
+                  <option value="{{ p.id }}" {% if t.partner_id == p.id %}selected{% endif %}>{{ p.name }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-sm" style="background:#64748b;">Ata</button>
+              </form>
+            </div>
+            <div class="card-footer" style="display:flex;flex-direction:column;gap:0.5rem;">
+              <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.25rem;" title="Firma kullanıcıları bu linkle giriş yapmalı (yanlış tenant görünmesini önler)">
+                Giriş: <a href="/admin/t/{{ t.slug }}" target="_blank" style="color:var(--primary);">/admin/t/{{ t.slug }}</a>
+              </div>
+              <a href="/admin/super/modules/{{ t.id }}" class="btn btn-sm btn-block" style="background:#64748b;text-align:center;">Modülleri Yönet</a>
+              <form method="post" action="/admin/super/enter/{{ t.id }}" style="display:inline;">
+                <input type="hidden" name="next_url" value="/admin/settings/ai">
+                <button type="submit" class="btn btn-sm btn-block" style="background:var(--accent);color:#1a1a1a;">Yapay Zeka Ayarları</button>
+              </form>
+              <form method="post" action="/admin/super/enter/{{ t.id }}" style="display:inline;">
+                <button type="submit" class="btn btn-sm btn-block">Panele gir →</button>
+              </form>
+              <form method="post" action="/admin/super/tenants/{{ t.id }}/delete" style="display:inline;" onsubmit="return confirm('Bu firmayı silmek istediğinize emin misiniz?');">
+                <button type="submit" class="btn btn-sm btn-block" style="background:#dc2626;color:#fff;">Sil</button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="card">
+          <div class="empty-state">
+            <p>Henüz firma yok.</p>
+            <p><a href="/admin/register">Üye Ol</a> ile yeni firma ekleyebilirsiniz.</p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+  </div>
+  <!-- Yardım sohbeti -->
+  <div id="support-widget" style="position:fixed;bottom:20px;right:20px;z-index:9998;">
+    <div id="support-panel" style="display:none;flex-direction:column;width:380px;max-width:calc(100vw - 48px);height:min(560px,70vh);max-height:min(560px,70vh);min-height:320px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 12px 48px rgba(0,0,0,0.15);overflow:hidden;margin-bottom:0.5rem;">
+      <div style="background:linear-gradient(135deg,#1e3a5f,#2d5a87);color:#fff;padding:0.85rem 1rem;font-weight:600;">💬 Yardım — Emare Asistan</div>
+      <div id="support-messages" style="flex:1;overflow-y:auto;min-height:180px;max-height:400px;padding:1rem;font-size:0.9rem;background:#f8fafc;word-wrap:break-word;">
+        <p style="color:#64748b;margin:0;">Sorularınızı yazın. Örn: "Partner nasıl eklerim?", "Modül etkinleştirme nasıl yapılır?"</p>
+      </div>
+      <div style="padding:0.75rem;border-top:1px solid #e2e8f0;display:flex;gap:0.5rem;">
+        <input type="text" id="support-input" placeholder="Sorunuzu yazın..." style="flex:1;padding:0.6rem 0.9rem;border:1px solid #e2e8f0;border-radius:8px;">
+        <button type="button" id="support-send" style="padding:0.6rem 1rem;background:#1e3a5f;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Gönder</button>
+      </div>
+    </div>
+    <button type="button" id="support-toggle" title="Yardım" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1e3a5f,#2d5a87);color:#fff;border:none;cursor:pointer;font-size:1.4rem;box-shadow:0 4px 16px rgba(30,58,95,0.35);">💬</button>
+  </div>
+  <script>
+    (function(){var p=document.getElementById('support-panel'),t=document.getElementById('support-toggle'),i=document.getElementById('support-input'),s=document.getElementById('support-send'),m=document.getElementById('support-messages');
+    if(!p||!t)return;var sid='sup_'+Math.random().toString(36).slice(2);try{sid=localStorage.getItem('asistan_support_id')||sid;localStorage.setItem('asistan_support_id',sid);}catch(e){}
+    var historyKey='asistan_support_msgs_'+sid;var history=[];try{history=JSON.parse(localStorage.getItem(historyKey)||'[]');if(!Array.isArray(history))history=[];}catch(e){history=[];}
+    var supportApiUrl=window.location.origin+'/api/chat/support';
+    t.onclick=function(){p.style.display=p.style.display==='none'?'flex':'none';if(p.style.display==='flex')i.focus();};
+    function saveHistory(){try{localStorage.setItem(historyKey,JSON.stringify(history.slice(-80)));}catch(e){}}
+    function addMsg(r,txt,skipSave){var d=document.createElement('div');d.style.marginBottom='0.75rem';d.style.padding='0.6rem 0.85rem';d.style.borderRadius='10px';d.style.whiteSpace='pre-wrap';d.style.wordBreak='break-word';d.style.maxWidth='100%';if(r==='user'){d.style.background='#1e3a5f';d.style.color='#fff';d.style.marginLeft='20%';}else{d.style.background='#fff';d.style.border='1px solid #e2e8f0';}d.textContent=txt;m.appendChild(d);m.scrollTop=m.scrollHeight;if(!skipSave&&txt){history.push({role:r,text:txt});saveHistory();}}
+    if(history.length){var firstSaved=m.querySelector('p');if(firstSaved)firstSaved.remove();history.forEach(function(x){if(x&&x.role&&x.text)addMsg(x.role,x.text,true);});}
+    s.onclick=function(){var txt=(i.value||'').trim();if(!txt)return;i.value='';var fp=m.querySelector('p');if(fp)fp.remove();addMsg('user',txt);var ty=document.createElement('div');ty.id='styping';ty.textContent='Yazıyor...';ty.style.color='#64748b';m.appendChild(ty);m.scrollTop=m.scrollHeight;
+    fetch(supportApiUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sid,message:txt,role:'super_admin'})}).then(function(r){if(!r.ok)return r.json().catch(function(){throw new Error('HTTP '+r.status);});return r.json();}).then(function(d){var el=document.getElementById('styping');if(el)el.remove();addMsg('assistant',d.text||d.detail||'Yanıt alınamadı.');}).catch(function(e){var el=document.getElementById('styping');if(el)el.remove();addMsg('assistant','Bağlantı hatası: '+(e.message||'Tekrar deneyin.'));});
+    };i.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();s.click();}};
+    })();
+  </script>
+</body>
+</html>

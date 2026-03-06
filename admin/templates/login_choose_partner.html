@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel Seçin | Emare Asistan</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; background: linear-gradient(165deg, #0f172a 0%, #1e293b 45%, #0f172a 100%); color: #fff; }
+    .box { background: #fff; color: #0f172a; padding: 2.5rem 3rem; border-radius: 20px; max-width: 420px; width: 100%; box-shadow: 0 32px 64px -12px rgba(0,0,0,0.4); }
+    .box h1 { margin: 0 0 0.5rem; font-size: 1.4rem; font-weight: 700; }
+    .box p { color: #64748b; font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .btn { display: block; width: 100%; padding: 1rem 1.25rem; margin-bottom: 0.75rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; font-family: inherit; transition: transform 0.2s, box-shadow 0.2s; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(15,23,42,0.35); }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Panele girin</h1>
+    <p>Bu e-posta birden fazla partner panelinde kayıtlı. Girmek istediğiniz paneli seçin:</p>
+    {% for c in choices %}
+    <form method="post" action="/admin/login/complete-partner" style="margin-bottom:0.75rem;">
+      <input type="hidden" name="partner_slug" value="{{ c.partner_slug }}">
+      <button type="submit" class="btn">{{ c.partner_name }}</button>
+    </form>
+    {% endfor %}
+  </div>
+</body>
+</html>

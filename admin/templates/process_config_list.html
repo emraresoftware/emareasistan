@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Süreç Konfigürasyonu{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/workflows">İş Akışları</a> <span>›</span> <span>Süreç Konfigürasyonu</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Süreç Konfigürasyonu</h1>
+    <p class="page-subtitle">SLA, escalation ve bildirim ayarları — platform ve süreç tipine göre.</p>
+  </div>
+  <a href="/admin/workflows" class="btn btn-secondary">← İş Akışları</a>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Platform</th>
+        <th>Süreç Tipi</th>
+        <th>Otomatik Yanıt</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in configs %}
+      <tr>
+        <td><span class="badge badge-info">{{ c.platform }}</span></td>
+        <td>{{ c.process_type }}</td>
+        <td><span class="badge {% if c.auto_response %}badge-success{% else %}badge-danger{% endif %}">{{ 'Evet' if c.auto_response else 'Hayır' }}</span></td>
+        <td><a href="/admin/process-config/edit?platform={{ c.platform }}&process_type={{ c.process_type }}" class="btn btn-sm">Düzenle</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty-state">
+        <p>Henüz süreç konfigürasyonu yok. Aşağıdaki linklerden yeni oluşturabilirsiniz.</p>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <h3 style="margin-top:0;">Hızlı Erişim</h3>
+  <p>Platform ve süreç tipi seçerek konfigürasyon oluşturun:</p>
+  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.75rem;">
+    {% for platform in ['whatsapp','telegram','instagram'] %}
+    {% for ptype in ['order_management','customer_service','marketing'] %}
+    <a href="/admin/process-config/edit?platform={{ platform }}&process_type={{ ptype }}" class="btn btn-sm btn-secondary">{{ platform }} / {{ ptype }}</a>
+    {% endfor %}
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

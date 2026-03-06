@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Örnek Düzenle' if example else 'Yeni Eğitim Örneği' }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/training">AI Eğitim</a> <span>›</span> <span>{{ 'Düzenle' if example else 'Yeni' }}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{{ 'Örnek Düzenle' if example else 'Yeni Eğitim Örneği' }}</h1>
+  <p class="page-subtitle">Müşteri bu soruyu sorduğunda AI bu cevaba benzer yanıt üretir.</p>
+</div>
+<form method="post" action="/admin/training/save">
+  {% if example %}<input type="hidden" name="id" value="{{ example.id }}">{% endif %}
+  <div class="form-group">
+    <label>Soru (müşterinin soracağı)</label>
+    <input type="text" name="question" value="{{ example.question if example else '' }}" placeholder="Örn: Montaj fiyatı ne kadar?">
+    <small style="color:#64748b;">Müşteri benzer bir şey sorduğunda AI bu örneği referans alır.</small>
+  </div>
+  <div class="form-group">
+    <label>Beklenen cevap</label>
+    <textarea name="expected_answer" rows="4" placeholder="Örn: Montaj işlemleri mağzamızda yapılıyor. Montaj ücreti 500 TL'dir. Süre yaklaşık 2-2.5 saattir.">{{ example.expected_answer if example else '' }}</textarea>
+  </div>
+  <div class="form-group">
+    <label>Kategori (isteğe bağlı)</label>
+    <input type="text" name="category" value="{{ example.category if example else '' }}" placeholder="Örn: fiyat, montaj, kargo">
+  </div>
+  <div class="form-group">
+    <label>Anahtar kelimeler (isteğe bağlı)</label>
+    <input type="text" name="trigger_keywords" value="{{ example.trigger_keywords if example and example.trigger_keywords else '' }}" placeholder="Örn: montaj, ücret, fiyat - mesajda geçerse bu örnek öncelikli kullanılır">
+    <small style="color:#64748b;">Virgülle ayırın. Müşteri bu kelimelerden birini yazarsa bu örnek benzerlik/öncelikten önce kullanılır.</small>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_active" value="on" {% if not example or example.is_active %}checked{% endif %}> Aktif</label>
+  </div>
+  <div class="form-group">
+    <label>Öncelik (yüksek = önce kullan)</label>
+    <input type="number" name="priority" value="{{ example.priority if example else 0 }}">
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <button type="submit" class="btn">Kaydet</button>
+    <a href="/admin/training" class="btn btn-secondary">İptal</a>
+  </div>
+</form>
+{% endblock %}

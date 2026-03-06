@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Hesap Sahibi - Super Admin{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/settings">Ayarlar</a> <span>›</span> <span>Hesap Sahibi</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Hesap Sahibi (Super Admin)</h1>
+  <p class="page-subtitle">Super admin hesap ayarları sistem yöneticisi tarafından yapılır.</p>
+</div>
+
+<div class="card" style="max-width: 520px;">
+  <h3>Mevcut Durum</h3>
+  <p style="margin:0.5rem 0 1rem;color:var(--text-muted);">Giriş e-posta: <strong>{{ super_email }}</strong></p>
+  <p style="margin:0;font-size:0.9rem;color:var(--text-muted);">
+    Super admin hesap bilgileri <code style="background:var(--primary-soft);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em;">.env</code> dosyasında tanımlanır:
+  </p>
+  <ul style="margin:1rem 0 0;padding-left:1.25rem;color:var(--text-muted);font-size:0.9rem;line-height:1.7;">
+    <li><code style="background:var(--primary-soft);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em;">SUPER_ADMIN_EMAIL</code> – Giriş e-posta adresi</li>
+    <li><code style="background:var(--primary-soft);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85em;">SUPER_ADMIN_PASSWORD</code> – Şifre</li>
+  </ul>
+  <p style="margin:1rem 0 0;font-size:0.85rem;color:var(--text-muted);">
+    Değişiklik yapmak için .env dosyasını düzenleyip sunucuyu yeniden başlatın.
+  </p>
+  <p style="margin:1.25rem 0 0;"><a href="/admin/settings" class="btn btn-secondary">Ayarlara Dön</a></p>
+</div>
+{% endblock %}

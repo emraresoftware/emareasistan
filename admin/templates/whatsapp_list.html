@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}WhatsApp Hesapları{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>WhatsApp Hesapları</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">WhatsApp Hesapları</h1>
+    <p class="page-subtitle">Birden fazla WhatsApp numarası oluşturup kullanıcılara atayabilirsiniz. Her hesap için QR kod ile bağlanın.</p>
+  </div>
+  <form method="post" action="/admin/whatsapp/create" style="display:flex;gap:0.5rem;">
+    <input type="text" name="name" placeholder="Hesap adı (örn: Satış 2)" class="search-box" style="width:200px;">
+    <button type="submit" class="btn btn-success">+ Yeni Hesap</button>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Bağlantılar</h3>
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Ad</th>
+        <th>Durum</th>
+        <th>Numara</th>
+        <th>QR</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in connections %}
+      <tr>
+        <td><strong>{{ c.name }}</strong></td>
+        <td>
+          {% if c._bridge_status == 'connected' %}
+          <span class="badge badge-success">Aktif</span>
+          {% elif c._bridge_status == 'qr_pending' %}
+          <span class="badge badge-warning">QR Bekliyor</span>
+          {% else %}
+          <span class="badge badge-danger">Bağlı Değil</span>
+          {% endif %}
+        </td>
+        <td>{% if c._bridge_phone %}{{ c._bridge_phone }}{% else %}-{% endif %}</td>
+        <td>
+          {% if c._bridge_status != 'connected' %}
+          <a href="/admin/whatsapp/qr/{{ c.id }}" target="_blank" class="btn btn-sm">QR Göster</a>
+          {% else %}
+          <span style="color:#16a34a;">Bağlı</span>
+          {% endif %}
+        </td>
+        <td>
+          <form method="post" action="/admin/whatsapp/{{ c.id }}/delete" style="display:inline;" onsubmit="return confirm('Bu WhatsApp hesabını kaldırmak istediğinize emin misiniz? Bu hesaba atanmış kullanıcılar atanmasız kalacaktır.');">
+            <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="empty-state"><p>Henüz hesap yok. Yukarıdan yeni hesap oluşturun.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p style="margin-top:1rem;font-size:0.85rem;color:#64748b;">Yeni hesap oluşturduktan sonra "QR Göster" ile telefonunuzdan tarayın. Kullanıcılar sayfasından atama yapın.</p>
+
+  {% for c in connections %}
+  {% if c._bridge_status != 'connected' %}
+  <div class="card" style="margin-top:1rem;background:#fef3c7;border:1px solid #fcd34d;">
+    <h4 style="margin:0 0 0.5rem;">📱 {{ c.name }} — Bağlantı kopunca otomatik QR</h4>
+    <p style="font-size:0.9rem;color:#92400e;margin:0 0 0.75rem;">QR kod otomatik oluşturuluyor (5 sn). Sayfa 10 sn'de bir yenilenir.</p>
+    <iframe src="/admin/whatsapp/qr/{{ c.id }}" style="width:100%;max-width:320px;height:380px;border:1px solid #e2e8f0;border-radius:8px;background:#fff;" title="QR Kod"></iframe>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+
+<script>
+  (function(){
+    var hasDisconnected = false;
+    {% for c in connections %}{% if c._bridge_status != 'connected' %}hasDisconnected=true;{% endif %}{% endfor %}
+    if (hasDisconnected) setInterval(function(){ location.reload(); }, 15000);
+  })();
+</script>
+
+<div class="card">
+  <h3>Kullanıcıya Atama</h3>
+  <p style="font-size:0.9rem;color:#64748b;margin:0 0 1rem;">Kullanıcıları <a href="/admin/users">Kullanıcılar</a> sayfasından oluşturup WhatsApp hesabı atayabilirsiniz.</p>
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr><th>Kullanıcı</th><th>Atanmış Hesap</th></tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.name }}{% if u.email %} <small>({{ u.email }})</small>{% endif %}</td>
+        <td>
+          {% if u.whatsapp_connection_id %}
+            {% for c in connections %}{% if c.id == u.whatsapp_connection_id %}{{ c.name }}{% endif %}{% endfor %}
+          {% else %}
+            <span style="color:#94a3b8;">Atanmamış</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="2" class="empty-state"><p>Henüz kullanıcı yok. <a href="/admin/users">Kullanıcı ekle</a></p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

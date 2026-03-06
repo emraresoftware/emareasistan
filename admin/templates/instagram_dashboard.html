@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Instagram DM{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb">
+  <a href="/admin/dashboard">Dashboard</a> <span>›</span>
+  <a href="/admin/instagram">Instagram</a> <span>›</span>
+  <span>Genel Bakış</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Instagram Direct Messages</h1>
+    <p class="page-subtitle">Instagram DM üzerinden gelen mesajları AI asistan ile yanıtlayın. Meta Graph API ile entegre.</p>
+  </div>
+</div>
+
+<div class="stats" style="margin-bottom:1.5rem;">
+  <a href="/admin/conversations?platform=instagram" class="stat-card stat-card-link">
+    <h3>{{ instagram_conv_count }}</h3>
+    <p>Toplam Sohbet</p>
+  </a>
+  <a href="/admin/conversations?platform=instagram" class="stat-card stat-card-link">
+    <h3>{{ instagram_conv_today }}</h3>
+    <p>Bugün Yeni</p>
+  </a>
+  <div class="stat-card {% if not configured %}alert{% endif %}">
+    <h3>{% if configured %}✓ Aktif{% else %}⚠ Kurulmadı{% endif %}</h3>
+    <p>{% if configured %}API bağlantısı hazır{% else %}Webhook ve token ayarlayın{% endif %}</p>
+  </div>
+</div>
+
+<div class="card-grid">
+  <div class="card">
+    <h3>Hızlı Erişim</h3>
+    <div style="display:flex;flex-direction:column;gap:0.6rem;">
+      <a href="/admin/conversations?platform=instagram" class="btn btn-primary">Sohbetleri Görüntüle</a>
+      <a href="/admin/instagram/setup" class="btn btn-secondary">Webhook Kurulum Rehberi</a>
+      <a href="/admin/settings/api" class="btn btn-secondary">Entegrasyon Ayarları</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Webhook Bilgileri</h3>
+    <p style="font-size:0.9rem;color:var(--text-muted);margin:0 0 0.75rem;">Meta Developer Console'da kullanacağınız URL ve token:</p>
+    <div class="form-group">
+      <label>Webhook URL</label>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="text" value="{{ webhook_url }}" readonly style="font-family:monospace;font-size:0.85rem;" id="webhook-url">
+        <button type="button" class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('webhook-url').value);this.textContent='Kopyalandı!';setTimeout(function(){this.textContent='Kopyala';}.bind(this),1500);">Kopyala</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Verify Token</label>
+      <input type="text" value="{{ verify_token }}" readonly style="font-family:monospace;font-size:0.85rem;">
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Nasıl Çalışır?</h3>
+  <ul style="margin:0;padding-left:1.25rem;line-height:1.8;color:var(--text-muted);">
+    <li>Instagram Business hesabınızı Meta Developer Console'da bir uygulamaya bağlayın</li>
+    <li>Webhook URL ve Verify Token ile webhook aboneliğini tamamlayın</li>
+    <li>Müşteriler Instagram DM'den mesaj gönderdiğinde AI asistan otomatik yanıt verir</li>
+    <li>Sohbetler sayfasından tüm Instagram mesajlarını görüntüleyebilirsiniz</li>
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{% if reminder %}Hatırlatıcı Düzenle{% else %}Yeni Hatırlatıcı{% endif %}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/reminders">Hatırlatıcılar</a> <span>›</span> <span>{% if reminder %}Düzenle{% else %}Yeni{% endif %}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{% if reminder %}Hatırlatıcı Düzenle{% else %}Yeni Hatırlatıcı{% endif %}</h1>
+</div>
+
+<div class="card" style="max-width:480px;">
+  <form method="post" action="/admin/reminders/save">
+    {% if reminder %}<input type="hidden" name="id" value="{{ reminder.id }}">{% endif %}
+    <div class="form-group">
+      <label>Müşteri adı</label>
+      <input type="text" name="customer_name" value="{{ reminder.customer_name if reminder else (conv.customer_name if conv else (contact.name if contact else '')) }}" placeholder="Ad Soyad">
+    </div>
+    <div class="form-group">
+      <label>Telefon</label>
+      <input type="text" name="customer_phone" value="{{ reminder.customer_phone if reminder else (conv.customer_phone or conv.platform_user_id if conv else (contact.phone if contact else '')) }}" placeholder="905551234567">
+    </div>
+    <div class="form-group">
+      <label>Tarih ve saat</label>
+      <input type="datetime-local" name="due_at" value="{{ reminder.due_at|to_turkey('%Y-%m-%dT%H:%M') if reminder and reminder.due_at else (default_due|default('')) }}" required>
+    </div>
+    <div class="form-group">
+      <label>Not (ne yapılacak)</label>
+      <textarea name="note" rows="3" placeholder="Örn: Ara, fiyat teklifi gönder...">{{ reminder.note if reminder else '' }}</textarea>
+    </div>
+    <input type="hidden" name="conversation_id" value="{{ reminder.conversation_id if reminder else (conv.id if conv else '') }}">
+    <input type="hidden" name="contact_id" value="{{ reminder.contact_id if reminder else (contact.id if contact else '') }}">
+    <div style="display:flex;gap:0.5rem;">
+      <button type="submit" class="btn">Kaydet</button>
+      <a href="/admin/reminders" class="btn btn-secondary">İptal</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

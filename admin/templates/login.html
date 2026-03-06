@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Giriş | Emare Asistan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%2310b8a6'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='52' font-weight='bold' font-family='Inter,sans-serif'>EA</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:'#effefb',100:'#c8fff4',200:'#93fce8',300:'#5cf2d8',400:'#2ad8c2',
+              500:'#10b8a6',600:'#0d9e91',700:'#0c7f76',800:'#0a655f',900:'#094f4b',950:'#032e2b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .hero-gradient { background: linear-gradient(180deg, #f0fdfa 0%, #e6faf5 35%, #d5f5f0 70%, #effefb 100%); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-up { animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .input-field { width:100%; padding:0.8rem 1rem 0.8rem 2.7rem; border:1.5px solid #d1faf4; border-radius:12px; font-size:0.95rem; font-family:inherit; transition:all 0.2s; background:#f0fdfa; color:#0a655f; display:block; }
+    .input-field:focus { outline:none; border-color:#10b8a6; box-shadow:0 0 0 3px rgba(16,184,166,0.12); background:#fff; }
+    .input-field::placeholder { color:#94a3b8; }
+  </style>
+</head>
+<body class="hero-gradient min-h-screen flex flex-col">
+
+  <!-- Top nav -->
+  <nav class="w-full px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
+    <a href="/" class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center shadow-md shadow-brand-500/25">
+        <span class="text-white font-bold text-sm">EA</span>
+      </div>
+      <span class="font-extrabold text-gray-900 text-lg tracking-tight">Emare <span class="text-brand-600">Asistan</span></span>
+    </a>
+    <a href="/" class="text-sm text-gray-500 hover:text-brand-600 transition-colors flex items-center gap-1.5">
+      <i class="fas fa-arrow-left text-xs"></i> Ana Sayfa
+    </a>
+  </nav>
+
+  <!-- Card -->
+  <div class="flex-1 flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-md relative">
+
+      <!-- Decorative blobs -->
+      <div class="fixed -z-10 top-20 left-10 w-80 h-80 rounded-full opacity-25 blur-3xl pointer-events-none" style="background:radial-gradient(circle,#10b8a6,transparent);"></div>
+      <div class="fixed -z-10 bottom-20 right-10 w-64 h-64 rounded-full opacity-15 blur-3xl pointer-events-none" style="background:radial-gradient(circle,#059669,transparent);"></div>
+
+      <div class="bg-white rounded-3xl shadow-2xl shadow-brand-500/10 border border-brand-100 p-8 slide-up">
+
+        <div class="mb-6">
+          <h1 class="text-2xl font-extrabold text-gray-900 mb-1">Tekrar hoş geldiniz 👋</h1>
+          <p class="text-sm text-gray-500">
+            {% if tenant_name %}{{ tenant_name }} — Yönetim Paneli{% elif partner_slug %}Partner girişi{% else %}Yönetim Paneline Giriş{% endif %}
+          </p>
+        </div>
+
+        {% if error %}
+        <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 mb-5 text-sm font-medium">
+          <i class="fas fa-circle-exclamation text-red-400"></i> {{ error }}
+        </div>
+        {% endif %}
+        {% if registered %}
+        <div class="flex items-center gap-3 bg-brand-50 border border-brand-200 text-brand-700 rounded-xl px-4 py-3 mb-5 text-sm font-medium">
+          <i class="fas fa-circle-check text-brand-500"></i> Kayıt başarılı! Giriş yapabilirsiniz.
+        </div>
+        {% endif %}
+
+        <form method="post" action="/admin/login" class="space-y-4">
+          {% if tenant_slug %}<input type="hidden" name="tenant" value="{{ tenant_slug }}">{% endif %}
+          {% if partner_slug %}<input type="hidden" name="partner" value="{{ partner_slug }}">{% endif %}
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">E-posta</label>
+            <div class="relative">
+              <i class="fas fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+              <input type="email" name="email" placeholder="ornek@firma.com" autocomplete="email" class="input-field">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Şifre</label>
+            <div class="relative">
+              <i class="fas fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+              <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password" class="input-field">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-600 hover:to-emerald-700 shadow-lg shadow-brand-500/25 hover:-translate-y-0.5 transition-all duration-200 mt-1">
+            Giriş Yap <i class="fas fa-arrow-right ml-1.5"></i>
+          </button>
+        </form>
+
+        <p class="text-xs text-gray-400 text-center mt-3">Super admin: E-posta boş bırakıp sadece şifre ile giriş yapın.</p>
+
+        <div class="flex items-center gap-3 my-5">
+          <div class="flex-1 h-px bg-gray-100"></div>
+          <span class="text-xs text-gray-400 font-medium">veya</span>
+          <div class="flex-1 h-px bg-gray-100"></div>
+        </div>
+
+        <div class="text-center">
+          <p class="text-sm text-gray-500 mb-3">Henüz hesabınız yok mu?</p>
+          <a href="{% if tenant_slug %}/admin/register?tenant={{ tenant_slug }}{% else %}/admin/register{% endif %}"
+            class="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-semibold text-brand-700 border-2 border-brand-200 hover:border-brand-400 hover:bg-brand-50 transition-all duration-200">
+            <i class="fas fa-rocket text-brand-500 text-xs"></i> Ücretsiz Dene — 14 gün
+          </a>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center gap-5 mt-6 text-xs text-gray-400">
+        <span class="flex items-center gap-1"><i class="fas fa-shield-halved text-brand-400"></i> SSL Güvenli</span>
+        <span class="flex items-center gap-1"><i class="fas fa-lock text-brand-400"></i> Veri Güvenliği</span>
+        <span class="flex items-center gap-1"><i class="fas fa-headset text-brand-400"></i> 7/24 Destek</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

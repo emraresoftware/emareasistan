@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Videolar{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Videolar</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Videolar</h1>
+    <p class="page-subtitle">Video yükleyin veya URL girin. Müşteri tetikleyici kelime ve araç modeli yazdığında bu video gönderilir (albümler gibi araç seçimi yapılabilir).</p>
+  </div>
+  <a href="/admin/videos/new" class="btn">+ Yeni Video</a>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Ad</th>
+        <th>Tetikleyici</th>
+        <th>Araçlar</th>
+        <th>Video URL</th>
+        <th>Durum</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in videos %}
+      <tr>
+        <td><strong>{{ v.name or '-' }}</strong></td>
+        <td><span class="badge badge-info">{{ v.trigger_keyword or '-' }}</span></td>
+        <td><small>{{ v.vehicle_models or 'Tümü' }}</small></td>
+        <td><small>{{ (v.video_url or '')[:50] }}{% if (v.video_url or '')|length > 50 %}...{% endif %}</small></td>
+        <td><span class="badge {% if v.is_active %}badge-success{% else %}badge-danger{% endif %}">{{ 'Aktif' if v.is_active else 'Pasif' }}</span></td>
+        <td>
+          <a href="/admin/videos/{{ v.id }}" class="btn btn-sm">Düzenle</a>
+          <form method="post" action="/admin/videos/{{ v.id }}/delete" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henüz video yok.</p><p style="font-size:0.9rem;color:#94a3b8;">Montaj videosu, kurulum videosu vb. ekleyin. Albümlerde olduğu gibi araç modeli seçebilirsiniz.</p><a href="/admin/videos/new" class="btn btn-sm">+ Yeni Video</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}<a href="?page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

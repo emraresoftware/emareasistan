@@ -1,0 +1,28 @@
+=== Sohbet #4 | whatsapp | 905327804227 | 905327804227 ===
+[15.02.2026 19:00] Müşteri: Merhaba
+[15.02.2026 19:00] Asistan: Emare Asistan, musteri iletisimi ve satis operasyonunu tek merkezden yonetmeniz icin tasarlandi. Mesajlari onceliklendirir, tekrar eden sorulari otomatik yanitlar, kacan talepleri yakalar ve ekip devrini hizlandirir.
+
+Hangi sektordesiniz? (ornegin e-ticaret, otomotiv, finans, saglik, egitim). Sektorunuze gore 3-5 somut kullanim senaryosu ve hizli kazanim planini cikarayim.
+
+Isterseniz Emare Asistan hakkinda daha fazla bilgi verebilirim. Ornegin su sorulari birlikte netlestirebiliriz: "Musterilerime nasil daha iyi hizmet verebilirim?", "Kacirilan mesajlari otomatik yakalayabilir miyim?", "Satis surecini panelden uc uca takip edebilir miyim?"
+[15.02.2026 19:01] Müşteri: Otomobil
+[15.02.2026 19:01] Asistan: Emare Asistan, otomotiv sektöründe de müşterilerinize 7/24 hizmet sunmanızı, sorularını otomatik yanıtlamanızı ve hatta satış süreçlerini hızlandırmanızı sağlar. Örneğin, model bilgisi taleplerine anında dönüş yapabilir veya servis randevusu oluşturabilirsiniz.
+
+Bu konudaki yeteneklerimizi daha detaylı konuşmak ister misiniz? İsterseniz size özel bir demo ayarlayabiliriz.
+[15.02.2026 19:01] Müşteri: Evet
+[15.02.2026 19:01] Asistan: Demo sürecimiz oldukça pratiktir. Randevuyu netlestirmek icin sadece telefon numaraniz ve e-posta adresiniz paylasir misiniz?
+[15.02.2026 19:02] Müşteri: Cengiz Kurtoğlu cengiz@dsa.com 04636644775
+[15.02.2026 19:02] Asistan: Bilgileriniz zaten mevcut. Uygun gun ve saatinizi paylasirsaniz toplantiyi hemen planlayabilirim.
+[15.02.2026 19:02] Müşteri: 14:00 Perşembe
+[15.02.2026 19:02] Asistan: Paylastiginiz saate gore randevuyu hazirladim, son bir onay alayim.
+- Tarih: Pazartesi 16.02.2026
+- Saat: 14:00
+- Ad Soyad: Cengiz Kurtoğlu
+- Telefon: 04636644775
+Onay icin: 'evet' / 'onay' | Iptal icin: 'hayir'
+[15.02.2026 19:02] Müşteri: Evet
+[15.02.2026 19:02] Asistan: Randevunuzu olusturdum.
+- Tarih: Pazartesi 16.02.2026
+- Saat: 14:00
+- Ad Soyad: Cengiz Kurtoğlu
+- Telefon: 04636644775

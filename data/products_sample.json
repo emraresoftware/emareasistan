@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Elit Serisi Koltuk Kılıfı",
+    "slug": "elit-serisi-koltuk-kilifi",
+    "description": "Yüksek kaliteli kumaştan üretilmiş, tüm araç koltuklarınızı koruyan şık oto koltuk kılıfı. Elit serisi dayanıklılık ve konforu bir arada sunar.",
+    "category": "elit_serisi",
+    "price": 899.00,
+    "image_url": "https://meridyenoto.com/uploads/elit-serisi.jpg",
+    "vehicle_compatibility": ["VW Passat", "Ford Focus", "Hyundai i20", "Toyota Corolla"],
+    "external_url": "https://meridyenoto.com/elit-serisi"
+  },
+  {
+    "name": "GT Premium Serisi Koltuk Kılıfı",
+    "slug": "gt-premium-serisi",
+    "description": "Deri görünümlü premium koltuk kılıfı. Lüks görünüm ve uzun ömürlü kullanım.",
+    "category": "gt_premium_serisi",
+    "price": 1299.00,
+    "image_url": "https://meridyenoto.com/uploads/gt-premium.jpg",
+    "vehicle_compatibility": ["BMW 3 Serisi", "Mercedes C-Serisi", "Audi A4"],
+    "external_url": "https://meridyenoto.com/gt-premium-serisi"
+  },
+  {
+    "name": "Ekonom Serisi Koltuk Kılıfı",
+    "slug": "ekonom-serisi",
+    "description": "Uygun fiyatlı, kaliteli kumaş oto koltuk kılıfı. Temel koruma ve konfor.",
+    "category": "ekonom_serisi",
+    "price": 499.00,
+    "image_url": "https://meridyenoto.com/uploads/ekonom-serisi.jpg",
+    "vehicle_compatibility": ["Tofaş Şahin", "Fiat Egea", "Renault Symbol"],
+    "external_url": "https://meridyenoto.com/ekonom-serisi"
+  },
+  {
+    "name": "7D Zemin Döşeme",
+    "slug": "7d-zemin-doseme",
+    "description": "Araç zeminini tam kaplayan 7D paspas. Su geçirmez, kolay temizlenebilir.",
+    "category": "7d_zemin_doseme",
+    "price": 599.00,
+    "image_url": "https://meridyenoto.com/uploads/7d-zemin.jpg",
+    "vehicle_compatibility": ["Tüm araçlar"],
+    "external_url": "https://meridyenoto.com/7d-zemin-doseme"
+  },
+  {
+    "name": "Oto Paspas ve Bagaj Seti",
+    "slug": "oto-paspas-bagaj",
+    "description": "Ön, arka ve bagaj paspasından oluşan tam set. Kauçuk malzeme.",
+    "category": "oto_paspas_ve_bagaj",
+    "price": 449.00,
+    "image_url": "https://meridyenoto.com/uploads/paspas-bagaj.jpg",
+    "vehicle_compatibility": ["Model bazlı"],
+    "external_url": "https://meridyenoto.com/oto-paspas-bagaj"
+  },
+  {
+    "name": "Oto Yastık Kolçak ve Organizer",
+    "slug": "oto-yastik-kolcak-organizer",
+    "description": "Boyun yastığı, kolçak ve araç içi organizasyon ürünleri seti.",
+    "category": "oto_yastik_kolcak_organizer",
+    "price": 299.00,
+    "image_url": "https://meridyenoto.com/uploads/yastik-kolcak.jpg",
+    "vehicle_compatibility": ["Evrensel"],
+    "external_url": "https://meridyenoto.com/oto-yastik-kolcak"
+  }
+]

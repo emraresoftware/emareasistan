@@ -1,0 +1,17 @@
+.git
+.gitignore
+.env
+.env.*
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.db
+.wwebjs_auth/
+uploads/
+node_modules/
+*.md
+.cursor
+scripts/local_llm/.venv
+scripts/local_llm/artifacts
+*.log

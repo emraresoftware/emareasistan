@@ -1,0 +1,34 @@
+{
+  "editor.formatOnSave": false,
+  "editor.quickSuggestionsDelay": 500,
+  "editor.parameterHints.enabled": false,
+  "files.autoSave": "off",
+  "python.analysis.indexing": true,
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.venv/**": true,
+    "**/venv/**": true,
+    "**/__pycache__/**": true,
+    "**/.git/**": true,
+    "**/.git/objects/**": true,
+    "**/.cursor/**": true,
+    "**/uploads/**": true,
+    "**/data/**": true,
+    "**/*.log": true,
+    "**/whatsapp-bridge/node_modules/**": true,
+    "**/scripts/local_llm/**": true,
+    "**/artifacts/**": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.venv": true,
+    "**/venv": true,
+    "**/__pycache__": true,
+    "**/whatsapp-bridge/node_modules": true,
+    "**/scripts/local_llm": true,
+    "**/uploads": true,
+    "**/data": true,
+    "**/*.log": true,
+    "**/artifacts": true
+  }
+}

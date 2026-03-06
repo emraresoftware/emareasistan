@@ -1,0 +1,32 @@
+[
+  {
+    "name": "✉️ info@dogatelekom.com.tr",
+    "slug": "mailto:info@dogatelekom.com.tr",
+    "description": "✉️ info@dogatelekom.com.tr",
+    "price": 216,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "mailto:info@dogatelekom.com.tr",
+    "vehicle_compatibility": []
+  },
+  {
+    "name": "Gizlilik Politikası",
+    "slug": "gizlilik-politikasi.php",
+    "description": "Gizlilik Politikası",
+    "price": 216,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "https://dogatelekom.com/gizlilik-politikasi.php",
+    "vehicle_compatibility": []
+  },
+  {
+    "name": "KVKK Aydınlatma Metni",
+    "slug": "kvkk.php",
+    "description": "KVKK Aydınlatma Metni",
+    "price": 216,
+    "category": "genel",
+    "image_url": "",
+    "external_url": "https://dogatelekom.com/kvkk.php",
+    "vehicle_compatibility": []
+  }
+]

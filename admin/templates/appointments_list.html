@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Randevular{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Randevular</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Randevular</h1>
+    <p class="page-subtitle">WhatsApp üzerinden alınan randevular. Müşteri "randevu almak istiyorum" dediğinde AI müsait slotları önerir.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <details>
+    <summary style="cursor:pointer;font-weight:600;">📅 Randevu Ayarları</summary>
+    <form method="post" action="/admin/appointments/settings" style="margin-top:1rem;display:grid;grid-template-columns:1fr 1fr auto;gap:1rem;align-items:end;">
+      <div>
+        <label>Çalışma saatleri</label>
+        <input type="text" name="appointment_work_hours" value="{{ appointment_work_hours }}" placeholder="09:00-18:00">
+      </div>
+      <div>
+        <label>Slot süresi (dakika)</label>
+        <input type="number" name="appointment_slot_minutes" value="{{ appointment_slot_minutes }}" min="15" max="120" step="15">
+      </div>
+      <div>
+        <label>Çalışma günleri (1=Pzt, 7=Paz)</label>
+        <input type="text" name="appointment_work_days" value="{{ appointment_work_days }}" placeholder="1,2,3,4,5">
+      </div>
+      <div style="grid-column:1/-1;">
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+      </div>
+    </form>
+  </details>
+</div>
+
+{% if request.query_params.get('saved') == '1' %}
+<div class="msg" style="background:#dcfce7;color:#166534;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;">Ayarlar kaydedildi.</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:1rem;">
+  <form method="get" style="display:flex;gap:0.5rem;align-items:center;">
+    <label>Durum:</label>
+    <select name="status" onchange="this.form.submit()">
+      <option value="" {% if not status_filter %}selected{% endif %}>Tümü</option>
+      <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Bekleyen</option>
+      <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Onaylı</option>
+      <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Tamamlanan</option>
+      <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>İptal</option>
+    </select>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Müşteri</th>
+        <th>Telefon</th>
+        <th>Tarih / Saat</th>
+        <th>Hizmet</th>
+        <th>Durum</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in appointments %}
+      <tr>
+        <td><strong>{{ a.customer_name or '-' }}</strong></td>
+        <td>{% if a.customer_phone %}<a href="tel:{{ a.customer_phone }}">{{ a.customer_phone }}</a>{% else %}-{% endif %}</td>
+        <td>{{ a.scheduled_at|to_turkey if a.scheduled_at else '-' }}</td>
+        <td><small>{{ a.service_type or '-' }}</small></td>
+        <td><span class="badge {% if a.status == 'pending' %}badge-warning{% elif a.status == 'completed' %}badge-success{% elif a.status == 'cancelled' %}badge-secondary{% else %}badge-info{% endif %}">{{ a.status }}</span></td>
+        <td>
+          {% if a.conversation_id %}<a href="/admin/agent/chat/{{ a.conversation_id }}" class="btn btn-sm">Sohbet</a>{% endif %}
+          {% if a.status in ('pending', 'confirmed') %}
+          <form method="post" action="/admin/appointments/{{ a.id }}/complete" style="display:inline;"><button type="submit" class="btn btn-sm btn-success">Tamamla</button></form>
+          <form method="post" action="/admin/appointments/{{ a.id }}/cancel" style="display:inline;"><button type="submit" class="btn btn-sm btn-secondary">İptal</button></form>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henüz randevu yok.</p><p>Müşteri WhatsApp'tan "randevu almak istiyorum" veya "yağ değişimi ne zaman yapılır" dediğinde AI müsait slotları önerecek.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

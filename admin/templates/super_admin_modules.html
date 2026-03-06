@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modüller - {{ tenant.name }} | Super Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2d5a87;
+      --accent: #c59b3d;
+      --muted: #64748b;
+      --bg: #f1f5f9;
+      --card: #fff;
+    }
+    body { font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; min-height: 100vh; background: var(--bg); color: #334155; line-height: 1.5; }
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 12px rgba(30,58,95,0.2);
+    }
+    .header-brand { font-weight: 700; font-size: 1.15rem; }
+    .header-links { display: flex; gap: 1rem; }
+    .header-links a { color: rgba(255,255,255,0.95); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: background 0.2s; }
+    .header-links a:hover { background: rgba(255,255,255,0.15); }
+    .header-links a.cta { background: var(--accent); color: #1a1a1a; }
+    .header-links a.cta:hover { background: #d4ab4a; }
+    .container { max-width: 680px; margin: 0 auto; padding: 1.5rem; }
+    .breadcrumb { font-size: 0.9rem; color: var(--muted); margin-bottom: 1rem; }
+    .breadcrumb a { color: var(--primary); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem; }
+    .page-subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 1.5rem; }
+    .msg { background: #dcfce7; color: #166534; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 500; }
+    .card {
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card h3 { font-size: 1rem; color: var(--primary); margin-bottom: 1rem; font-weight: 600; }
+    .radio-group { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1rem; }
+    .radio-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.85rem 1rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .radio-item:hover { border-color: #cbd5e1; background: #f8fafc; }
+    .radio-item.selected { border-color: var(--primary); background: #f0f7ff; }
+    .radio-item input { margin-top: 0.2rem; accent-color: var(--primary); }
+    .radio-item label { cursor: pointer; flex: 1; font-weight: 500; }
+    .radio-item .hint { font-size: 0.85rem; color: var(--muted); margin-top: 0.25rem; }
+    .modules-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+    .module-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+    }
+    .module-item input { accent-color: var(--primary); }
+    .module-item label { cursor: pointer; flex: 1; font-weight: 500; }
+    .module-item .desc { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+    .btn { display: inline-flex; align-items: center; padding: 0.6rem 1.25rem; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.2s; }
+    .btn:hover { background: var(--primary-light); }
+    .btn-secondary { background: #64748b; }
+    .btn-secondary:hover { background: #475569; }
+    .actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+    .modules-section { display: none; }
+    .modules-section.visible { display: block; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="header-brand">Emare Asistan — Modül Yönetimi</h1>
+    <div class="header-links">
+      <a href="/admin/super">← Dashboard</a>
+      <a href="/admin/logout">Çıkış</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/admin/super">Firmalar</a> → <span>{{ tenant.name or tenant.slug }}</span>
+    </div>
+    <h1 class="page-title">{{ tenant.name or tenant.slug }}</h1>
+    <p class="page-subtitle">Bu firma için hangi özelliklerin (modüllerin) etkin olacağını belirleyin.</p>
+
+    {% if request.query_params.get('saved') %}
+    <div class="msg">✅ Modüller kaydedildi.</div>
+    {% endif %}
+    {% if error %}
+    <div style="background:#fee2e2;color:#991b1b;padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/admin/super/modules/{{ tenant.id }}">
+      <div class="card">
+        <h3>Modül Seçimi</h3>
+        <div class="radio-group">
+          <div class="radio-item {% if use_all %}selected{% endif %}" data-value="all" onclick="setMode('all')">
+            <input type="radio" name="use_all" value="1" id="mode_all" {% if use_all %}checked{% endif %}>
+            <label for="mode_all">
+              Tüm modüller etkin
+              <div class="hint">Firma tüm özelliklere (WhatsApp, siparişler, ürünler vb.) erişebilir.</div>
+            </label>
+          </div>
+          <div class="radio-item {% if not use_all %}selected{% endif %}" data-value="selected" onclick="setMode('selected')">
+            <input type="radio" name="use_all" value="0" id="mode_selected" {% if not use_all %}checked{% endif %}>
+            <label for="mode_selected">
+              Sadece seçilen modüller
+              <div class="hint">Aşağıdan etkin olmasını istediğiniz modülleri işaretleyin.</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="modules-section {% if not use_all %}visible{% endif %}" id="modulesSection">
+          <div class="modules-grid">
+            {% for m in modules %}
+            <div class="module-item">
+              <input type="checkbox" name="mod_{{ m.id }}" id="mod_{{ m.id }}" value="1"
+                {% if use_all or m.id in enabled %}checked{% endif %}
+                {% if use_all %}disabled{% endif %}>
+              <label for="mod_{{ m.id }}">
+                {{ m.name }}
+                <div class="desc">{{ m.desc }}</div>
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn">Kaydet</button>
+        <a href="/admin/super" class="btn btn-secondary" style="text-decoration:none;">İptal</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function setMode(mode) {
+      const all = mode === 'all';
+      document.getElementById('mode_all').checked = all;
+      document.getElementById('mode_selected').checked = !all;
+      document.querySelectorAll('.radio-item').forEach(el => {
+        el.classList.toggle('selected', (el.dataset.value === 'all' && all) || (el.dataset.value === 'selected' && !all));
+      });
+      const section = document.getElementById('modulesSection');
+      section.classList.toggle('visible', !all);
+      document.querySelectorAll('#modulesSection input[type=checkbox]').forEach(cb => {
+        cb.disabled = all;
+        if (all) cb.checked = true;
+      });
+    }
+  </script>
+</body>
+</html>

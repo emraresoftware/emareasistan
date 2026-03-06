@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Kargo Bilgisi",
+    "text": "Merhaba, gonderilerimizi Trendyol Express ve Kolay Gelsin Kargo ile saglamaktayiz. {{ek_bilgi}} Saygilar, Kozmopol",
+    "variables": [
+      "ek_bilgi"
+    ],
+    "category": "kargo"
+  },
+  {
+    "name": "Urun Orijinallik",
+    "text": "Merhaba, tum urunlerimiz orijinaldir. {{urun_adi}} markanin kendisi veya ana dagiticisindan temin edilmektedir. Saygilar, Kozmopol",
+    "variables": [
+      "urun_adi"
+    ],
+    "category": "urun"
+  },
+  {
+    "name": "Iade Yonlendirme",
+    "text": "Merhaba, {{sorun_detay}} konusunda Trendyol musteri hizmetleri ile iletisime gecmenizi rica ederiz. Saygilarimizla Kozmopol",
+    "variables": [
+      "sorun_detay"
+    ],
+    "category": "iade"
+  },
+  {
+    "name": "SKT Bilgisi",
+    "text": "Merhaba, tum urunlerimizde son kullanma tarihi en az 12 aydir. {{urun_adi}} urunumuzun SKT bilgisi icin mesai saatlerinde iletisime gecebilirsiniz. Saygilar",
+    "variables": [
+      "urun_adi"
+    ],
+    "category": "skt"
+  },
+  {
+    "name": "Hamile/Emziren Uyarisi",
+    "text": "Merhaba, hamile ve emziren bayanlara ozel urun degilse veya acikca belirtilmiyorsa urun onerememekteyiz. {{ek_not}} Uretici firmanin resmi sayfasina danismanizi oneriyoruz. Saygilar",
+    "variables": [
+      "ek_not"
+    ],
+    "category": "hamile"
+  },
+  {
+    "name": "Genel Bilgi Yonlendirme",
+    "text": "Merhaba, {{konu}} hakkinda en dogru bilgiyi uretici firmanin resmi internet sayfasi veya musteri hizmetlerine ulasarak alabilirsiniz. Saygilar, Kozmopol",
+    "variables": [
+      "konu"
+    ],
+    "category": "diger"
+  }
+]

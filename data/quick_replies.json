@@ -1,0 +1,8 @@
+[
+  {"label": "Merhaba", "text": "Merhaba, size nasıl yardımcı olabilirim?"},
+  {"label": "Bekleyin", "text": "Bilgilerinizi kontrol ediyorum, lütfen bir dakika bekleyin."},
+  {"label": "Sipariş onay", "text": "Siparişiniz alındı. En kısa sürede sizinle iletişime geçeceğiz."},
+  {"label": "Kargo bilgisi", "text": "Kargo bilgisi hazır olduğunda size bildireceğiz."},
+  {"label": "Teşekkür", "text": "Rica ederiz, iyi günler dileriz."},
+  {"label": "Arayacağız", "text": "En kısa sürede sizi arayacağız."}
+]

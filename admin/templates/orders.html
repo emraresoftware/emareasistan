@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Siparişler{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Siparişler</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Siparişler</h1>
+    <p class="page-subtitle">Tüm siparişleri görüntüleyin ve yönetin. Toplam {{ total }} sipariş.</p>
+  </div>
+  <a href="/admin/orders/export{% if status_filter %}?status={{ status_filter }}{% endif %}" class="btn btn-success">📥 Excel/CSV İndir</a>
+</div>
+
+<div class="action-bar">
+  <form method="get" action="/admin/orders" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+    <input type="text" name="q" class="search-box" placeholder="Sipariş no, müşteri, telefon..." value="{{ search_q or '' }}">
+    <select name="status">
+      <option value="">Tüm durumlar</option>
+      <option value="pending" {% if status_filter=='pending' %}selected{% endif %}>Beklemede</option>
+      <option value="confirmed" {% if status_filter=='confirmed' %}selected{% endif %}>Onaylandı</option>
+      <option value="processing" {% if status_filter=='processing' %}selected{% endif %}>Hazırlanıyor</option>
+      <option value="shipped" {% if status_filter=='shipped' %}selected{% endif %}>Kargoda</option>
+      <option value="delivered" {% if status_filter=='delivered' %}selected{% endif %}>Teslim edildi</option>
+      <option value="cancelled" {% if status_filter=='cancelled' %}selected{% endif %}>İptal</option>
+    </select>
+    <button type="submit" class="btn btn-sm">Filtrele</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Sipariş No</th>
+        <th>Müşteri</th>
+        <th>Tutar</th>
+        <th>Ödeme</th>
+        <th>Durum</th>
+        <th>Platform</th>
+        <th>Tarih</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>{{ o.order_number }}</strong></td>
+        <td>{{ o.customer_name }}<br><small style="color:#64748b;">{{ o.customer_phone }}</small></td>
+        <td>{{ o.total_amount }} TL</td>
+        <td><small>{% if o.payment_option %}{% if o.payment_option == 'havale' %}Havale{% elif o.payment_option == 'kredi_karti' %}Kredi Kartı{% elif o.payment_option == 'kapida_odeme' %}Kapıda{% else %}{{ o.payment_option }}{% endif %}{% else %}-{% endif %}</small></td>
+        <td>
+          <span class="badge {% if o.status == 'delivered' %}badge-success{% elif o.status == 'cancelled' %}badge-danger{% elif o.status == 'pending' %}badge-warning{% else %}badge-info{% endif %}">
+            {% if o.status == 'pending' %}Beklemede{% elif o.status == 'confirmed' %}Onaylandı{% elif o.status == 'processing' %}Hazırlanıyor{% elif o.status == 'shipped' %}Kargoda{% elif o.status == 'delivered' %}Teslim edildi{% elif o.status == 'cancelled' %}İptal{% else %}{{ o.status }}{% endif %}
+          </span>
+        </td>
+        <td><span class="badge badge-info">{{ o.platform or '-' }}</span></td>
+        <td>{{ o.created_at|to_turkey if o.created_at else '-' }}</td>
+        <td><a href="/admin/orders/{{ o.id }}" class="btn btn-sm">Detay</a></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="8" class="empty-state"><p>Henüz sipariş yok veya filtre sonucu bulunamadı.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination">
+    <span class="pagination-info">Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" class="btn btn-sm">← Önceki</a>
+    {% endif %}
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" class="btn btn-sm">Sonraki →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Kişiler{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Kişiler</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Kişiler</h1>
+    <p class="page-subtitle">Rehber - Temsilci panelinde kişi seçip WhatsApp sohbeti başlatılabilir.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Kişi Ekle / Düzenle</h3>
+  <form method="post" action="/admin/contacts/save" id="contact-form" style="display:grid;grid-template-columns:1fr 1fr auto;gap:1rem;align-items:end;max-width:600px;">
+    <input type="hidden" name="id" id="contact-id" value="">
+    <div class="form-group" style="margin:0;">
+      <label for="contact-name">Ad</label>
+      <input type="text" id="contact-name" name="name" placeholder="Örn: Ahmet Yılmaz" required>
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label for="contact-phone">Telefon</label>
+      <input type="text" id="contact-phone" name="phone" placeholder="0532 123 45 67" required>
+    </div>
+    <button type="submit" class="btn" id="contact-submit">Ekle</button>
+    <div class="form-group" style="margin:0;grid-column:1/-1;">
+      <label for="contact-email">E-posta (opsiyonel)</label>
+      <input type="email" id="contact-email" name="email" placeholder="ahmet@email.com">
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h3>Mevcut Kişiler</h3>
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Ad</th>
+        <th>Telefon</th>
+        <th>E-posta</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in contacts %}
+      <tr>
+        <td><strong>{{ c.name }}</strong></td>
+        <td><a href="tel:{{ c.phone }}">{{ c.phone }}</a></td>
+        <td>{{ c.email or '-' }}</td>
+        <td>
+          <button type="button" class="btn btn-sm btn-secondary" onclick="editContact({{ c.id }}, {{ c.name|tojson }}, {{ c.phone|tojson }}, {{ (c.email or '')|tojson }})">Düzenle</button>
+          <form method="post" action="/admin/contacts/{{ c.id }}/delete" style="display:inline;" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+            <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty-state"><p>Henüz kişi yok. Yukarıdan ekleyin.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}<a href="?page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+<script>
+function editContact(id, name, phone, email) {
+  document.getElementById('contact-id').value = id;
+  document.getElementById('contact-name').value = name || '';
+  document.getElementById('contact-phone').value = phone || '';
+  document.getElementById('contact-email').value = email || '';
+  document.getElementById('contact-submit').textContent = 'Güncelle';
+}
+document.getElementById('contact-form').addEventListener('submit', function() {
+  if (!document.getElementById('contact-id').value) document.getElementById('contact-submit').textContent = 'Ekle';
+});
+</script>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Idari Isler - Faturalar{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Idari Isler</span> <span>›</span> <span>Faturalar</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Faturalar</h1>
+  <p class="page-subtitle">Fatura kaydi ve onay durum takibi.</p>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <form method="post" action="/admin/admin-staff/invoices/save" enctype="multipart/form-data" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">
+    <input type="text" name="supplier_name" placeholder="Tedarikci adi" required>
+    <input type="text" name="invoice_number" placeholder="Fatura no">
+    <input type="text" name="total_amount" placeholder="Tutar">
+    <div><label>Vade tarihi</label><input type="date" name="due_date"></div>
+    <input type="text" name="note" placeholder="Not" style="grid-column: span 2;">
+    <div><label>Fatura resmi (OCR)</label><input type="file" name="invoice_image" accept="image/*"></div>
+    <div style="grid-column:1/-1;"><button class="btn btn-primary" type="submit">Fatura Ekle</button></div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead><tr><th>Tedarikci</th><th>Fatura</th><th>Tutar</th><th>Vade</th><th>Durum</th><th>Islem</th></tr></thead>
+    <tbody>
+    {% for i in invoices %}
+      <tr>
+        <td>{{ i.supplier_name }}</td>
+        <td>{{ i.invoice_number or '-' }}</td>
+        <td>{{ i.total_amount or '-' }}</td>
+        <td>{{ i.due_date or '-' }}</td>
+        <td><span class="badge {% if i.status == 'paid' %}badge-success{% elif i.status == 'rejected' %}badge-danger{% elif i.status in ['approved','pending_manager'] %}badge-info{% else %}badge-warning{% endif %}">{{ i.status }}</span></td>
+        <td>
+          {% if i.status in ['pending','pending_finance'] %}
+          <form method="post" action="/admin/admin-staff/invoices/{{ i.id }}/status" style="display:inline;">
+            <input type="hidden" name="action" value="approve">
+            <input type="hidden" name="approver_role" value="finance">
+            <button class="btn btn-sm btn-success" type="submit">Finans Onayi</button>
+          </form>
+          <form method="post" action="/admin/admin-staff/invoices/{{ i.id }}/status" style="display:inline;">
+            <input type="hidden" name="action" value="reject">
+            <button class="btn btn-sm btn-secondary" type="submit">Reddet</button>
+          </form>
+          {% elif i.status == 'pending_manager' %}
+          <form method="post" action="/admin/admin-staff/invoices/{{ i.id }}/status" style="display:inline;">
+            <input type="hidden" name="action" value="approve">
+            <input type="hidden" name="approver_role" value="manager">
+            <button class="btn btn-sm btn-success" type="submit">Yonetici Onayi</button>
+          </form>
+          <form method="post" action="/admin/admin-staff/invoices/{{ i.id }}/status" style="display:inline;">
+            <input type="hidden" name="action" value="reject">
+            <button class="btn btn-sm btn-secondary" type="submit">Reddet</button>
+          </form>
+          {% elif i.status == 'approved' %}
+          <form method="post" action="/admin/admin-staff/invoices/{{ i.id }}/status" style="display:inline;">
+            <input type="hidden" name="action" value="paid">
+            <button class="btn btn-sm btn-success" type="submit">Odendi</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henuz fatura yok.</p></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% set qs = ('status=' ~ status_filter ~ '&' if status_filter else '') %}
+    {% if page > 1 %}<a href="?{{ qs }}page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?{{ qs }}page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

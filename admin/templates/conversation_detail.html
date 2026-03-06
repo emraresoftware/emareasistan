@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Sohbet #{{ conversation.id }}{% endblock %}
+{% block extra_css %}
+<style>
+  .msg-bubble { margin-bottom: 1rem; padding: 1.1rem 1.35rem; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); transition: box-shadow 0.2s; }
+  .msg-bubble:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .msg-bubble-user { background: linear-gradient(135deg, #f1f5f9, #f8fafc); border-left: 4px solid #94a3b8; }
+  .msg-bubble-assistant { background: linear-gradient(135deg, #ecfdf5, #f0fdf4); border-left: 4px solid #059669; }
+  [data-theme="dark"] .msg-bubble-user { background: linear-gradient(135deg, #334155, #1e293b); border-left-color: #64748b; }
+  [data-theme="dark"] .msg-bubble-assistant { background: linear-gradient(135deg, #064e3b, #065f46); border-left-color: #10b981; }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/conversations">Sohbetler</a> <span>›</span> <span>#{{ conversation.id }}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Sohbet Detayı</h1>
+    <p class="page-subtitle">
+      <span class="badge badge-info">{{ conversation.platform }}</span>
+      {{ conversation.customer_name or conversation.platform_user_id or 'Müşteri' }}
+      {% if conversation.customer_phone %} · <a href="tel:{{ conversation.customer_phone }}">{{ conversation.customer_phone }}</a>{% endif %}
+      {% if conv_orders %}
+        {% for o in conv_orders %}<a href="/admin/orders/{{ o.id }}" class="badge badge-success" style="margin-left:0.5rem;">{{ o.order_number }}</a>{% endfor %}
+      {% endif %}
+    </p>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <a href="/admin/conversations/export?ids={{ conversation.id }}&format=csv" class="btn btn-sm">📥 İndir (CSV)</a>
+    <a href="/admin/conversations/export?ids={{ conversation.id }}&format=txt" class="btn btn-sm">📥 İndir (TXT)</a>
+    <a href="/admin/reminders/new?conv_id={{ conversation.id }}" class="btn btn-sm">⏰ Hatırlatıcı</a>
+    <a href="/admin/agent/chat/{{ conversation.id }}" class="btn btn-sm btn-success">Temsilci Paneli</a>
+    <form method="post" action="/admin/conversations/{{ conversation.id }}/delete" onsubmit="return confirm('Bu sohbet ve mesaj gecmisi silinecek. Emin misiniz?');" style="display:inline;">
+      <button type="submit" class="btn btn-sm btn-danger">Sohbeti Sil</button>
+    </form>
+    <a href="/admin/conversations" class="btn btn-sm btn-secondary">← Sohbetlere Dön</a>
+  </div>
+</div>
+
+{% if conversation.notes %}
+<div class="card" style="margin-bottom:1rem;">
+  <h3>Sohbet Notu</h3>
+  <p style="white-space:pre-wrap;margin:0;">{{ conversation.notes }}</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <h3>Mesajlar</h3>
+  {% for m in messages %}
+  <div class="msg-bubble {% if m.role=='user' %}msg-bubble-user{% else %}msg-bubble-assistant{% endif %}">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem;">
+      <small style="color:#64748b;"><strong>{{ 'Müşteri' if m.role=='user' else 'Asistan' }}</strong> · {{ m.created_at|to_turkey }}</small>
+      {% if m.role == 'assistant' and m.content and (m.content|length) > 10 %}
+      <span style="display:inline-flex;gap:0.25rem;">
+        <form method="post" action="/admin/feedback" style="display:inline;">
+          <input type="hidden" name="message_id" value="{{ m.id }}"><input type="hidden" name="feedback" value="like">
+          <button type="submit" class="btn btn-sm" style="font-size:0.75rem;padding:0.2rem 0.4rem;" title="Beğendim" {% if m.feedback == 'like' %}disabled{% endif %}>👍</button>
+        </form>
+        <form method="post" action="/admin/feedback" style="display:inline;">
+          <input type="hidden" name="message_id" value="{{ m.id }}"><input type="hidden" name="feedback" value="dislike">
+          <button type="submit" class="btn btn-sm" style="font-size:0.75rem;padding:0.2rem 0.4rem;" title="Beğenmedim" {% if m.feedback == 'dislike' %}disabled{% endif %}>👎</button>
+        </form>
+        <form method="post" action="/admin/training/from-chat" style="display:inline;">
+          <input type="hidden" name="message_id" value="{{ m.id }}">
+          <button type="submit" class="btn btn-sm" style="font-size:0.75rem;" title="Bu yanıtı AI eğitim örneği olarak ekle">📚 Örnek ekle</button>
+        </form>
+      </span>
+      {% endif %}
+    </div>
+    <p style="margin:0.4rem 0 0; white-space: pre-wrap;">{{ (m.content or '')|replace('\n[Ürün resimleri gönderildi]', '')|replace('[Ürün resimleri gönderildi]', '') }}</p>
+    {% if m.extra_data and 'product_images' in (m.extra_data or '') %}
+      <div style="margin-top:0.5rem; font-size:0.8rem; color:#059669;">
+        📷 Ürün resimleri gönderildi
+      </div>
+    {% endif %}
+  </div>
+  {% else %}
+  <div class="empty-state"><p>Henüz mesaj yok.</p></div>
+  {% endfor %}
+</div>
+{% endblock %}

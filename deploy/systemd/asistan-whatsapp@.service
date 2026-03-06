@@ -1,0 +1,26 @@
+[Unit]
+Description=Emare Asistan WhatsApp Bridge (tenant bazlı instance %i)
+After=network.target asistan-api.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/asistan/whatsapp-bridge
+
+# API her instance için aynı; tenant izolasyonu API tarafında sağlanır
+Environment=ASISTAN_API_URL=http://127.0.0.1:8000
+
+# Instance adı (%i) tenant_id olarak kullanılır (TENANT_ID env)
+Environment=TENANT_ID=%i
+
+# İsteğe bağlı: her tenant için port vb. ayarları buradan verebilirsin
+# Örn: /opt/asistan/whatsapp-bridge/whatsapp-1.env içinde: QR_PORT=3101
+EnvironmentFile=-/opt/asistan/whatsapp-bridge/whatsapp-%i.env
+
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

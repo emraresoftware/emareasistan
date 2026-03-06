@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Kural Düzenle' if rule else 'Yeni Kural' }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/rules">Kurallar</a> <span>›</span> <span>{{ 'Düzenle' if rule else 'Yeni' }}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{{ 'Kural Düzenle' if rule else 'Yeni Kural' }}</h1>
+  <p class="page-subtitle">Müşteri belirttiğiniz kelimeleri yazınca otomatik olarak seçtiğiniz ürün veya resimler gönderilir.</p>
+</div>
+<form method="post" action="/admin/rules/save">
+  {% if rule %}<input type="hidden" name="id" value="{{ rule.id }}">{% endif %}
+  <div class="form-group">
+    <label>Kural adı</label>
+    <input type="text" name="name" value="{{ rule.name if rule else '' }}" placeholder="Örn: Fiyat soranlara kampanya">
+  </div>
+  <div class="form-group">
+    <label>Ne zaman tetiklensin?</label>
+    <select name="trigger_type">
+      <option value="keyword" {% if not rule or rule.trigger_type=='keyword' %}selected{% endif %}>Müşteri şu kelimeleri yazınca</option>
+      <option value="vehicle_model" {% if rule and rule.trigger_type=='vehicle_model' %}selected{% endif %}>Araç modeli yazınca (Passat, Golf, Corolla…)</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Kelimeler veya modeller (virgülle ayırın)</label>
+    <input type="text" name="trigger_value" value="{{ rule.trigger_value if rule else '' }}" placeholder="Örn: fiyat, koltuk, paspas, kampanya">
+  </div>
+  <div class="form-group">
+    <label>Gönderilecek ürün no'ları (isteğe bağlı)</label>
+    <input type="text" name="product_ids" value="{{ product_ids_display if product_ids_display is defined else (rule.product_ids if rule else '') }}" placeholder="Boş bırakabilir veya: 1, 2, 3">
+    <small style="color:#64748b;">Ürünler sayfasındaki ürün numaraları. Virgülle yazın.</small>
+  </div>
+  <div class="form-group">
+    <label>Gönderilecek resim linkleri (isteğe bağlı)</label>
+    <textarea name="image_urls" rows="2" placeholder="Her satıra bir link veya boş bırakın">{{ image_urls_display if image_urls_display is defined else '' }}</textarea>
+    <small style="color:#64748b;">En az biri (ürün no veya resim linki) dolu olmalı; yoksa kural tetiklenmez.</small>
+  </div>
+  <div class="form-group">
+    <label>Yanıtta ek metin (isteğe bağlı)</label>
+    <textarea name="custom_message" rows="2" placeholder="Resimlerle birlikte gösterilecek kısa mesaj">{{ rule.custom_message if rule else '' }}</textarea>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_active" value="on" {% if not rule or rule.is_active %}checked{% endif %}> Kural aktif</label>
+  </div>
+  <div class="form-group" style="max-width:8rem;">
+    <label>Öncelik</label>
+    <input type="number" name="priority" value="{{ rule.priority if rule else 0 }}" min="0" title="Aynı mesajda birden fazla kural eşleşirse yüksek öncelik önce çalışır.">
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <button type="submit" class="btn">Kaydet</button>
+    <a href="/admin/rules" class="btn btn-secondary">İptal</a>
+  </div>
+</form>
+{% endblock %}

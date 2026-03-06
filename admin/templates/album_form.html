@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Albüm Düzenle' if album else 'Yeni Albüm' }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/albums">Albümler</a> <span>›</span> <span>{{ 'Düzenle' if album else 'Yeni' }}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{{ 'Albüm Düzenle' if album else 'Yeni Albüm' }}</h1>
+  <p class="page-subtitle">Albümdeki resimler, seçtiğiniz araç modelleri için otomatik gönderilir.</p>
+</div>
+<form method="post" action="/admin/albums/save" id="albumForm">
+  {% if album %}<input type="hidden" name="id" value="{{ album.id }}">{% endif %}
+  <div class="form-group">
+    <label>Albüm adı</label>
+    <input type="text" name="name" value="{{ album.name if album else '' }}" placeholder="Örn: Passat Elit Serisi" required>
+  </div>
+  <div class="form-group">
+    <label>Bu albüm hangi araçlar için?</label>
+    <div style="display:flex;gap:0.5rem;">
+      <input type="text" name="vehicle_models" id="vehicle_models_input" value="{{ album.vehicle_models if album else '' }}" placeholder="Menüden seçin veya virgülle yazın" style="flex:1;">
+      <button type="button" id="open_vehicle_menu" class="btn btn-sm">Araç seç</button>
+    </div>
+    <small style="color:#64748b;">Menüden seçin veya virgülle yazın – müşteri bu araçlardan birini yazdığında bu albüm gönderilir.</small>
+    <div id="vehicle_menu" class="vehicle-menu" style="display:none;">
+      <input type="text" id="vehicle_search" placeholder="Araç ara..." class="vehicle-search">
+      <div class="vehicle-menu-inner">
+        {% for brand, models in (brands or {}).items() %}
+        <div class="vehicle-brand-group">
+          <div class="vehicle-brand-name">{{ brand }}</div>
+          <div class="vehicle-models">
+            {% for model in models %}
+            <label class="vehicle-option"><input type="checkbox" value="{{ model }}" data-display="{{ brand }} {{ model }}"> {{ model }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Resimler</label>
+    <div class="image-actions">
+      <label class="btn btn-sm" style="cursor:pointer;margin-right:0.5rem;">
+        <input type="file" id="file_upload" accept="image/*" multiple style="display:none;"> Bilgisayardan yükle
+      </label>
+      <button type="button" id="open_image_picker" class="btn btn-sm">Klasörden seç</button>
+    </div>
+    <textarea name="image_urls" id="image_urls" rows="8" placeholder="URL'ler veya yukarıdan yükleyin/seçin">{{ album_urls_display }}</textarea>
+    <small style="color:#64748b;">Resim yükleyin, klasörden seçin veya URL'leri her satıra bir tane yazın.</small>
+  </div>
+  <div id="image_picker_modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Klasördeki resimlerden seç</h3>
+        <button type="button" class="modal-close" id="close_image_picker">&times;</button>
+      </div>
+      <div id="image_picker_grid" class="image-picker-grid"></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Özel mesaj (isteğe bağlı)</label>
+    <textarea name="custom_message" rows="2">{{ album.custom_message if album else '' }}</textarea>
+    <small style="color:#64748b;">Resimlerle birlikte gönderilecek metin.</small>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_active" value="on" {% if not album or album.is_active %}checked{% endif %}> Aktif</label>
+  </div>
+  <div class="form-group">
+    <label>Öncelik (yüksek = önce)</label>
+    <input type="number" name="priority" value="{{ album.priority if album else 0 }}">
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <button type="submit" class="btn">Kaydet</button>
+    <a href="/admin/albums" class="btn btn-secondary">İptal</a>
+  </div>
+</form>
+
+<style>
+.vehicle-menu { position: relative; margin-top: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 320px; overflow: hidden; }
+.vehicle-search { width: 100%; padding: 0.5rem 0.75rem; border: none; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+.vehicle-menu-inner { max-height: 260px; overflow-y: auto; padding: 0.5rem 0; }
+.vehicle-brand-group { margin-bottom: 0.5rem; }
+.vehicle-brand-name { font-weight: 600; font-size: 0.8rem; color: var(--primary); padding: 0.25rem 0.75rem; }
+.vehicle-models { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0 0.75rem 0.5rem; }
+.vehicle-option { display: inline-flex; align-items: center; padding: 0.25rem 0.5rem; margin: 0; font-size: 0.85rem; cursor: pointer; border-radius: 4px; white-space: nowrap; }
+.vehicle-option:hover { background: #f1f5f9; }
+.vehicle-option input { margin-right: 0.35rem; }
+.vehicle-option.hidden { display: none; }
+.image-actions { margin-bottom: 0.5rem; }
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+.modal-content { background: #fff; border-radius: 8px; max-width: 90vw; max-height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid #e5e7eb; }
+.modal-header h3 { margin: 0; font-size: 1.1rem; }
+.modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; padding: 0 0.5rem; }
+.modal-close:hover { color: #333; }
+.image-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 0.75rem; padding: 1rem; overflow-y: auto; max-height: 60vh; }
+.image-picker-item { border: 2px solid #e5e7eb; border-radius: 6px; overflow: hidden; cursor: pointer; aspect-ratio: 1; }
+.image-picker-item:hover, .image-picker-item.selected { border-color: var(--primary); }
+.image-picker-item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+</style>
+
+<script>
+(function() {
+  const input = document.getElementById('vehicle_models_input');
+  const menu = document.getElementById('vehicle_menu');
+  const search = document.getElementById('vehicle_search');
+  const form = document.getElementById('albumForm');
+
+  // Parse existing value to check boxes
+  const existing = (input.value || '').split(',').map(s => s.trim()).filter(Boolean);
+
+  function updateInput() {
+    const checked = Array.from(menu.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+    input.value = checked.join(', ');
+  }
+
+  document.getElementById('open_vehicle_menu').addEventListener('click', function() {
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    if (menu.style.display === 'block') search.focus();
+  });
+
+  search.addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    menu.querySelectorAll('.vehicle-option').forEach(lab => {
+      const txt = (lab.textContent || '').toLowerCase();
+      const brand = (lab.closest('.vehicle-brand-group')?.querySelector('.vehicle-brand-name')?.textContent || '').toLowerCase();
+      const show = !q || txt.includes(q) || brand.includes(q);
+      lab.classList.toggle('hidden', !show);
+    });
+    menu.querySelectorAll('.vehicle-brand-group').forEach(grp => {
+      const visible = grp.querySelectorAll('.vehicle-option:not(.hidden)').length > 0;
+      grp.style.display = visible ? '' : 'none';
+    });
+  });
+
+  menu.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    if (existing.includes(cb.value)) cb.checked = true;
+    cb.addEventListener('change', updateInput);
+  });
+  updateInput();
+
+  document.addEventListener('click', function(e) {
+    if (!menu.contains(e.target) && e.target !== input && e.target.id !== 'open_vehicle_menu') menu.style.display = 'none';
+  });
+})();
+
+// Resim yükle + klasörden seç
+(function() {
+  const textarea = document.getElementById('image_urls');
+  const fileInput = document.getElementById('file_upload');
+  const openBtn = document.getElementById('open_image_picker');
+  const modal = document.getElementById('image_picker_modal');
+  const grid = document.getElementById('image_picker_grid');
+  const closeBtn = document.getElementById('close_image_picker');
+
+  function addUrls(urls) {
+    const lines = (textarea.value || '').split('\n').filter(Boolean);
+    urls.forEach(u => { if (u && !lines.includes(u)) lines.push(u); });
+    textarea.value = lines.join('\n');
+  }
+
+  fileInput.addEventListener('change', async function() {
+    const files = this.files;
+    if (!files.length) return;
+    const fd = new FormData();
+    for (let i = 0; i < files.length; i++) fd.append('files', files[i]);
+    try {
+      const r = await fetch('/admin/albums/upload', { method: 'POST', body: fd });
+      const j = await r.json();
+      if (j.urls && j.urls.length) addUrls(j.urls);
+    } catch (e) { alert('Yükleme hatası'); }
+    this.value = '';
+  });
+
+  openBtn.addEventListener('click', async function() {
+    modal.style.display = 'flex';
+    try {
+      const r = await fetch('/admin/api/album-images');
+      const images = await r.json();
+      grid.innerHTML = images.map(img => `
+        <div class="image-picker-item" data-url="${img.url}">
+          <img src="${img.url}" alt="${img.name}" loading="lazy">
+        </div>
+      `).join('');
+      grid.querySelectorAll('.image-picker-item').forEach(el => {
+        el.addEventListener('click', function() {
+          el.classList.toggle('selected');
+        });
+      });
+    } catch (e) { grid.innerHTML = '<p>Resim yüklenemedi.</p>'; }
+  });
+
+  closeBtn.addEventListener('click', function() {
+    const selected = grid.querySelectorAll('.image-picker-item.selected');
+    const urls = Array.from(selected).map(el => el.dataset.url);
+    if (urls.length) addUrls(urls);
+    modal.style.display = 'none';
+  });
+  modal.addEventListener('click', function(e) {
+    if (e.target === modal) closeBtn.click();
+  });
+})();
+</script>
+{% endblock %}

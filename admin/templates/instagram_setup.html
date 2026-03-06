@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Instagram Webhook Kurulumu{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb">
+  <a href="/admin/dashboard">Dashboard</a> <span>›</span>
+  <a href="/admin/instagram">Instagram</a> <span>›</span>
+  <span>Webhook Kurulumu</span>
+</div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Instagram Webhook Kurulum Rehberi</h1>
+  <p class="page-subtitle">Meta Developer Console üzerinden Instagram Messaging API'yi adım adım bağlayın.</p>
+</div>
+
+<div class="card">
+  <h3>1. Meta Developer Console'a Gidin</h3>
+  <p style="margin:0 0 0.75rem;color:var(--text-muted);">Önce bir Meta (Facebook) geliştirici hesabı ve uygulama oluşturun.</p>
+  <a href="https://developers.facebook.com/apps/" target="_blank" rel="noopener" class="btn btn-primary">Meta for Developers → Uygulamalar</a>
+</div>
+
+<div class="card">
+  <h3>2. Instagram Ürününü Ekleyin</h3>
+  <ul style="margin:0;padding-left:1.25rem;line-height:1.8;color:var(--text-muted);">
+    <li>Uygulamanızı seçin veya yeni oluşturun</li>
+    <li><strong>Ürün Ekle</strong> → <strong>Instagram</strong> → <strong>Instagram Graph API</strong> veya <strong>Messenger Platform</strong></li>
+    <li>Instagram Business veya Creator hesabınızı Facebook Page'e bağlayın</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>3. Webhook Ayarları</h3>
+  <p style="margin:0 0 0.75rem;color:var(--text-muted);">Instagram → Ayarlar → Webhooks bölümünde aşağıdaki bilgileri girin:</p>
+  <div class="form-group">
+    <label>Callback URL</label>
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <input type="text" value="{{ webhook_url }}" readonly style="font-family:monospace;font-size:0.9rem;flex:1;min-width:200px;" id="cb-url">
+      <button type="button" class="btn btn-sm" onclick="navigator.clipboard.writeText(document.getElementById('cb-url').value);this.textContent='Kopyalandı!';setTimeout(function(){this.textContent='Kopyala';}.bind(this),1500);">Kopyala</button>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Verify Token</label>
+    <input type="text" value="{{ verify_token }}" readonly style="font-family:monospace;font-size:0.9rem;">
+  </div>
+  <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">Verify Token'ı aynen kopyalayıp Meta'ya yapıştırın. <strong>Doğrulama</strong> butonuna bastığınızda Emare Asistan sunucusu bu token ile yanıt verecektir.</p>
+</div>
+
+<div class="card">
+  <h3>4. Abonelik Alanları</h3>
+  <p style="margin:0 0 0.75rem;color:var(--text-muted);">Webhook doğrulandıktan sonra şu alanlara abone olun:</p>
+  <ul style="margin:0;padding-left:1.25rem;line-height:1.8;">
+    <li><strong>messages</strong> – Gelen mesajlar</li>
+    <li><strong>messaging_postbacks</strong> – Buton tıklamaları (opsiyonel)</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>5. .env Ayarları</h3>
+  <p style="margin:0 0 0.75rem;color:var(--text-muted);">Sunucunuzdaki <code>.env</code> dosyasına ekleyin:</p>
+  <pre style="background:var(--primary-soft,#f8fafc);padding:1rem;border-radius:8px;font-size:0.85rem;overflow-x:auto;border:1px solid var(--border);"><code># Instagram Messaging API
+INSTAGRAM_PAGE_ID=
+INSTAGRAM_ACCESS_TOKEN=your_page_access_token
+INSTAGRAM_VERIFY_TOKEN=emare_verify</code></pre>
+  <p style="font-size:0.85rem;color:var(--text-muted);margin-top:0.75rem;">Access Token'ı Meta Developer Console → Instagram → Token Araçları'ndan alın. Page Access Token kullanın (Instagram Business hesabına bağlı Facebook Page).</p>
+</div>
+
+<div class="card">
+  <h3>Önemli Notlar</h3>
+  <ul style="margin:0;padding-left:1.25rem;line-height:1.8;color:var(--text-muted);">
+    <li><strong>24 saat kuralı:</strong> Müşteri mesaj gönderdikten sonra 24 saat içinde yanıt verebilirsiniz. Sonrasında template mesaj gerekir.</li>
+    <li><strong>İzinler:</strong> <code>instagram_basic</code>, <code>instagram_manage_messages</code>, <code>pages_manage_metadata</code> gerekebilir.</li>
+    <li><strong>Canlı mod:</strong> Test modunda sadece uygulama rollerindeki hesaplar mesaj alır. Canlıya geçince herkes kullanabilir.</li>
+  </ul>
+</div>
+
+<div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+  <a href="/admin/instagram" class="btn btn-secondary">← Genel Bakışa Dön</a>
+  <a href="/admin/conversations?platform=instagram" class="btn btn-primary">Sohbetlere Git</a>
+</div>
+{% endblock %}

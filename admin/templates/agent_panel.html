@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% block title %}Temsilci Paneli{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Temsilci Paneli</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Temsilci Paneli</h1>
+    <p class="page-subtitle">Müşteri sohbetlerini devralın, canlı olarak yanıt verin. Müsait olduğunuzda sohbetlere dahil olabilirsiniz.</p>
+  </div>
+</div>
+{% if sla_auto_count and sla_auto_count > 0 %}
+<div class="card" style="margin-bottom:1rem;border-left:4px solid #f59e0b;background:#fffbeb;border-radius:12px;">
+  <strong>SLA Alarmi:</strong> Son kontrolde {{ sla_auto_count }} sohbet otomatik devralindi ({{ 'SLA Bot' }}).
+</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:1rem;">
+  <h3>WhatsApp Durumu</h3>
+  <p style="margin:0 0 0.5rem;font-size:0.9rem;">
+    <span id="wa-status-badge" class="badge" style="padding:0.35rem 0.6rem;">Yükleniyor...</span>
+    <span id="wa-status-text" style="margin-left:0.5rem;color:#64748b;font-size:0.85rem;"></span>
+  </p>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <h3>Yeni Sohbet Başlat</h3>
+  <p style="margin:0 0 1rem;font-size:0.9rem;color:#64748b;">Kişi seçin veya numara girin, WhatsApp sohbeti açın.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;">
+    <div style="min-width:200px;">
+      <label style="display:block;font-size:0.8rem;color:#64748b;margin-bottom:0.25rem;">Kişi seç</label>
+      <select id="start-contact" style="width:100%;padding:0.6rem 0.9rem;border:1px solid var(--border);border-radius:var(--radius-sm);">
+        <option value="">— Kişi seç —</option>
+      </select>
+    </div>
+    <span style="color:#94a3b8;align-self:center;">veya</span>
+    <div style="min-width:180px;">
+      <label style="display:block;font-size:0.8rem;color:#64748b;margin-bottom:0.25rem;">Numara gir</label>
+      <input type="text" id="start-phone" placeholder="0532 123 45 67" style="width:100%;padding:0.5rem;border:1px solid #cbd5e1;border-radius:6px;">
+    </div>
+    <div style="min-width:100px;">
+      <label style="display:block;font-size:0.8rem;color:#64748b;margin-bottom:0.25rem;">İsim (opsiyonel)</label>
+      <input type="text" id="start-name" placeholder="Müşteri adı" style="width:100%;padding:0.5rem;border:1px solid #cbd5e1;border-radius:6px;">
+    </div>
+    <button type="button" class="btn btn-success" onclick="startChat()">Sohbet Başlat</button>
+  </div>
+  <p id="start-chat-err" style="margin:0.5rem 0 0;font-size:0.85rem;color:#dc2626;display:none;"></p>
+</div>
+
+<div class="card" style="margin-bottom:1.5rem;">
+  <h3>Profil ve Müsaitlik</h3>
+  <form method="post" action="/admin/agent/set-profile" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;">
+    <div class="form-group" style="margin:0;min-width:180px;">
+      <label for="agent-name">Temsilci Adınız</label>
+      <input type="text" id="agent-name" name="name" value="{{ agent_name }}" placeholder="Örn: Ahmet" required>
+    </div>
+    <div class="form-group" style="margin:0;min-width:160px;">
+      <label for="agent-status">Durum</label>
+      <select id="agent-status" name="status">
+        <option value="available" {% if agent_status == 'available' %}selected{% endif %}>Müsait</option>
+        <option value="busy" {% if agent_status == 'busy' %}selected{% endif %}>Meşgul</option>
+        <option value="offline" {% if agent_status == 'offline' %}selected{% endif %}>Çevrimdışı</option>
+      </select>
+    </div>
+    <button type="submit" class="btn">Kaydet</button>
+  </form>
+  <p style="margin:0.75rem 0 0;font-size:0.85rem;color:#64748b;">Müsait olduğunuzda sohbet listesinden bir sohbeti seçip Devral ile müşteriyle doğrudan iletişime geçebilirsiniz.</p>
+</div>
+
+<div class="card">
+  <h3>Aktif Sohbetler</h3>
+  <p style="margin:0 0 1rem;font-size:0.9rem;color:#64748b;">Son mesaj sırasına göre listelenir. Devraldığınız sohbetlerde müşteri mesajları size iletilir, AI yanıt vermez.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Müşteri</th>
+        <th>Platform</th>
+        <th>Lead</th>
+        <th>Durum</th>
+        <th>Son Mesaj</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in conversations %}
+      <tr>
+        <td>
+          <strong>{{ c.customer_name or c.platform_user_id or 'Müşteri' }}</strong>
+          {% if c.customer_phone %}<br><small style="color:#64748b;">{{ c.customer_phone }}</small>{% endif %}
+        </td>
+        <td><span class="badge badge-info">{{ c.platform or '-' }}</span></td>
+        <td>
+          {% if c.lead_tier == 'vip' %}
+            <span class="badge badge-danger">VIP {{ c.lead_score }}</span>
+          {% elif c.lead_tier == 'warm' %}
+            <span class="badge badge-warning">SICAK {{ c.lead_score }}</span>
+          {% else %}
+            <span class="badge" style="background:#e2e8f0;color:#475569;">NORMAL {{ c.lead_score }}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if c.is_taken_over %}
+            <span class="badge badge-warning">Temsilci: {{ c.agent_name or '-' }}</span>
+            {% if c.is_mine %}<span class="badge badge-success">Sizin</span>{% endif %}
+          {% else %}
+            <span class="badge" style="background:#e2e8f0;color:#475569;">AI</span>
+          {% endif %}
+        </td>
+        <td><small>{{ c.last_message_at|to_turkey('%d.%m %H:%M') if c.last_message_at else '-' }}</small></td>
+        <td>
+          <a href="/admin/agent/chat/{{ c.id }}" class="btn btn-sm">Sohbet</a>
+          {% if not c.is_taken_over %}
+          <button type="button" class="btn btn-sm btn-success" onclick="takeover({{ c.id }})">Devral</button>
+          {% else %}
+          <button type="button" class="btn btn-sm btn-secondary" onclick="release({{ c.id }})">AI'a Bırak</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henüz sohbet yok.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p style="margin-top:1rem;font-size:0.85rem;color:#64748b;">Liste her 15 saniyede otomatik yenilenir.</p>
+</div>
+
+<script>
+var contactsData = [];
+fetch('/admin/api/agent/contacts').then(function(r){return r.json();}).then(function(arr){
+  contactsData = arr;
+  var sel = document.getElementById('start-contact');
+  arr.forEach(function(c){
+    var opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name + ' (' + c.phone + ')';
+    sel.appendChild(opt);
+  });
+}).catch(function(){});
+
+function startChat() {
+  var contactId = document.getElementById('start-contact').value;
+  var phone = document.getElementById('start-phone').value.trim();
+  var name = document.getElementById('start-name').value.trim();
+  var errEl = document.getElementById('start-chat-err');
+
+  var payload = {};
+  if (contactId) payload.contact_id = parseInt(contactId, 10);
+  else if (phone) {
+    payload.phone = phone;
+    if (name) payload.name = name;
+  } else {
+    errEl.textContent = 'Kişi seçin veya numara girin.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  fetch('/admin/api/agent/start-chat', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+    body: JSON.stringify(payload)
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if (d.ok && d.conversation_id) {
+      location.href = '/admin/agent/chat/' + d.conversation_id + '?takeover=1';
+    } else {
+      errEl.textContent = d.detail || 'Hata oluştu.';
+      errEl.style.display = 'block';
+    }
+  })
+  .catch(function(e){
+    errEl.textContent = 'Hata: ' + e.message;
+    errEl.style.display = 'block';
+  });
+}
+
+document.getElementById('start-contact').addEventListener('change', function(){
+  if (this.value) document.getElementById('start-phone').value = '';
+});
+document.getElementById('start-phone').addEventListener('input', function(){
+  if (this.value) document.getElementById('start-contact').value = '';
+});
+
+function takeover(convId) {
+  fetch('/admin/api/agent/takeover/' + convId, { method: 'POST', headers: {'X-Requested-With':'XMLHttpRequest'} })
+    .then(function(r){return r.json();})
+    .then(function(d){ if (d.ok) location.href = '/admin/agent/chat/' + convId; });
+}
+function release(convId) {
+  if (!confirm('Sohbeti AI\'a devretmek istediğinize emin misiniz?')) return;
+  fetch('/admin/api/agent/release/' + convId, { method: 'POST', headers: {'X-Requested-With':'XMLHttpRequest'} })
+    .then(function(r){return r.json();})
+    .then(function(d){ if (d.ok) location.reload(); else alert('İşlem başarısız.'); })
+    .catch(function(e){ alert('Hata: ' + e.message); });
+}
+setInterval(function(){ location.reload(); }, 15000);
+
+fetch('/admin/api/whatsapp-status').then(function(r){return r.json();}).then(function(d){
+  var badge = document.getElementById('wa-status-badge');
+  var text = document.getElementById('wa-status-text');
+  if (d.connected) {
+    badge.className = 'badge badge-success';
+    badge.textContent = 'Aktif';
+    text.textContent = 'WhatsApp bağlı, mesaj gönderebilirsiniz.';
+  } else {
+    badge.className = 'badge badge-danger';
+    badge.textContent = 'Bağlı Değil';
+    text.textContent = 'WhatsApp Bridge\'i başlatın ve QR ile bağlanın (http://localhost:3100)';
+  }
+}).catch(function(){
+  var badge = document.getElementById('wa-status-badge');
+  badge.className = 'badge badge-danger';
+  badge.textContent = 'Bağlı Değil';
+});
+</script>
+{% endblock %}

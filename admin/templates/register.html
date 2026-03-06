@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Üye Ol | Emare Asistan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%2310b8a6'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='52' font-weight='bold' font-family='Inter,sans-serif'>EA</text></svg>">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:'#effefb',100:'#c8fff4',200:'#93fce8',300:'#5cf2d8',400:'#2ad8c2',
+              500:'#10b8a6',600:'#0d9e91',700:'#0c7f76',800:'#0a655f',900:'#094f4b',950:'#032e2b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+    .hero-gradient { background: linear-gradient(180deg, #f0fdfa 0%, #e6faf5 35%, #d5f5f0 70%, #effefb 100%); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    .slide-up { animation: slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+    .input-field { width:100%; padding:0.8rem 1rem 0.8rem 2.7rem; border:1.5px solid #d1faf4; border-radius:12px; font-size:0.95rem; font-family:inherit; transition:all 0.2s; background:#f0fdfa; color:#0a655f; display:block; }
+    .input-field:focus { outline:none; border-color:#10b8a6; box-shadow:0 0 0 3px rgba(16,184,166,0.12); background:#fff; }
+    .input-field::placeholder { color:#94a3b8; }
+    .plain-field { width:100%; padding:0.8rem 1rem; border:1.5px solid #d1faf4; border-radius:12px; font-size:0.95rem; font-family:inherit; transition:all 0.2s; background:#f0fdfa; color:#0a655f; display:block; }
+    .plain-field:focus { outline:none; border-color:#10b8a6; box-shadow:0 0 0 3px rgba(16,184,166,0.12); background:#fff; }
+    .plain-field::placeholder { color:#94a3b8; }
+    select.plain-field { cursor:pointer; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .result-box { border-radius:12px; padding:1rem 1.15rem; margin-bottom:1rem; font-size:0.9rem; font-weight:500; border:1.5px solid #d1faf4; background:#effefb; color:#0c7f76; }
+    .result-box strong { display:block; margin-bottom:0.3rem; }
+    .result-box.error { background:#fee2e2; border-color:#fecaca; color:#b91c1c; }
+  </style>
+</head>
+<body class="hero-gradient min-h-screen flex flex-col">
+
+  <!-- Top nav -->
+  <nav class="w-full px-6 py-4 flex items-center justify-between max-w-6xl mx-auto">
+    <a href="/" class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center shadow-md shadow-brand-500/25">
+        <span class="text-white font-bold text-sm">EA</span>
+      </div>
+      <span class="font-extrabold text-gray-900 text-lg tracking-tight">Emare <span class="text-brand-600">Asistan</span></span>
+    </a>
+    <a href="/" class="text-sm text-gray-500 hover:text-brand-600 transition-colors flex items-center gap-1.5">
+      <i class="fas fa-arrow-left text-xs"></i> Ana Sayfa
+    </a>
+  </nav>
+
+  <!-- Card -->
+  <div class="flex-1 flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-md relative">
+
+      <div class="fixed -z-10 top-20 left-10 w-80 h-80 rounded-full opacity-25 blur-3xl pointer-events-none" style="background:radial-gradient(circle,#10b8a6,transparent);"></div>
+      <div class="fixed -z-10 bottom-20 right-10 w-64 h-64 rounded-full opacity-15 blur-3xl pointer-events-none" style="background:radial-gradient(circle,#059669,transparent);"></div>
+
+      <div class="bg-white rounded-3xl shadow-2xl shadow-brand-500/10 border border-brand-100 p-8 slide-up">
+
+        {% if tenant_slug and tenant_name %}
+        <!-- JOIN TENANT BRANCH -->
+        <div class="mb-6">
+          <h1 class="text-2xl font-extrabold text-gray-900 mb-1">Ekibe Katılın 🤝</h1>
+          <p class="text-sm text-gray-500">{{ tenant_name }} firmasına üye olun</p>
+        </div>
+
+        <form method="post" action="/admin/register" onsubmit="return checkPasswordJoin()" class="space-y-4">
+          <input type="hidden" name="join_tenant_slug" value="{{ tenant_slug }}">
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">E-posta</label>
+            <div class="relative">
+              <i class="fas fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+              <input type="email" name="email" placeholder="ornek@firma.com" required autofocus class="input-field">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Şifre</label>
+            <div class="relative">
+              <i class="fas fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+              <input type="password" name="password" id="pw_join" placeholder="••••••••" required minlength="6" class="input-field">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Şifre Tekrar</label>
+            <div class="relative">
+              <i class="fas fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+              <input type="password" name="password_confirm" id="pw2_join" placeholder="••••••••" required class="input-field">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3.5 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-600 hover:to-emerald-700 shadow-lg shadow-brand-500/25 hover:-translate-y-0.5 transition-all duration-200">
+            Kayıt Ol <i class="fas fa-arrow-right ml-1.5"></i>
+          </button>
+        </form>
+
+        <div class="text-center mt-5 pt-5 border-t border-gray-100">
+          <a href="/admin/t/{{ tenant_slug }}" class="text-sm font-semibold text-brand-600 hover:text-brand-700 transition-colors">
+            <i class="fas fa-sign-in-alt mr-1"></i> Giriş Yap
+          </a>
+        </div>
+
+        {% else %}
+        <!-- NEW REGISTRATION BRANCH -->
+        <div class="mb-6">
+          <h1 class="text-2xl font-extrabold text-gray-900 mb-1">Ücretsiz Başlayın 🚀</h1>
+          <p class="text-sm text-gray-500">Web sitenizi yapıştırın, sistem otomatik ayarlanacak.</p>
+        </div>
+
+        <!-- Step 1: URL -->
+        <div id="step1" class="step active">
+          <!-- Progress -->
+          <div class="flex items-center gap-2 mb-5">
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-brand-600">
+              <span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs">1</span> Site Analizi
+            </div>
+            <div class="flex-1 h-0.5 bg-gray-100 rounded"></div>
+            <div class="flex items-center gap-1.5 text-xs font-medium text-gray-400">
+              <span class="w-6 h-6 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center text-xs">2</span> Hesap Bilgileri
+            </div>
+          </div>
+
+          <form id="form1" onsubmit="return analyzeSite(event)" class="space-y-4">
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Web Siteniz</label>
+              <div class="relative">
+                <i class="fas fa-globe absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+                <input type="url" name="website_url" id="website_url" placeholder="https://siteniz.com" required autofocus class="input-field">
+              </div>
+            </div>
+            <button type="submit" id="btn1" class="w-full py-3.5 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-600 hover:to-emerald-700 shadow-lg shadow-brand-500/25 hover:-translate-y-0.5 transition-all duration-200">
+              Analiz Et <i class="fas fa-magnifying-glass ml-1.5"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Step 2: Account details -->
+        <div id="step2" class="step">
+          <!-- Progress -->
+          <div class="flex items-center gap-2 mb-5">
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-brand-600">
+              <span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs"><i class="fas fa-check text-xs"></i></span> Site Analizi
+            </div>
+            <div class="flex-1 h-0.5 bg-brand-300 rounded"></div>
+            <div class="flex items-center gap-1.5 text-xs font-semibold text-brand-600">
+              <span class="w-6 h-6 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs">2</span> Hesap Bilgileri
+            </div>
+          </div>
+
+          <div id="analyze-result" class="result-box"></div>
+
+          <form id="form2" method="post" action="/admin/register" onsubmit="return checkPassword()" class="space-y-4">
+            <input type="hidden" name="website_url" id="website_url_h">
+            <input type="hidden" name="tenant_name" id="tenant_name_h">
+            <input type="hidden" name="tenant_slug" id="tenant_slug_h">
+            <input type="hidden" name="products_json" id="products_json_h">
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Sektör</label>
+              <select name="sector" id="sector_select" required class="plain-field">
+                <option value="genel">Genel</option>
+                <option value="otomobil">Otomobil / Oto Aksesuar</option>
+                <option value="mobilya">Mobilya</option>
+                <option value="tekstil">Tekstil / Giyim</option>
+                <option value="emlak">Emlak</option>
+                <option value="elektronik">Elektronik</option>
+                <option value="telekom">Telekom / İletişim</option>
+                <option value="gida">Gıda / Restoran</option>
+                <option value="saglik">Sağlık / Eczane</option>
+                <option value="kozmetik">Kozmetik / Güzellik</option>
+                <option value="spor">Spor / Fitness</option>
+                <option value="turizm">Turizm / Otel</option>
+                <option value="insaat">İnşaat / Yapı</option>
+                <option value="tarim">Tarım / Ziraat</option>
+                <option value="egitim">Eğitim</option>
+                <option value="perakende">Perakende / Mağaza</option>
+                <option value="hizmet">Hizmet</option>
+                <option value="otomotiv">Otomotiv / Oto Tamir</option>
+                <option value="kuaför">Kuaför / Berber</option>
+                <option value="evcil">Evcil Hayvan</option>
+                <option value="ofis">Ofis Malzemesi</option>
+                <option value="kitap">Kitap / Yayın</option>
+                <option value="sinema">Sinema / Eğlence</option>
+                <option value="sigorta">Sigorta</option>
+                <option value="finans">Finans / Bankacılık</option>
+                <option value="hukuk">Hukuk / Avukatlık</option>
+                <option value="lojistik">Lojistik / Kargo</option>
+                <option value="madencilik">Madencilik</option>
+                <option value="enerji">Enerji</option>
+                <option value="bilisim">Bilişim / Yazılım</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">E-posta</label>
+              <div class="relative">
+                <i class="fas fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+                <input type="email" name="email" placeholder="ornek@firma.com" required class="input-field">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Şifre</label>
+              <div class="relative">
+                <i class="fas fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+                <input type="password" name="password" id="pw" placeholder="••••••••" required minlength="6" class="input-field">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-gray-700 mb-1.5">Şifre Tekrar</label>
+              <div class="relative">
+                <i class="fas fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-brand-400 text-sm"></i>
+                <input type="password" name="password_confirm" id="pw2" placeholder="••••••••" required class="input-field">
+              </div>
+            </div>
+
+            <button type="submit" id="btn2" class="w-full py-3.5 rounded-2xl text-white font-semibold text-sm bg-gradient-to-r from-brand-500 to-emerald-600 hover:from-brand-600 hover:to-emerald-700 shadow-lg shadow-brand-500/25 hover:-translate-y-0.5 transition-all duration-200">
+              Kayıt Ol <i class="fas fa-rocket ml-1.5"></i>
+            </button>
+          </form>
+        </div>
+
+        <div class="flex items-center gap-3 mt-5">
+          <div class="flex-1 h-px bg-gray-100"></div>
+          <span class="text-xs text-gray-400 font-medium">veya</span>
+          <div class="flex-1 h-px bg-gray-100"></div>
+        </div>
+
+        <div class="text-center mt-4">
+          <p class="text-sm text-gray-500 mb-3">Zaten hesabınız var mı?</p>
+          <a href="/admin" class="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-semibold text-brand-700 border-2 border-brand-200 hover:border-brand-400 hover:bg-brand-50 transition-all duration-200">
+            <i class="fas fa-sign-in-alt text-brand-500 text-xs"></i> Giriş Yap
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="flex items-center justify-center gap-5 mt-6 text-xs text-gray-400">
+        <span class="flex items-center gap-1"><i class="fas fa-shield-halved text-brand-400"></i> SSL Güvenli</span>
+        <span class="flex items-center gap-1"><i class="fas fa-lock text-brand-400"></i> Veri Güvenliği</span>
+        <span class="flex items-center gap-1"><i class="fas fa-headset text-brand-400"></i> 7/24 Destek</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let analysisData = null
+
+    async function analyzeSite(e) {
+      e.preventDefault()
+      var url = document.getElementById('website_url').value.trim()
+      if (!url) return
+      if (!url.startsWith('http')) url = 'https://' + url
+
+      var btn = document.getElementById('btn1')
+      btn.disabled = true
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Analiz ediliyor...'
+
+      try {
+        var r = await fetch('/admin/api/register/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ website_url: url })
+        })
+        var d = await r.json()
+        if (!r.ok) throw new Error(d.detail || 'Analiz başarısız')
+
+        analysisData = d
+        document.getElementById('website_url_h').value = url
+        document.getElementById('tenant_name_h').value = d.name || ''
+        document.getElementById('tenant_slug_h').value = d.slug || ''
+        var sectorVal = (d.sector || 'genel')
+        var sectorSelect = document.getElementById('sector_select')
+        if (sectorSelect.querySelector('option[value="' + sectorVal + '"]')) {
+          sectorSelect.value = sectorVal
+        } else {
+          sectorSelect.value = 'genel'
+        }
+        document.getElementById('products_json_h').value = JSON.stringify(d.products || [])
+
+        var res = document.getElementById('analyze-result')
+        if (d.success) {
+          res.className = 'result-box'
+          res.innerHTML = '<strong>✅ ' + (d.name || 'Site') + ' bulundu</strong>' +
+            'Sektör: ' + (sectorSelect.options[sectorSelect.selectedIndex].text) + ' &nbsp;·&nbsp; ' +
+            'Ürün: ' + (d.products || []).length + ' adet'
+        } else {
+          res.className = 'result-box error'
+          res.innerHTML = '<strong>⚠️ Uyarı</strong>' + (d.error || 'Analiz tamamlanamadı') + '. Devam edebilirsiniz.'
+        }
+
+        document.getElementById('step1').classList.remove('active')
+        document.getElementById('step2').classList.add('active')
+      } catch (err) {
+        document.getElementById('analyze-result').className = 'result-box error'
+        document.getElementById('analyze-result').innerHTML = '<strong>❌ Hata</strong>' + err.message
+        document.getElementById('step1').classList.add('active')
+        document.getElementById('step2').classList.remove('active')
+      }
+      btn.disabled = false
+      btn.innerHTML = 'Analiz Et <i class="fas fa-magnifying-glass ml-1.5"></i>'
+    }
+
+    function checkPassword() {
+      if (document.getElementById('pw').value !== document.getElementById('pw2').value) {
+        alert('Şifreler eşleşmiyor.')
+        return false
+      }
+      return true
+    }
+    function checkPasswordJoin() {
+      var pw = document.getElementById('pw_join')
+      var pw2 = document.getElementById('pw2_join')
+      if (pw && pw2 && pw.value !== pw2.value) {
+        alert('Şifreler eşleşmiyor.')
+        return false
+      }
+      return true
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends "partner_base.html" %}
+{% block title %}Kurumsal Logo{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Kurumsal Logo</h1>
+  <p class="page-subtitle">Partner panelinde navbar'da görünecek logo. Boş bırakırsanız {{ partner.name }} metni gösterilir.</p>
+</div>
+
+{% if request.query_params.get('saved') %}
+<div class="msg msg-success">✓ Kaydedildi.</div>
+{% endif %}
+
+<div class="card" style="max-width:520px;">
+  <form method="post" action="/admin/partner/settings/branding" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="logo_url">Logo URL</label>
+      <input type="url" id="logo_url" name="logo_url" value="{{ logo_url or '' }}" placeholder="https://example.com/logo.png">
+      <small style="color:var(--text-muted);font-size:0.8rem;">Navbar'da görünecek logo. PNG veya SVG önerilir.</small>
+    </div>
+    <div class="form-group">
+      <label for="logo_file">veya logo resmi yükle</label>
+      <input type="file" id="logo_file" name="logo_file" accept="image/*">
+      <small style="color:var(--text-muted);font-size:0.8rem;">PNG, JPG, SVG (max 10 MB). Yüklerseniz URL yerine kullanılır.</small>
+    </div>
+    {% if logo_url %}
+    <div style="margin-bottom:1rem;">
+      <img src="{{ logo_url }}" alt="Önizleme" style="height:48px;max-width:160px;object-fit:contain;">
+    </div>
+    {% endif %}
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a href="/admin/partner" class="btn btn-secondary" style="margin-left:0.5rem;">← Firmalarım</a>
+  </form>
+</div>
+{% endblock %}

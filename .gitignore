@@ -1,0 +1,15 @@
+.env
+venv/
+__pycache__/
+*.pyc
+*.db
+.wwebjs_auth/
+uploads/
+
+.venv/
+.venv_backup_broken/
+node_modules/
+*.db
+*.log
+uploads/
+whatsapp-bridge/node_modules/

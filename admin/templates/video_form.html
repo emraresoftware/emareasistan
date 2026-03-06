@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Video Düzenle' if video else 'Yeni Video' }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/videos">Videolar</a> <span>›</span> <span>{{ 'Düzenle' if video else 'Yeni' }}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{{ 'Video Düzenle' if video else 'Yeni Video' }}</h1>
+  <p class="page-subtitle">Video yükleyin veya URL yapıştırın. Müşteri tetikleyici kelime yazdığında video gönderilir.</p>
+</div>
+<form method="post" action="/admin/videos/save">
+  {% if video %}<input type="hidden" name="id" value="{{ video.id }}">{% endif %}
+  <div class="form-group">
+    <label>Video adı</label>
+    <input type="text" name="name" value="{{ video.name if video else '' }}" placeholder="Örn: Montaj Videosu">
+  </div>
+  <div class="form-group">
+    <label>Tetikleyici kelime *</label>
+    <input type="text" name="trigger_keyword" value="{{ video.trigger_keyword if video else 'montaj' }}" placeholder="Örn: montaj, kurulum">
+    <small style="color:#64748b;">Müşteri mesajında bu kelime geçerse video gönderilir.</small>
+  </div>
+  <div class="form-group">
+    <label>Bu video hangi araçlar için?</label>
+    <div style="display:flex;gap:0.5rem;">
+      <input type="text" name="vehicle_models" id="vehicle_models_input" value="{{ video.vehicle_models if video else '' }}" placeholder="Menüden seçin veya virgülle yazın (boş = tüm araçlar)" style="flex:1;">
+      <button type="button" id="open_vehicle_menu" class="btn btn-sm">Araç seç</button>
+    </div>
+    <small style="color:#64748b;">Menüden seçin veya virgülle yazın – müşteri bu araçlardan birini yazdığında bu video gönderilir. Boş bırakırsanız tüm araçlar için geçerli olur.</small>
+    <div id="vehicle_menu" class="vehicle-menu" style="display:none;">
+      <input type="text" id="vehicle_search" placeholder="Araç ara..." class="vehicle-search">
+      <div class="vehicle-menu-inner">
+        {% for brand, models in (brands or {}).items() %}
+        <div class="vehicle-brand-group">
+          <div class="vehicle-brand-name">{{ brand }}</div>
+          <div class="vehicle-models">
+            {% for model in models %}
+            <label class="vehicle-option"><input type="checkbox" value="{{ model }}" data-display="{{ brand }} {{ model }}"> {{ model }}</label>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Video URL *</label>
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;">
+      <input type="file" id="video_file" accept="video/*" style="display:none;">
+      <label class="btn btn-sm" for="video_file" style="cursor:pointer;">Bilgisayardan yükle</label>
+      <span id="upload_status" style="font-size:0.85rem;color:#64748b;"></span>
+    </div>
+    <input type="text" name="video_url" id="video_url" value="{{ video.video_url if video else '' }}" placeholder="https://... veya yukarıdan yükleyin" required>
+  </div>
+  <div class="form-group">
+    <label>Mesaj (video ile gönderilecek)</label>
+    <textarea name="caption" rows="2">{{ video.caption if video else '' }}</textarea>
+  </div>
+  <div class="form-group">
+    <label><input type="checkbox" name="is_active" value="on" {% if not video or video.is_active %}checked{% endif %}> Aktif</label>
+  </div>
+  <div class="form-group">
+    <label>Öncelik (yüksek = önce)</label>
+    <input type="number" name="priority" value="{{ video.priority if video else 0 }}">
+    <small style="color:#64748b;">Aynı araç için birden fazla video varsa öncelik yüksek olan gönderilir.</small>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <button type="submit" class="btn">Kaydet</button>
+    <a href="/admin/videos" class="btn btn-secondary">İptal</a>
+  </div>
+</form>
+
+<style>
+.vehicle-menu { position: relative; margin-top: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-height: 320px; overflow: hidden; }
+.vehicle-search { width: 100%; padding: 0.5rem 0.75rem; border: none; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+.vehicle-menu-inner { max-height: 260px; overflow-y: auto; padding: 0.5rem 0; }
+.vehicle-brand-group { margin-bottom: 0.5rem; }
+.vehicle-brand-name { font-weight: 600; font-size: 0.8rem; color: var(--primary); padding: 0.25rem 0.75rem; }
+.vehicle-models { display: flex; flex-wrap: wrap; gap: 0.25rem; padding: 0 0.75rem 0.5rem; }
+.vehicle-option { display: inline-flex; align-items: center; padding: 0.25rem 0.5rem; margin: 0; font-size: 0.85rem; cursor: pointer; border-radius: 4px; white-space: nowrap; }
+.vehicle-option:hover { background: #f1f5f9; }
+.vehicle-option input { margin-right: 0.35rem; }
+.vehicle-option.hidden { display: none; }
+</style>
+<script>
+(function() {
+  const input = document.getElementById('vehicle_models_input');
+  const menu = document.getElementById('vehicle_menu');
+  const search = document.getElementById('vehicle_search');
+  if (!input || !menu) return;
+  const existing = (input.value || '').split(',').map(s => s.trim()).filter(Boolean);
+  function updateInput() {
+    const checked = Array.from(menu.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+    input.value = checked.join(', ');
+  }
+  document.getElementById('open_vehicle_menu').addEventListener('click', function() {
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    if (menu.style.display === 'block') search.focus();
+  });
+  search.addEventListener('input', function() {
+    const q = this.value.toLowerCase().trim();
+    menu.querySelectorAll('.vehicle-option').forEach(lab => {
+      const txt = (lab.textContent || '').toLowerCase();
+      const brand = (lab.closest('.vehicle-brand-group')?.querySelector('.vehicle-brand-name')?.textContent || '').toLowerCase();
+      lab.classList.toggle('hidden', !q || txt.includes(q) || brand.includes(q));
+    });
+    menu.querySelectorAll('.vehicle-brand-group').forEach(grp => {
+      grp.style.display = grp.querySelectorAll('.vehicle-option:not(.hidden)').length > 0 ? '' : 'none';
+    });
+  });
+  menu.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    if (existing.includes(cb.value)) cb.checked = true;
+    cb.addEventListener('change', updateInput);
+  });
+  updateInput();
+  document.addEventListener('click', function(e) {
+    if (!menu.contains(e.target) && e.target !== input && e.target.id !== 'open_vehicle_menu') menu.style.display = 'none';
+  });
+})();
+document.getElementById('video_file').addEventListener('change', async function() {
+  const file = this.files[0];
+  if (!file) return;
+  const status = document.getElementById('upload_status');
+  status.textContent = 'Yükleniyor...';
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const r = await fetch('/admin/videos/upload', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (j.url) {
+      document.getElementById('video_url').value = j.url;
+      status.textContent = 'Yüklendi!';
+    } else {
+      status.textContent = 'Hata: ' + (j.detail || 'Bilinmeyen');
+    }
+  } catch (e) {
+    status.textContent = 'Yükleme hatası';
+  }
+  this.value = '';
+});
+</script>
+{% endblock %}

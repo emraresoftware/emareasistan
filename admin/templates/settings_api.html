@@ -1,0 +1,611 @@
+{% extends "base.html" %}
+{% block title %}API Entegrasyonları{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Entegrasyon Ayarları</span></div>
+{% endblock %}
+{% block content %}
+<style>
+  /* Simplified integration page styles */
+  .integration-tabs { display:flex; gap:0.5rem; margin-bottom:1.25rem; border-bottom:2px solid #e2e8f0; }
+  .tab-btn { padding:0.6rem 1.2rem; border:none; background:none; color:#64748b; font-weight:500; cursor:pointer; border-bottom:3px solid transparent; transition:all 0.15s; }
+  .tab-btn.active { color:#0f172a; border-bottom-color:#3b82f6; }
+  .integration-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:1rem; }
+  .integration-card { border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; transition:all 0.15s; background:#fff; }
+  .integration-card:hover { box-shadow:0 6px 20px rgba(2,6,23,0.08); }
+  .card-header { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.25rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
+  .platform-info h3 { margin:0; font-size:1.05rem; }
+  .status { padding:0.25rem 0.75rem; border-radius:999px; font-size:0.75rem; font-weight:600; }
+  .status.configured { background:#dcfce7; color:#166534; }
+  .status.missing { background:#fee2e2; color:#991b1b; }
+  .card-body { padding:1rem 1.25rem; }
+  .form-group { margin-bottom:0.75rem; }
+  .form-group label { display:block; font-size:0.85rem; color:#475569; margin-bottom:0.35rem; }
+  .form-group input { width:100%; padding:0.5rem 0.75rem; border:1px solid #e6eef6; border-radius:8px; }
+  .integration-tabs, .integration-grid { max-width:1120px; margin:0 auto; }
+  @media (max-width:720px){ .integration-tabs { flex-wrap:wrap; } }
+</style>
+
+<div class="page-header">
+  <h1 class="page-title">Entegrasyon Ayarları</h1>
+  <p class="page-subtitle">Platform bağlantılarını kolayca yönetin — sekmeler arasında geçiş yapın ve ilgili platformu yapılandırın.</p>
+</div>
+
+<div class="card" style="margin-bottom:1.25rem;background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);border:1px solid #e2e8f0;">
+  <h3 style="margin:0 0 0.75rem;font-size:1rem;color:#475569;">Kurum Bazlı Süreç Yönetimi</h3>
+  <p style="color:#64748b;margin:0 0 1rem;font-size:0.9rem;">İş akışları, SLA ve escalation ayarlarını platform bazlı yapılandırın.</p>
+  <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+    <a href="/admin/workflows" class="btn">İş Akışları (Builder)</a>
+    <a href="/admin/process-config" class="btn btn-secondary">Süreç Konfigürasyonu</a>
+    <a href="/admin/rules" class="btn btn-secondary">Kurallar</a>
+  </div>
+</div>
+
+{% if saved %}
+<div class="msg" style="background:#dcfce7;color:#166534;padding:0.75rem 1rem;border-radius:6px;margin-bottom:1rem;">Kaydedildi.</div>
+{% endif %}
+
+<div class="integration-tabs">
+  <button class="tab-btn active" data-tab="chat">Sohbet</button>
+  <button class="tab-btn" data-tab="email">E-posta</button>
+  <button class="tab-btn" data-tab="social">Sosyal Medya</button>
+  <button class="tab-btn" data-tab="payment">Ödemeler</button>
+  <button class="tab-btn" data-tab="cargo">Kargo</button>
+  <button class="tab-btn" data-tab="marketplace">Pazaryerleri</button>
+  <button class="tab-btn" data-tab="other">Diğer</button>
+</div>
+
+<form method="post" action="/admin/settings/api">
+  <div class="tab-content active" id="chat">
+    {% if env_channels %}
+    <div style="margin-bottom:1.5rem;">
+      <h3 style="margin:0 0 0.75rem;font-size:1rem;color:#475569;">Sohbet Kanalları (.env)</h3>
+      <p style="color:#64748b;margin:0 0 1rem;font-size:0.9rem;">Bu platformlar sistem genelinde .env dosyasından yapılandırılır. Kurulum için ilgili sayfaya gidin.</p>
+      <div class="integration-grid">
+        {% for ch in env_channels %}
+        <div class="integration-card">
+          <div class="card-header">
+            <div class="platform-info">
+              <h3>{{ ch.name }}</h3>
+              <div class="status {{ 'configured' if ch.configured else 'missing' }}">{{ 'Bağlı' if ch.configured else 'Yapılandırma Gerekli' }}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p style="color:#64748b;margin:0 0 0.75rem;font-size:0.9rem;">{{ ch.desc }}</p>
+            <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+              <a class="btn" href="{{ ch.url }}">{{ 'Yönet' if ch.configured else 'Kurulum' }}</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div id="embed-kodu" class="card" style="margin-bottom:1.5rem;margin-top:1.5rem;">
+      <h3 style="margin:0 0 0.75rem;font-size:1.1rem;color:#475569;">Web Sohbet Embed Kodu</h3>
+      <p style="color:#64748b;font-size:0.9rem;margin:0 0 1rem;">Web sitenize bu kodu ekleyerek AI destekli sohbet widget'ını gömün. Her firma için benzersiz koddur.</p>
+      {% if embed_code %}
+      <pre id="web-embed-code" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:1rem 1.25rem;overflow-x:auto;font-size:0.85rem;margin:0 0 0.75rem;">{{ embed_code }}</pre>
+      <button type="button" class="btn" onclick="navigator.clipboard.writeText(document.getElementById('web-embed-code').textContent).then(function(){var o=document.getElementById('embed-copy-ok');o.style.display='inline';setTimeout(function(){o.style.display='none'},2000);})">Kodu Kopyala</button>
+      <span id="embed-copy-ok" style="margin-left:0.5rem;font-size:0.9rem;color:#16a34a;display:none;">Kopyalandı!</span>
+      <p style="color:#94a3b8;font-size:0.8rem;margin:1rem 0 0;">Modül: Web Sohbet modülü Super Admin veya Partner tarafından firmanız için etkinleştirilmiş olmalı.</p>
+      {% else %}
+      <p style="color:#94a3b8;font-size:0.9rem;margin:0;">Önce bir firma seçmeniz gerekiyor. Dashboard'dan firma seçin.</p>
+      {% endif %}
+    </div>
+
+    <!-- ── YAZILIM ALARM BİLDİRİMİ ── -->
+    <div class="card" style="margin-bottom:1.5rem;border-left:4px solid #ef4444;">
+      <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.75rem;">
+        <span style="font-size:1.4rem;">🚨</span>
+        <h3 style="margin:0;font-size:1.05rem;color:#1e293b;">Yazılım Alarm Bildirimleri</h3>
+        <span style="margin-left:auto;font-size:0.75rem;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;padding:0.2rem 0.6rem;border-radius:6px;font-weight:600;">YENİ</span>
+      </div>
+      <p style="color:#64748b;font-size:0.88rem;margin:0 0 1rem;">
+        Yazılımlarınızdaki hataları, kritik uyarıları ve sistem bildirimlerini anında WhatsApp'a gönderin.
+        <strong>api_key</strong> aşağıdan oluşturun, <strong>alert_phone</strong>a bildirim alacak numarayı yazın.
+      </p>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem;">
+        <div class="form-group" style="margin:0;">
+          <label for="alert_phone">Bildirim Telefonu / Grup ID</label>
+          <input type="text" id="alert_phone" name="alert_phone"
+                 value="{{ alert_phone }}"
+                 placeholder="905xxxxxxxxx veya grup@g.us"
+                 style="font-family:monospace;">
+          <small style="color:#94a3b8;font-size:0.78rem;">Uyarıların gönderileceği WhatsApp numarası veya grup JID'i</small>
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label for="alert_api_key">API Anahtarı (alert_api_key)</label>
+          <div style="display:flex;gap:0.4rem;">
+            <input type="text" id="alert_api_key" name="alert_api_key"
+                   value="{{ alert_api_key }}"
+                   placeholder="Buraya yazın veya üretin"
+                   style="font-family:monospace;flex:1;">
+            <button type="button" onclick="genAlertKey()" class="btn btn-sm btn-secondary" title="Rastgele oluştur">⟳</button>
+          </div>
+          <small style="color:#94a3b8;font-size:0.78rem;">POST /api/alert isteğinde gönderilecek gizli anahtar</small>
+        </div>
+      </div>
+
+      <details style="margin-bottom:0.5rem;">
+        <summary style="cursor:pointer;font-size:0.85rem;font-weight:600;color:#475569;user-select:none;">
+          📋 Entegrasyon Kodu Örnekleri (Python / JavaScript / curl)
+        </summary>
+        <div style="margin-top:0.75rem;display:grid;gap:0.5rem;">
+          <div>
+            <div style="font-size:0.78rem;font-weight:600;color:#64748b;margin-bottom:0.3rem;">Python (requests)</div>
+            <pre style="background:#0f172a;color:#e2e8f0;padding:0.75rem 1rem;border-radius:8px;font-size:0.78rem;overflow-x:auto;margin:0;">import requests
+
+requests.post("{{ api_base }}/api/alert", json={
+    "api_key": "{{ alert_api_key if alert_api_key and alert_api_key != '••••••••••••' else 'YOUR_API_KEY' }}",
+    "level": "critical",      # critical | error | warning | info
+    "app": "SatışPaneli",
+    "title": "Ödeme servisi yanıt vermiyor",
+    "message": "PaymentGateway.charge() TimeoutError (>30s)",
+    "trace": traceback.format_exc(),  # opsiyonel
+})</pre>
+          </div>
+          <div>
+            <div style="font-size:0.78rem;font-weight:600;color:#64748b;margin-bottom:0.3rem;">JavaScript / Node.js</div>
+            <pre style="background:#0f172a;color:#e2e8f0;padding:0.75rem 1rem;border-radius:8px;font-size:0.78rem;overflow-x:auto;margin:0;">await fetch("{{ api_base }}/api/alert", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    api_key: "YOUR_API_KEY",
+    level: "error",
+    app: "Web Sitesi",
+    title: error.message,
+    trace: error.stack,
+  }),
+});</pre>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <h3 style="margin:0 0 0.75rem;font-size:1rem;color:#475569;">Modül API Entegrasyonları</h3>
+    <div class="integration-grid">
+      {% for m in modules if m.category == 'Sohbet' %}
+      <div class="integration-card">
+        <div class="card-header">
+          <div class="platform-info">
+            <h3>{{ m.name }}</h3>
+            <div class="status {{ 'configured' if m._status == 'configured' else 'missing' }}">{{ 'Bağlı' if m._status == 'configured' else 'Yapılandırma Gerekli' }}</div>
+          </div>
+          {% if m.icon_url %}
+          <img src="{{ m.icon_url }}" alt="{{ m.name }}" style="height:34px;opacity:0.95;">
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <p style="color:#64748b;margin:0 0 0.75rem;">{{ m.desc }}</p>
+          <details id="module-{{ m.id }}" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer;font-weight:500;color:#3b82f6;">Tüm alanları göster</summary>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
+              {% if m._groups %}
+              {% for grp in m._groups %}
+              <div style="margin-bottom:1rem;">
+                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#475569;">{{ grp.name }}</h4>
+                {% for f in grp.fields %}
+                <div class="form-group">
+                  <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                  {% if f.type == 'password' %}
+                  <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                  {% elif f.type == 'checkbox' %}
+                  <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                  {% elif f.type == 'textarea' %}
+                  <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                  {% else %}
+                  <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+              {% else %}
+              {% for f in m.fields %}
+              <div class="form-group">
+                <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                {% if f.type == 'password' %}
+                <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                {% elif f.type == 'checkbox' %}
+                <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                {% elif f.type == 'textarea' %}
+                <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                {% else %}
+                <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                {% endif %}
+              </div>
+              {% endfor %}
+              {% endif %}
+            </div>
+          </details>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-content" id="email" style="display:none;">
+    <div style="margin-bottom:1.25rem;">
+      <h3 style="margin:0 0 0.75rem;font-size:1rem;color:#475569;">Firma E-posta Servisi</h3>
+      <p style="color:#64748b;font-size:0.9rem;margin:0 0 1rem;">E-posta gönderimleri (sipariş bildirimi, kayıt onayı vb.) bu ayarlarla yapılır. Boş bırakırsanız sistem genelindeki .env SMTP kullanılır.</p>
+    </div>
+    <div class="integration-grid">
+      {% for m in modules if m.category == 'E-posta' %}
+      <div class="integration-card">
+        <div class="card-header">
+          <div class="platform-info">
+            <h3>{{ m.name }}</h3>
+            <div class="status {{ 'configured' if m._status == 'configured' else 'missing' }}">{{ 'Bağlı' if m._status == 'configured' else 'Yapılandırma Gerekli' }}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:#64748b;margin:0 0 0.75rem;">{{ m.desc }}</p>
+          <div style="margin-top:1rem;">
+            {% for f in m.fields %}
+            <div class="form-group">
+              <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+              {% if f.type == 'password' %}
+              <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off" placeholder="{{ f.placeholder }}">
+              {% else %}
+              <input type="text" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" placeholder="{{ f.placeholder }}">
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <p style="color:#94a3b8;font-size:0.85rem;margin-top:1rem;">Kullanıcılar kendi e-posta adreslerini Hesap Sahibi ayarlarından tanımlayabilir; bildirimler bu adrese gider.</p>
+  </div>
+
+  <div class="tab-content" id="social" style="display:none;">
+    <div class="integration-grid">
+      {% for m in modules if m.category == 'Sosyal Medya' %}
+      <div class="integration-card">
+        <div class="card-header">
+          <div class="platform-info">
+            <h3>{{ m.name }}</h3>
+            <div class="status {{ 'configured' if m._status == 'configured' else 'missing' }}">{{ 'Bağlı' if m._status == 'configured' else 'Yapılandırma Gerekli' }}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:#64748b;margin:0 0 0.75rem;">{{ m.desc }}</p>
+          <details id="module-{{ m.id }}" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer;font-weight:500;color:#3b82f6;">Tüm alanları göster</summary>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
+              {% if m._groups %}
+              {% for grp in m._groups %}
+              <div style="margin-bottom:1rem;">
+                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#475569;">{{ grp.name }}</h4>
+                {% for f in grp.fields %}
+                <div class="form-group">
+                  <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                  {% if f.type == 'password' %}
+                  <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                  {% elif f.type == 'checkbox' %}
+                  <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                  {% elif f.type == 'textarea' %}
+                  <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                  {% else %}
+                  <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+              {% else %}
+              {% for f in m.fields %}
+              <div class="form-group">
+                <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                {% if f.type == 'password' %}
+                <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                {% elif f.type == 'checkbox' %}
+                <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                {% elif f.type == 'textarea' %}
+                <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                {% else %}
+                <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                {% endif %}
+              </div>
+              {% endfor %}
+              {% endif %}
+            </div>
+          </details>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-content" id="payment" style="display:none;">
+    <div class="integration-grid">
+      {% for m in modules if m.category == 'Ödemeler' %}
+      <div class="integration-card">
+        <div class="card-header">
+          <div class="platform-info">
+            <h3>{{ m.name }}</h3>
+            <div class="status {{ 'configured' if m._status == 'configured' else 'missing' }}">{{ 'Bağlı' if m._status == 'configured' else 'Yapılandırma Gerekli' }}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:#64748b;margin:0 0 0.75rem;">{{ m.desc }}</p>
+          <details id="module-{{ m.id }}" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer;font-weight:500;color:#3b82f6;">Tüm alanları göster</summary>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
+              {% if m._groups %}
+              {% for grp in m._groups %}
+              <div style="margin-bottom:1rem;">
+                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#475569;">{{ grp.name }}</h4>
+                {% for f in grp.fields %}
+                <div class="form-group">
+                  <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                  {% if f.type == 'password' %}
+                  <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                  {% elif f.type == 'checkbox' %}
+                  <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                  {% elif f.type == 'textarea' %}
+                  <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                  {% else %}
+                  <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+              {% else %}
+              {% for f in m.fields %}
+              <div class="form-group">
+                <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                {% if f.type == 'password' %}
+                <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                {% elif f.type == 'checkbox' %}
+                <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                {% elif f.type == 'textarea' %}
+                <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                {% else %}
+                <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                {% endif %}
+              </div>
+              {% endfor %}
+              {% endif %}
+            </div>
+          </details>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-content" id="cargo" style="display:none;">
+    <span id="module-cargo" style="position:absolute;visibility:hidden;"></span>
+    <p style="color:#64748b;margin:0 0 1rem;font-size:0.9rem;">Her kargo firması için API ve takip ayarlarını ayrı ayrı yapılandırın.</p>
+    <div class="integration-grid">
+      {% for m in modules if m.category == 'Kargo' %}
+        {% if m._groups %}
+        {# Her kargo firması ayrı kart — alt menü gibi #}
+        {% for grp in m._groups %}
+        {% set grp_slug = grp.name|replace(' Ayarlari','')|replace(' Ayarları','')|replace(' ','-')|lower %}
+        <div class="integration-card" id="cargo-{{ grp_slug }}">
+          <div class="card-header">
+            <div class="platform-info">
+              <h3>{{ grp.name|replace(' Ayarlari','')|replace(' Ayarları','') }}</h3>
+              <div class="status configured" style="opacity:0.7;">Ayarlar</div>
+            </div>
+          </div>
+          <div class="card-body">
+            {% for f in grp.fields %}
+            <div class="form-group">
+              <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+              {% if f.type == 'password' %}
+              <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+              {% elif f.type == 'checkbox' %}
+              <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+              {% elif f.type == 'textarea' %}
+              <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+              {% else %}
+              <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="integration-card">
+          <div class="card-header">
+            <div class="platform-info">
+              <h3>{{ m.name }}</h3>
+              <div class="status {{ 'configured' if m._status == 'configured' else 'missing' }}">{{ 'Bağlı' if m._status == 'configured' else 'Yapılandırma Gerekli' }}</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <p style="color:#64748b;margin:0 0 0.75rem;">{{ m.desc }}</p>
+            {% for f in m.fields %}
+            <div class="form-group">
+              <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+              {% if f.type == 'password' %}
+              <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+              {% elif f.type == 'checkbox' %}
+              <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+              {% elif f.type == 'textarea' %}
+              <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+              {% else %}
+              <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-content" id="marketplace" style="display:none;">
+    <div class="integration-grid">
+      {% for m in modules if m.category == 'Pazaryerleri' %}
+      <div class="integration-card">
+        <div class="card-header">
+          <div class="platform-info">
+            <h3>{{ m.name }}</h3>
+            <div class="status {{ 'configured' if m._status == 'configured' else 'missing' }}">{{ 'Bağlı' if m._status == 'configured' else 'Yapılandırma Gerekli' }}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:#64748b;margin:0 0 0.75rem;">{{ m.desc }}</p>
+          <details id="module-{{ m.id }}" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer;font-weight:500;color:#3b82f6;">Tüm alanları göster</summary>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
+              {% if m._groups %}
+              {% for grp in m._groups %}
+              <div style="margin-bottom:1rem;">
+                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#475569;">{{ grp.name }}</h4>
+                {% for f in grp.fields %}
+                <div class="form-group">
+                  <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                  {% if f.type == 'password' %}
+                  <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                  {% elif f.type == 'checkbox' %}
+                  <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                  {% elif f.type == 'textarea' %}
+                  <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                  {% else %}
+                  <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+              {% else %}
+              {% for f in m.fields %}
+              <div class="form-group">
+                <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                {% if f.type == 'password' %}
+                <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                {% elif f.type == 'checkbox' %}
+                <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                {% elif f.type == 'textarea' %}
+                <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                {% else %}
+                <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                {% endif %}
+              </div>
+              {% endfor %}
+              {% endif %}
+            </div>
+          </details>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-content" id="other" style="display:none;">
+    <div class="integration-grid">
+      {% for m in modules if m.category == 'Diğer' %}
+      <div class="integration-card">
+        <div class="card-header">
+          <div class="platform-info">
+            <h3>{{ m.name }}</h3>
+            <div class="status {{ 'configured' if m._status == 'configured' else 'missing' }}">{{ 'Bağlı' if m._status == 'configured' else 'Yapılandırma Gerekli' }}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p style="color:#64748b;margin:0 0 0.75rem;">{{ m.desc }}</p>
+          <details id="module-{{ m.id }}" style="margin-top:0.75rem;">
+            <summary style="cursor:pointer;font-weight:500;color:#3b82f6;">Tüm alanları göster</summary>
+            <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e2e8f0;">
+              {% if m._groups %}
+              {% for grp in m._groups %}
+              <div style="margin-bottom:1rem;">
+                <h4 style="margin:0 0 0.5rem;font-size:0.85rem;color:#475569;">{{ grp.name }}</h4>
+                {% for f in grp.fields %}
+                <div class="form-group">
+                  <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                  {% if f.type == 'password' %}
+                  <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                  {% elif f.type == 'checkbox' %}
+                  <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                  {% elif f.type == 'textarea' %}
+                  <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                  {% else %}
+                  <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                  {% endif %}
+                </div>
+                {% endfor %}
+              </div>
+              {% endfor %}
+              {% else %}
+              {% for f in m.fields %}
+              <div class="form-group">
+                <label for="d{{ m.id }}_{{ f.key }}">{{ f.label }}</label>
+                {% if f.type == 'password' %}
+                <input type="password" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}" autocomplete="off">
+                {% elif f.type == 'checkbox' %}
+                <input type="checkbox" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="1" {% if m._values.get(f.key) in ['1', 1, true, 'true', 'on'] %}checked{% endif %}>
+                {% elif f.type == 'textarea' %}
+                <textarea id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" rows="3" style="width:100%;padding:0.5rem 0.75rem;border:1px solid #e6eef6;border-radius:8px;">{{ m._values.get(f.key, '') }}</textarea>
+                {% else %}
+                <input type="{{ 'url' if f.type == 'url' else 'text' }}" id="d{{ m.id }}_{{ f.key }}" name="module_{{ m.id }}_{{ f.key }}" value="{{ m._values.get(f.key, '') }}">
+                {% endif %}
+              </div>
+              {% endfor %}
+              {% endif %}
+            </div>
+          </details>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="max-width:1120px;margin:1.25rem auto;display:flex;justify-content:space-between;gap:0.5rem;">
+    <div style="color:#475569;align-self:center;">Değişiklikleri kaydetmek için <strong>Yapılandır</strong> butonunu kullanın.</div>
+    <div>
+      <button type="submit" class="btn">Tümünü Kaydet</button>
+      <a href="/admin/dashboard" class="btn btn-secondary">İptal</a>
+    </div>
+  </div>
+</form>
+
+<script>
+  function genAlertKey() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let key = 'sk-';
+    for (let i = 0; i < 32; i++) key += chars[Math.floor(Math.random() * chars.length)];
+    document.getElementById('alert_api_key').value = key;
+    document.getElementById('alert_api_key').type = 'text';
+  }
+
+  (function(){
+    const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+    tabs.forEach((t)=>t.addEventListener('click',function(){
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      const id = t.getAttribute('data-tab');
+      document.querySelectorAll('.tab-content').forEach(c=>{ c.style.display = c.id===id ? '' : 'none'; });
+    }));
+    // Hash ile modül detayına gelindiyse ilgili sekmeyi aç ve details'i aç
+    const hash = (location.hash || '').replace('#','');
+    if (hash && hash.startsWith('module-')) {
+      const el = document.getElementById(hash);
+      if (el) {
+        const tabContent = el.closest('.tab-content');
+        if (tabContent && tabContent.id) {
+          const tabBtn = document.querySelector('.tab-btn[data-tab="'+tabContent.id+'"]');
+          if (tabBtn) {
+            tabs.forEach(x=>x.classList.remove('active'));
+            tabBtn.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c=>{ c.style.display = c.id===tabContent.id ? '' : 'none'; });
+          }
+        }
+        if (el.tagName === 'DETAILS') el.setAttribute('open','');
+      }
+    }
+  })();
+</script>
+
+{% endblock %}

@@ -1,0 +1,35 @@
+---
+description: DEVAM.md anlık güncelleme - Cursor kapansa da iş kaybolmasın. ZORUNLU akış.
+alwaysApply: true
+---
+
+# DEVAM.md İş Akışı (ZORUNLU)
+
+Cursor kapandığında kayıp olmaması için bu akışı MUTLAKA takip et.
+
+## 1. KOD YAZMADAN ÖNCE (her seferinde)
+
+`DEVAM.md` → **Anlık İş Günlüğü** → **Şimdi Yapılacak** bölümünü güncelle:
+
+- Ne yapacağını madde madde yaz (dosya adı + değişiklik)
+- Örnek: "admin/routes.py: rule_edit'e tenant_id filtresi ekle"
+- DEVAM.md'yi KAYDET (StrReplace/Write kullan)
+
+## 2. HER KOD DEĞİŞİKLİĞİNDEN SONRA (her dosya için)
+
+- İlgili maddeyi **Az Önce Yapıldı** altına taşı
+- DEVAM.md'yi KAYDET
+- Sonra bir sonraki değişikliğe geç
+
+## 3. Sıra
+
+```
+1. DEVAM.md'ye "Şimdi Yapılacak" yaz → kaydet
+2. Kodu yaz (StrReplace/Write)
+3. DEVAM.md'ye "Az Önce Yapıldı" ekle → kaydet
+4. Sonraki maddeye geç (1'e dön)
+```
+
+## 4. Çoklu dosya
+
+Her dosya = ayrı adım. Önce planla, sonra kod, sonra kaydet.

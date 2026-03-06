@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+{% block title %}Yapay Zeka Ayarları{% endblock %}
+{% block extra_css %}
+<style>
+  .ai-settings { max-width: 900px; }
+  .ai-provider-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .ai-provider-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .ai-provider-card.gemini { border-left: 4px solid #4285f4; }
+  .ai-provider-card.openai { border-left: 4px solid #10a37f; }
+  .ai-provider-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  .ai-provider-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .ai-provider-title .icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+  }
+  .ai-provider-card.gemini .icon { background: #e8f0fe; color: #4285f4; }
+  .ai-provider-card.openai .icon { background: #d1fae5; color: #10a37f; }
+  .ai-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .ai-toggle input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+  .ai-toggle span { font-weight: 500; font-size: 0.9rem; }
+  .ai-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+  }
+  @media (max-width: 640px) {
+    .ai-fields { grid-template-columns: 1fr; }
+  }
+  .ai-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 1rem;
+  }
+  .ai-status-badge.active { background: #dcfce7; color: #166534; }
+  .ai-status-badge.configured { background: #e0f2fe; color: #0369a1; }
+  .ai-status-badge.none { background: #fef3c7; color: #92400e; }
+  .local-llm-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .local-llm-status-badge.status-online { background: #dcfce7; color: #166534; }
+  .local-llm-status-badge.status-disabled { background: #f1f5f9; color: #64748b; }
+  .local-llm-status-badge.status-missing { background: #fef3c7; color: #92400e; }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .status-dot.online { background: #22c55e; box-shadow: 0 0 0 2px rgba(34,197,94,0.3); }
+  .status-dot.disabled { background: #94a3b8; }
+  .status-dot.missing { background: #f59e0b; }
+  .ai-status-card {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #bae6fd;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  [data-theme="dark"] .ai-status-card {
+    background: linear-gradient(135deg, #0c4a6e 0%, #075985 100%);
+    border-color: #0ea5e9;
+  }
+  [data-theme="dark"] .ai-provider-card.gemini .icon { background: #1e3a8a; color: #93c5fd; }
+  [data-theme="dark"] .ai-provider-card.openai .icon { background: #064e3b; color: #6ee7b7; }
+  [data-theme="dark"] .ai-status-badge.active { background: #14532d; color: #86efac; }
+  [data-theme="dark"] .ai-status-badge.configured { background: #0c4a6e; color: #7dd3fc; }
+  [data-theme="dark"] .ai-status-badge.none { background: #78350f; color: #fcd34d; }
+  [data-theme="dark"] .local-llm-status-badge.status-online { background: #14532d; color: #86efac; }
+  [data-theme="dark"] .local-llm-status-badge.status-disabled { background: #334155; color: #94a3b8; }
+  [data-theme="dark"] .local-llm-status-badge.status-missing { background: #78350f; color: #fcd34d; }
+  [data-theme="dark"] .ai-priority-option.selected { background: #0c4a6e; border-color: #0ea5e9; }
+  .ai-status-card h3 { margin: 0 0 0.5rem; font-size: 0.9rem; color: #0369a1; font-weight: 600; }
+  .ai-status-card .current-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .ai-status-card .current-badge.gemini { background: #4285f4; color: #fff; }
+  .ai-status-card .current-badge.openai { background: #10a37f; color: #fff; }
+  .ai-status-card .current-badge.env { background: #64748b; color: #fff; }
+  .ai-priority-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border);
+  }
+  .ai-priority-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 0.75rem;
+  }
+  .ai-priority-option {
+    flex: 1;
+    min-width: 200px;
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .ai-priority-option:hover { border-color: var(--primary); background: #f8fafc; }
+  .ai-priority-option.selected { border-color: var(--primary); background: #f0f9ff; box-shadow: 0 0 0 2px rgba(30,58,95,0.15); }
+  .ai-priority-option input { display: none; }
+  .ai-priority-option .radio-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ai-priority-option.selected .radio-dot {
+    border-color: var(--primary);
+    background: var(--primary);
+  }
+  .ai-priority-option.selected .radio-dot::after {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .ai-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    margin-top: 0.5rem;
+  }
+  .ai-link { color: var(--primary); text-decoration: none; font-size: 0.85rem; }
+  .ai-link:hover { text-decoration: underline; }
+  .test-result-box {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    min-height: 2.5rem;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .stat-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    background: var(--card-bg);
+  }
+  .stat-item .k { font-size: 0.75rem; color: var(--text-muted); }
+  .stat-item .v { font-size: 1.05rem; font-weight: 700; margin-top: 0.25rem; }
+  .usage-bars {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.45rem;
+    align-items: end;
+    margin-top: 0.75rem;
+  }
+  .usage-bar {
+    height: 90px;
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 0.35rem;
+  }
+  .usage-fill {
+    width: 100%;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #60a5fa 0%, #2563eb 100%);
+    min-height: 4px;
+  }
+  .usage-label {
+    margin-top: 0.3rem;
+    text-align: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+</style>
+{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Yapay Zeka Ayarları</span></div>
+{% endblock %}
+{% block content %}
+<div class="ai-settings">
+  <div class="page-header">
+    <h1 class="page-title">Yapay Zeka Ayarları</h1>
+    <p class="page-subtitle">Sohbet asistanı için AI API'lerini yönetin. API anahtarlarını girin, aktif/pasif yapın ve önceliği belirleyin.</p>
+  </div>
+
+  {% if saved %}
+  <div class="msg msg-success">✓ Ayarlar kaydedildi.</div>
+  {% endif %}
+
+  <div class="ai-status-card">
+    <h3>Mevcut Durum</h3>
+    {% if current_ai == 'gemini' %}
+    <div class="current-badge gemini">🔷 Gemini kullanılıyor</div>
+    {% elif current_ai == 'openai' %}
+    <div class="current-badge openai">🟢 OpenAI kullanılıyor</div>
+    {% else %}
+    <div class="current-badge env">⚙️ Sistem genel ayarları (.env)</div>
+    <p style="margin:0.5rem 0 0;font-size:0.9rem;color:#64748b;">Firma API anahtarı girilmediği için sistem genel ayarları kullanılıyor.</p>
+    {% endif %}
+  </div>
+
+  <div class="ai-provider-card local-llm" style="border-left-color:#8b5cf6;">
+    <div class="ai-provider-header">
+      <div class="ai-provider-title">
+        <div class="icon" style="background:#ede9fe;color:#8b5cf6;">🖥</div>
+        <span>Lokal Yapay Zeka (Fallback)</span>
+      </div>
+      <div class="local-llm-status-badge status-{{ local_llm_status.status }}">
+        {% if local_llm_status.status == 'online' %}
+        <span class="status-dot online"></span> Online
+        {% elif local_llm_status.status == 'disabled' %}
+        <span class="status-dot disabled"></span> Kapalı
+        {% else %}
+        <span class="status-dot missing"></span> {{ local_llm_status.label }}
+        {% endif %}
+      </div>
+    </div>
+    <p style="font-size:0.875rem;color:var(--text-muted);margin:0 0 0.5rem;">
+      {{ local_llm_status.message }}
+    </p>
+    <p style="font-size:0.8rem;color:var(--text-muted);">API koptuğunda (WhatsApp, Telegram vb.) lokal model devreye girer. .env: LOCAL_LLM_ENABLED=true</p>
+  </div>
+
+  <form method="post" action="/admin/settings/ai">
+    <div class="ai-provider-card gemini">
+      <div class="ai-provider-header">
+        <div class="ai-provider-title">
+          <div class="icon">🔷</div>
+          <span>Google Gemini</span>
+        </div>
+        <label class="ai-toggle">
+          <input type="checkbox" id="gemini_active" name="gemini_active" value="1" {% if gemini_active %}checked{% endif %}>
+          <span>Aktif</span>
+        </label>
+      </div>
+      <p style="font-size:0.875rem;color:var(--text-muted);margin:0 0 1rem;">
+        API anahtarı: <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" class="ai-link">aistudio.google.com/apikey</a>
+      </p>
+      <div class="ai-fields">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="gemini_api_key">API Anahtarı</label>
+          <input type="password" id="gemini_api_key" name="gemini_api_key" value="{{ gemini_key_display }}" placeholder="AIzaSy..." autocomplete="off">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="gemini_model">Model</label>
+          <select id="gemini_model" name="gemini_model">
+            <option value="gemini-2.5-flash-lite" {% if gemini_model == 'gemini-2.5-flash-lite' %}selected{% endif %}>gemini-2.5-flash-lite (hızlı)</option>
+            <option value="gemini-2.0-flash" {% if gemini_model == 'gemini-2.0-flash' %}selected{% endif %}>gemini-2.0-flash</option>
+            <option value="gemini-1.5-flash" {% if gemini_model == 'gemini-1.5-flash' %}selected{% endif %}>gemini-1.5-flash</option>
+            <option value="gemini-1.5-pro" {% if gemini_model == 'gemini-1.5-pro' %}selected{% endif %}>gemini-1.5-pro (gelişmiş)</option>
+          </select>
+          <small style="display:block;margin-top:0.25rem;color:var(--text-muted);">Firma bazlı model seçimi</small>
+        </div>
+      </div>
+      <div class="ai-status-badge {% if gemini_status == 'active' %}active{% elif gemini_status == 'configured' %}configured{% else %}none{% endif %}">
+        {% if gemini_status == 'active' %}✓ Aktif (kullanılıyor){% elif gemini_status == 'configured' %}Anahtar girilmiş, pasif{% else %}Yapılandırılmamış{% endif %}
+      </div>
+    </div>
+
+    <div class="ai-provider-card openai">
+      <div class="ai-provider-header">
+        <div class="ai-provider-title">
+          <div class="icon">🟢</div>
+          <span>OpenAI (GPT)</span>
+        </div>
+        <label class="ai-toggle">
+          <input type="checkbox" id="openai_active" name="openai_active" value="1" {% if openai_active %}checked{% endif %}>
+          <span>Aktif</span>
+        </label>
+      </div>
+      <p style="font-size:0.875rem;color:var(--text-muted);margin:0 0 1rem;">
+        API anahtarı: <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" class="ai-link">platform.openai.com</a>
+      </p>
+      <div class="ai-fields">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="openai_api_key">API Anahtarı</label>
+          <input type="password" id="openai_api_key" name="openai_api_key" value="{{ openai_key_display }}" placeholder="sk-..." autocomplete="off">
+        </div>
+      </div>
+      <div class="ai-status-badge {% if openai_status == 'active' %}active{% elif openai_status == 'configured' %}configured{% else %}none{% endif %}">
+        {% if openai_status == 'active' %}✓ Aktif (kullanılıyor){% elif openai_status == 'configured' %}Anahtar girilmiş, pasif{% else %}Yapılandırılmamış{% endif %}
+      </div>
+    </div>
+
+    <div class="ai-provider-card" style="border-left-color:#6366f1;">
+      <h3>Günlük Mesaj Limiti</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:0 0 1rem;">AI yanıtı için günlük maksimum kullanıcı mesaj sayısı. 0 = sınırsız.</p>
+      <div class="form-group" style="max-width:200px;">
+        <label for="ai_daily_limit">Limit (mesaj/gün)</label>
+        <input type="number" id="ai_daily_limit" name="ai_daily_limit" value="{{ ai_daily_limit }}" min="0" max="100000" step="10" placeholder="500">
+      </div>
+    </div>
+
+    <div class="ai-provider-card" style="border-left-color:#f59e0b;">
+      <h3>Proaktif Mesajlaşma</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:0 0 1rem;">Belirli süre pasif kalan müşterilere otomatik hatırlatma mesajı gönderir. <code>{name}</code> yerine müşteri adı yazılır.</p>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label class="ai-toggle" style="margin:0;">
+          <input type="checkbox" id="proactive_enabled" name="proactive_enabled" value="1" {% if proactive_enabled %}checked{% endif %}>
+          <span>Aktif</span>
+        </label>
+      </div>
+      <div class="form-group" style="max-width:220px;">
+        <label for="proactive_inactivity_hours">Pasif süre (saat)</label>
+        <input type="number" id="proactive_inactivity_hours" name="proactive_inactivity_hours" value="{{ proactive_inactivity_hours }}" min="1" max="720" step="1" placeholder="24">
+      </div>
+      <div class="ai-fields" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="proactive_quiet_hours_start">Sessiz saat baslangic</label>
+          <input type="number" id="proactive_quiet_hours_start" name="proactive_quiet_hours_start" value="{{ proactive_quiet_hours_start }}" min="0" max="23" step="1" placeholder="23">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="proactive_quiet_hours_end">Sessiz saat bitis</label>
+          <input type="number" id="proactive_quiet_hours_end" name="proactive_quiet_hours_end" value="{{ proactive_quiet_hours_end }}" min="0" max="23" step="1" placeholder="9">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="proactive_weekly_limit">Haftalik limit</label>
+          <input type="number" id="proactive_weekly_limit" name="proactive_weekly_limit" value="{{ proactive_weekly_limit }}" min="0" max="50" step="1" placeholder="2">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label for="proactive_template">Mesaj şablonu</label>
+        <textarea id="proactive_template" name="proactive_template" rows="3" placeholder="Merhaba {name}, size yardımcı olmamızı ister misiniz?">{{ proactive_template }}</textarea>
+      </div>
+      <div class="form-group" style="margin-top:0.75rem;">
+        <label class="ai-toggle" style="margin:0;">
+          <input type="checkbox" id="proactive_ab_enabled" name="proactive_ab_enabled" value="1" {% if proactive_ab_enabled %}checked{% endif %}>
+          <span>A/B test aktif (sablon A/B)</span>
+        </label>
+      </div>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label for="proactive_template_b">Mesaj şablonu B</label>
+        <textarea id="proactive_template_b" name="proactive_template_b" rows="3" placeholder="Merhaba {name}, kampanyalarimiz icin yardimci olabiliriz.">{{ proactive_template_b }}</textarea>
+      </div>
+      <div class="ai-fields" style="grid-template-columns: 1fr 1fr;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="proactive_segment">Hedef segment</label>
+          <select id="proactive_segment" name="proactive_segment">
+            <option value="all" {% if proactive_segment == 'all' %}selected{% endif %}>Tum musteriler</option>
+            <option value="new_customer" {% if proactive_segment == 'new_customer' %}selected{% endif %}>Yeni musteri (siparissiz)</option>
+            <option value="has_order" {% if proactive_segment == 'has_order' %}selected{% endif %}>Siparis veren musteriler</option>
+            <option value="high_value" {% if proactive_segment == 'high_value' %}selected{% endif %}>Yuksek degerli musteriler</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="proactive_segment_min_order_total">Yuksek deger esigi (TL)</label>
+          <input type="number" id="proactive_segment_min_order_total" name="proactive_segment_min_order_total" value="{{ proactive_segment_min_order_total }}" min="0" step="100" placeholder="5000">
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-provider-card" style="border-left-color:#ef4444;">
+      <h3>Health Monitor Bildirimleri</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:0 0 1rem;">WhatsApp baglanti durumu bozuldugunda bildirim alabilirsiniz.</p>
+      <div class="ai-fields" style="grid-template-columns: 1fr 1fr;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="health_alert_email">Uyari e-postasi</label>
+          <input type="email" id="health_alert_email" name="health_alert_email" value="{{ health_alert_email }}" placeholder="ornek@firma.com">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="health_alert_sms_webhook">SMS/Webhook URL</label>
+          <input type="url" id="health_alert_sms_webhook" name="health_alert_sms_webhook" value="{{ health_alert_sms_webhook }}" placeholder="https://...">
+        </div>
+      </div>
+    </div>
+
+    <div class="ai-provider-card" style="border-left-color:#22c55e;">
+      <h3>AI Kota ve Kullanim (Son 7 Gun)</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:0;">Gunluk limit: <strong>{{ ai_daily_limit }}</strong> | Bugun: <strong>{{ usage_today }}</strong></p>
+      <div class="usage-bars">
+        {% set ns = namespace(max_count=1) %}
+        {% for u in usage_7d %}
+          {% if u.count > ns.max_count %}{% set ns.max_count = u.count %}{% endif %}
+        {% endfor %}
+        {% for u in usage_7d %}
+        <div>
+          <div class="usage-bar" title="{{ u.label }}: {{ u.count }}">
+            <div class="usage-fill" style="height: {{ ((u.count * 100) // ns.max_count) if ns.max_count > 0 else 0 }}%;"></div>
+          </div>
+          <div class="usage-label">{{ u.label }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="ai-provider-card" style="border-left-color:#0ea5e9;">
+      <h3>Pipeline Metrikleri (Son {{ pipeline_metrics.window_hours }} Saat)</h3>
+      <div class="stats-grid">
+        <div class="stat-item"><div class="k">Istek</div><div class="v">{{ pipeline_metrics.total_requests }}</div></div>
+        <div class="stat-item"><div class="k">Hata orani</div><div class="v">{{ pipeline_metrics.error_rate_pct }}%</div></div>
+        <div class="stat-item"><div class="k">Ort gecikme</div><div class="v">{{ pipeline_metrics.avg_latency_ms }} ms</div></div>
+        <div class="stat-item"><div class="k">P95 gecikme</div><div class="v">{{ pipeline_metrics.p95_latency_ms }} ms</div></div>
+      </div>
+      {% if pipeline_metrics.top_intents %}
+      <p style="margin:0.8rem 0 0;font-size:0.85rem;color:var(--text-muted);">
+        En sik intentler:
+        {% for i in pipeline_metrics.top_intents %}
+          <span style="display:inline-block;margin-right:0.5rem;">{{ i[0] }} ({{ i[1] }})</span>
+        {% endfor %}
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="ai-priority-card">
+      <h3>Öncelik</h3>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin:0;">Her iki API de aktif olduğunda hangisi kullanılsın?</p>
+      <div class="ai-priority-options">
+        <label class="ai-priority-option {% if ai_primary == 'gemini' %}selected{% endif %}">
+          <input type="radio" name="ai_primary" value="gemini" {% if ai_primary == 'gemini' %}checked{% endif %}>
+          <div class="radio-dot"></div>
+          <div>
+            <strong>Gemini</strong>
+            <div style="font-size:0.8rem;color:var(--text-muted);">Öncelikli kullan</div>
+          </div>
+        </label>
+        <label class="ai-priority-option {% if ai_primary == 'openai' %}selected{% endif %}">
+          <input type="radio" name="ai_primary" value="openai" {% if ai_primary == 'openai' %}checked{% endif %}>
+          <div class="radio-dot"></div>
+          <div>
+            <strong>OpenAI</strong>
+            <div style="font-size:0.8rem;color:var(--text-muted);">Öncelikli kullan</div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="ai-actions">
+      <button type="submit" class="btn">Kaydet</button>
+      <button type="button" id="btn-test-ai" class="btn btn-secondary">Bağlantıyı Test Et</button>
+      <div id="test-result" class="test-result-box" style="flex:1;min-width:200px;"></div>
+      <a href="/admin/dashboard" class="btn btn-secondary">İptal</a>
+    </div>
+  </form>
+
+  <p style="margin-top:1.5rem;font-size:0.85rem;color:var(--text-muted);">Bu ayarlar sadece bu firma için geçerlidir. Hiç API anahtarı girilmezse sistem genel ayarları (.env) kullanılır.</p>
+</div>
+
+<script>
+(function(){
+  var opts = document.querySelectorAll('.ai-priority-option');
+  opts.forEach(function(o){
+    o.addEventListener('click', function(){
+      opts.forEach(function(x){ x.classList.remove('selected'); });
+      o.classList.add('selected');
+      o.querySelector('input').checked = true;
+    });
+  });
+  document.getElementById('btn-test-ai').onclick = function(){
+    var btn = this;
+    var box = document.getElementById('test-result');
+    btn.disabled = true;
+    box.textContent = 'Test ediliyor...';
+    box.style.background = '#f8fafc';
+    box.style.color = '#64748b';
+    var ctrl = new AbortController();
+    var t = setTimeout(function(){ ctrl.abort(); }, 25000);
+    fetch('/admin/api/ai-status', { signal: ctrl.signal, credentials: 'same-origin' })
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(function(d){
+        clearTimeout(t);
+        var parts = [];
+        if(d.gemini.configured){
+          parts.push('Gemini: ' + (d.gemini.ok ? '✓ Bağlı' : '✗ ' + (d.gemini.error||'Hata')));
+        } else { parts.push('Gemini: —'); }
+        if(d.openai.configured){
+          parts.push('OpenAI: ' + (d.openai.ok ? '✓ Bağlı' : '✗ ' + (d.openai.error||'Hata')));
+        } else { parts.push('OpenAI: —'); }
+        box.textContent = parts.join('  ·  ');
+        box.style.background = (d.gemini.ok || d.openai.ok) ? '#dcfce7' : '#fee2e2';
+        box.style.color = (d.gemini.ok || d.openai.ok) ? '#166534' : '#b91c1c';
+      })
+      .catch(function(e){
+        clearTimeout(t);
+        box.textContent = e.name === 'AbortError' ? 'Zaman aşımı (25 sn)' : ('Hata: ' + e.message);
+        box.style.background = '#fee2e2';
+        box.style.color = '#b91c1c';
+      })
+      .finally(function(){ btn.disabled = false; });
+  };
+})();
+</script>
+{% endblock %}

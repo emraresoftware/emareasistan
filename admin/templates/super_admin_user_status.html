@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kullanıcı Durumları | Super Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --primary: #1e3a5f; --primary-light: #2d5a87; --muted: #64748b; --bg: #f1f5f9; --card: #fff; }
+    body { font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; min-height: 100vh; background: var(--bg); color: #334155; line-height: 1.5; }
+    .header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(30,58,95,0.2); }
+    .header-brand { font-weight: 700; font-size: 1.15rem; }
+    .header-badge { background: rgba(255,255,255,0.2); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+    .header-links { display: flex; gap: 1rem; align-items: center; }
+    .header-links a { color: rgba(255,255,255,0.95); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: background 0.2s; }
+    .header-links a:hover { background: rgba(255,255,255,0.15); }
+    .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .page-subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 0.25rem; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); overflow: hidden; }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+    th { background: #f8fafc; color: var(--primary); font-weight: 600; }
+    tr:hover { background: #fafafa; }
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 600; }
+    .badge-online { background: #dcfce7; color: #166534; }
+    .badge-offline { background: #f1f5f9; color: #64748b; }
+    .badge-partner { background: #fef3c7; color: #92400e; }
+    .empty-state { padding: 2rem; text-align: center; color: var(--muted); }
+    .stats { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .stat { padding: 0.5rem 1rem; background: #f8fafc; border-radius: 8px; font-size: 0.9rem; }
+    .stat strong { color: var(--primary); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="header-brand">Kullanıcı Durumları <span class="header-badge">Super Admin</span></h1>
+    <div class="header-links">
+      <a href="/admin/super">← Super Admin</a>
+      <a href="/admin/super/login-logs">Giriş Logu</a>
+      <a href="/admin/logout">Çıkış</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Online / Offline Durumu</h1>
+      <p class="page-subtitle">Son 5 dakika içinde aktivitesi olan kullanıcılar çevrimiçi sayılır.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><strong>{{ users_with_status|length }}</strong> toplam kullanıcı</div>
+      <div class="stat"><strong>{{ online_count }}</strong> çevrimiçi</div>
+      <div class="stat"><strong>{{ users_with_status|length - online_count }}</strong> çevrimdışı</div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Durum</th>
+              <th>Ad</th>
+              <th>E-posta</th>
+              <th>Firma / Partner</th>
+              <th>Son giriş</th>
+              <th>Son görülme</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in users_with_status %}
+            <tr>
+              <td>
+                {% if item.is_online %}
+                <span class="badge badge-online">● Çevrimiçi</span>
+                {% else %}
+                <span class="badge badge-offline">○ Çevrimdışı</span>
+                {% endif %}
+              </td>
+              <td><strong>{{ item.user.name }}</strong></td>
+              <td>{{ item.user.email or '-' }}</td>
+              <td>{{ item.firm_or_partner }}</td>
+              <td>{{ item.user.last_login|to_turkey('%d.%m.%Y %H:%M') if item.user.last_login else '-' }}</td>
+              <td>{{ item.user.last_seen|to_turkey('%d.%m.%Y %H:%M') if item.user.last_seen else '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="6" class="empty-state">Henüz kullanıcı yok.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

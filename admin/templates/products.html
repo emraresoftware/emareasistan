@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Ürünler{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Ürünler</span></div>
+{% endblock %}
+{% block content %}
+{% if request.query_params.get('imported') %}
+<div class="msg msg-success">✓ {{ request.query_params.get('imported') }} ürün veritabanına aktarıldı. AI asistan artık DB'den okuyacak.</div>
+{% endif %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Ürün Yönetimi</h1>
+    <p class="page-subtitle">Ürün kataloğunu düzenleyin. AI asistan bu listeyi kullanır. {% if db_product_count %}<strong>DB: {{ db_product_count }} ürün</strong>{% endif %}</p>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <form method="post" action="/admin/products/import-to-db" style="display:inline;">
+      <button type="submit" class="btn btn-secondary" onclick="return confirm('Mevcut JSON dosyasındaki ürünler veritabanına aktarılacak. Mevcut DB ürünleri silinir. Devam?')">JSON → DB Aktar</button>
+    </form>
+    <a href="/admin/products/gallery" class="btn btn-secondary">Galeri</a>
+    <a href="/admin/products/new" class="btn">+ Yeni Ürün</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Ürün</th>
+        <th>Kategori</th>
+        <th>Fiyat</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td><strong>{{ p.name }}</strong><br><small style="color:#64748b;">{{ p.slug or '-' }}</small></td>
+        <td>{{ p.category or '-' }}</td>
+        <td>{{ p.price }} TL</td>
+        <td>
+          <a href="/admin/products/{{ p._id }}" class="btn btn-sm">Düzenle</a>
+          <form method="post" action="/admin/products/{{ p._id }}/delete" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty-state"><p>Henüz ürün yok.</p><a href="/admin/products/new" class="btn btn-sm">+ Yeni Ürün</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

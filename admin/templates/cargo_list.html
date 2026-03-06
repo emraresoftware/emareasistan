@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ cargo_company_name or 'Kargo Takibi' }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/orders">Siparişler</a> <span>›</span> <a href="/admin/cargo">Kargo Takibi</a>{% if cargo_company_name %} <span>›</span> <span>{{ cargo_company_name }}</span>{% endif %}</div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">{{ cargo_company_name or 'Kargo Takibi' }}</h1>
+    <p class="page-subtitle">Sipariş kargolarını görüntüleyin ve takip linklerine erişin. Toplam {{ total }} kayıt.</p>
+  </div>
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+    {% if cargo_company %}<a href="/admin/cargo" class="btn btn-secondary">← Tüm Kargolar</a>{% endif %}
+    <a href="/admin/orders" class="btn btn-secondary">← Siparişlere Dön</a>
+  </div>
+</div>
+
+<div class="action-bar">
+  <form method="get" action="{% if cargo_company %}/admin/cargo/{{ cargo_company }}{% else %}/admin/cargo{% endif %}" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+    <select name="filter">
+      <option value="with_cargo" {% if filter=='with_cargo' %}selected{% endif %}>Kargo bilgisi olanlar</option>
+      <option value="no_cargo" {% if filter=='no_cargo' %}selected{% endif %}>Kargo bekleyenler</option>
+      <option value="all" {% if filter=='all' %}selected{% endif %}>Tümü</option>
+    </select>
+    <input type="text" name="q" class="search-box" placeholder="Sipariş no, takip no, müşteri..." value="{{ search_q or '' }}">
+    <button type="submit" class="btn btn-sm">Filtrele</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Sipariş No</th>
+        <th>Müşteri</th>
+        <th>Durum</th>
+        <th>Takip No</th>
+        <th>Kargo Firması</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><strong>{{ o.order_number }}</strong></td>
+        <td>{{ o.customer_name }}<br><small style="color:#64748b;">{{ o.customer_phone }}</small></td>
+        <td>
+          <span class="badge {% if o.status == 'delivered' %}badge-success{% elif o.status == 'cancelled' %}badge-danger{% elif o.status == 'pending' %}badge-warning{% else %}badge-info{% endif %}">
+            {% if o.status == 'pending' %}Beklemede{% elif o.status == 'confirmed' %}Onaylandı{% elif o.status == 'processing' %}Hazırlanıyor{% elif o.status == 'shipped' %}Kargoda{% elif o.status == 'delivered' %}Teslim{% elif o.status == 'cancelled' %}İptal{% else %}{{ o.status }}{% endif %}
+          </span>
+        </td>
+        <td>
+          {% if o.cargo_tracking_no %}
+          <code>{{ o.cargo_tracking_no }}</code>
+          {% else %}
+          <span style="color:#94a3b8;">-</span>
+          {% endif %}
+        </td>
+        <td>{{ o.cargo_company or '-' }}</td>
+        <td>
+          {% if o.cargo_tracking_no and tracking_urls.get(o.id) %}
+          <a href="{{ tracking_urls[o.id] }}" target="_blank" rel="noopener" class="btn btn-sm btn-success">🔗 Takip Et</a>
+          {% endif %}
+          <a href="/admin/orders/{{ o.id }}" class="btn btn-sm">Detay</a>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state">
+        <p>Filtreye uygun kayıt bulunamadı.</p>
+        <p><a href="/admin/orders" class="btn btn-success">Siparişlere Git</a></p>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination">
+    <span class="pagination-info">Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}
+    <a href="?page={{ page - 1 }}{% if filter %}&filter={{ filter }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" class="btn btn-sm">← Önceki</a>
+    {% endif %}
+    {% if page < total_pages %}
+    <a href="?page={{ page + 1 }}{% if filter %}&filter={{ filter }}{% endif %}{% if search_q %}&q={{ search_q }}{% endif %}" class="btn btn-sm">Sonraki →</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <h3 style="margin-top:0;">💡 İpucu</h3>
+  <p>Kargo bilgisi eklemek için sipariş detay sayfasındaki "Kargo Bilgisi Ekle" formunu kullanın. Müşteriye takip linki WhatsApp üzerinden otomatik paylaşılır.</p>
+</div>
+{% endblock %}

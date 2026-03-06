@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}İstatistikler{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>İstatistikler</span></div>
+{% endblock %}
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .chart-container { position:relative; height:280px; margin-bottom:1.5rem; }
+  .stat-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:1rem; margin-bottom:1.5rem; }
+  .stat-mini { background:var(--card-bg); padding:1.25rem; border-radius:12px; text-align:center; border:1px solid var(--border); box-shadow:0 1px 3px rgba(0,0,0,0.04); transition:box-shadow 0.2s; }
+  .stat-mini:hover { box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+  .stat-mini h4 { margin:0; font-size:1.6rem; font-weight:700; color:var(--primary); letter-spacing:-0.02em; }
+  .stat-mini p { margin:0.35rem 0 0; font-size:0.85rem; color:var(--text-muted); font-weight:500; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">İstatistikler</h1>
+  <p class="page-subtitle">Sohbet, sipariş ve gelir trendleri.</p>
+</div>
+{% if threshold_applied %}
+<div class="alert alert-success" style="margin-bottom:1rem;">Onerilen local confidence threshold uygulandi.</div>
+{% elif threshold_unchanged %}
+<div class="alert alert-info" style="margin-bottom:1rem;">Onerilen threshold mevcut degerle ayni, degisiklik yapilmadi.</div>
+{% endif %}
+<form method="post" action="/admin/analytics/local-threshold/apply" style="margin-bottom:1rem;">
+  <button id="btn-apply-threshold" type="submit" class="btn btn-primary">Apply Suggested Threshold</button>
+</form>
+{% if threshold_last_apply %}
+<div style="margin-bottom:1rem; color:#64748b; font-size:0.9rem;">
+  Son uygulama: {{ threshold_last_apply.created_at }} • {{ threshold_last_apply.user_email }}
+  {% if threshold_last_apply.from_threshold is not none and threshold_last_apply.to_threshold is not none %}
+  ({{ threshold_last_apply.from_threshold }} -> {{ threshold_last_apply.to_threshold }})
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="stat-row">
+  <div class="stat-mini">
+    <h4 id="stat-conv-7">-</h4>
+    <p>Son 7 gün sohbet</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-msg-7">-</h4>
+    <p>Son 7 gün mesaj</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-order-7">-</h4>
+    <p>Son 7 gün sipariş</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-revenue-7">-</h4>
+    <p>Son 7 gün gelir</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-takeover">-</h4>
+    <p>Devralınan sohbet</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-conversion">-</h4>
+    <p>Dönüşüm oranı (7 gün)</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-feedback">-</h4>
+    <p>AI geri bildirim</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-vip-leads">-</h4>
+    <p>VIP lead (7 gün)</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-warm-leads">-</h4>
+    <p>Sıcak lead (7 gün)</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-sla-risk">-</h4>
+    <p>SLA risk (açık)</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-sla-auto">-</h4>
+    <p>SLA auto-devralma</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-first-response">-</h4>
+    <p>Ilk yanit suresi (dk)</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-takeover-order">-</h4>
+    <p>Devralma->siparis oranı</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-local-attempts">-</h4>
+    <p>Local deneme (7 gun)</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-local-accept">-</h4>
+    <p>Local kabul orani</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-local-conf">-</h4>
+    <p>Ortalama local confidence</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-local-threshold">-</h4>
+    <p>Auto-tuning threshold</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-avg-latency">-</h4>
+    <p>Avg response latency (24h)</p>
+  </div>
+  <div class="stat-mini">
+    <h4 id="stat-p95-latency">-</h4>
+    <p>P95 response latency (24h)</p>
+  </div>
+</div>
+
+<div class="card-grid">
+  <div class="card">
+    <h3>Sohbet Trendi (Son 14 Gün)</h3>
+    <div class="chart-container"><canvas id="chart-conversations"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Mesaj Trendi (Son 14 Gün)</h3>
+    <div class="chart-container"><canvas id="chart-messages"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Sipariş & Gelir (Son 14 Gün)</h3>
+    <div class="chart-container"><canvas id="chart-orders"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Lead Kaynak Dağılımı (7 Gün)</h3>
+    <div class="chart-container"><canvas id="chart-platforms"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Sipariş Durumları</h3>
+    <div class="chart-container"><canvas id="chart-order-status"></canvas></div>
+  </div>
+  <div class="card">
+    <h3>Kaynak Bazlı Huni (7 Gün)</h3>
+    <div class="chart-container"><canvas id="chart-source-funnel"></canvas></div>
+  </div>
+</div>
+
+<script>
+fetch('/admin/api/analytics').then(r=>r.json()).then(function(d){
+  document.getElementById('stat-conv-7').textContent = d.conversations_7 || 0;
+  document.getElementById('stat-msg-7').textContent = d.messages_7 || 0;
+  document.getElementById('stat-order-7').textContent = d.orders_7 || 0;
+  document.getElementById('stat-revenue-7').textContent = (d.revenue_7 || 0).toLocaleString('tr-TR') + ' ₺';
+  document.getElementById('stat-takeover').textContent = d.taken_over_count || 0;
+  document.getElementById('stat-conversion').textContent = (d.conversion_rate || 0) + '%';
+  var like = d.feedback_like || 0, dis = d.feedback_dislike || 0;
+  document.getElementById('stat-feedback').textContent = like + ' 👍 / ' + dis + ' 👎';
+  document.getElementById('stat-vip-leads').textContent = d.vip_leads_7 || 0;
+  document.getElementById('stat-warm-leads').textContent = d.warm_leads_7 || 0;
+  document.getElementById('stat-sla-risk').textContent = d.sla_overdue_open || 0;
+  document.getElementById('stat-sla-auto').textContent = d.auto_sla_taken_over || 0;
+  document.getElementById('stat-first-response').textContent = (d.avg_first_response_min || 0) + ' dk';
+  document.getElementById('stat-takeover-order').textContent = (d.takeover_to_order_rate || 0) + '%';
+  document.getElementById('stat-local-attempts').textContent = d.local_attempts_7 || 0;
+  document.getElementById('stat-local-accept').textContent = (d.local_accept_rate_7 || 0) + '%';
+  document.getElementById('stat-local-conf').textContent = (d.local_avg_conf_7 || 0);
+  document.getElementById('stat-local-threshold').textContent = (d.local_base_threshold || 55) + ' -> ' + (d.local_suggested_threshold || 55);
+  document.getElementById('stat-avg-latency').textContent = (d.avg_response_latency_ms || 0) + ' ms';
+  document.getElementById('stat-p95-latency').textContent = (d.p95_response_latency_ms || 0) + ' ms';
+  var applyBtn = document.getElementById('btn-apply-threshold');
+  if (applyBtn) {
+    var cur = d.local_base_threshold || 55;
+    var sug = d.local_suggested_threshold || 55;
+    applyBtn.textContent = 'Apply Suggested Threshold (' + cur + ' -> ' + sug + ')';
+    applyBtn.disabled = (cur === sug);
+  }
+
+  var days = d.daily_labels || [];
+  new Chart(document.getElementById('chart-conversations'), {
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [{ label: 'Sohbet', data: d.daily_conversations || [], backgroundColor: 'rgba(30,58,95,0.7)' }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+  new Chart(document.getElementById('chart-messages'), {
+    type: 'line',
+    data: {
+      labels: days,
+      datasets: [{ label: 'Mesaj', data: d.daily_messages || [], borderColor: '#16a34a', fill: true, tension: 0.3 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+  new Chart(document.getElementById('chart-orders'), {
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [
+        { label: 'Sipariş', data: d.daily_orders || [], backgroundColor: 'rgba(22,163,74,0.7)', yAxisID: 'y' },
+        { label: 'Gelir (₺)', data: d.daily_revenue || [], backgroundColor: 'rgba(197,155,61,0.7)', yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { y: { type: 'linear', position: 'left' }, y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } } }
+    }
+  });
+  new Chart(document.getElementById('chart-platforms'), {
+    type: 'doughnut',
+    data: {
+      labels: d.source_labels || d.platform_labels || [],
+      datasets: [{ data: d.source_counts || d.platform_counts || [], backgroundColor: ['#25D366', '#0088cc', '#E4405F', '#94a3b8'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+  new Chart(document.getElementById('chart-order-status'), {
+    type: 'doughnut',
+    data: {
+      labels: d.status_labels || [],
+      datasets: [{ data: d.status_counts || [], backgroundColor: ['#f59e0b', '#10b981', '#3b82f6', '#6366f1', '#22c55e', '#ef4444'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false }
+  });
+  new Chart(document.getElementById('chart-source-funnel'), {
+    type: 'bar',
+    data: {
+      labels: d.source_labels || [],
+      datasets: [
+        { label: 'Lead', data: d.source_counts || [], backgroundColor: 'rgba(30,58,95,0.75)' },
+        { label: 'Sipariş', data: d.source_order_counts || [], backgroundColor: 'rgba(22,163,74,0.75)' }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: { y: { beginAtZero: true } }
+    }
+  });
+});
+</script>
+{% endblock %}

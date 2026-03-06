@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Hesap Ayarları{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/settings">Ayarlar</a> <span>›</span> <span>Hesap Sahibi</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Hesap Sahibi</h1>
+  <p class="page-subtitle">Kullanıcı adınızı (ad), e-posta adresinizi ve şifrenizi buradan değiştirebilirsiniz. Geçici şifre ile giriş yaptıysanız mutlaka değiştirin.</p>
+</div>
+
+{% if saved %}
+<div class="msg msg-success">✓ Kaydedildi.</div>
+{% endif %}
+{% if request.query_params.get('error') == 'password_mismatch' %}
+<div class="msg msg-error">Şifreler eşleşmiyor. Lütfen tekrar girin.</div>
+{% endif %}
+{% if request.query_params.get('error') == 'password_short' %}
+<div class="msg msg-error">Şifre en az 6 karakter olmalıdır.</div>
+{% endif %}
+{% if request.query_params.get('error') == 'email_taken' %}
+<div class="msg msg-error">Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.</div>
+{% endif %}
+
+<div class="card" style="max-width: 480px;">
+  <form method="post" action="/admin/settings/account">
+    <div class="form-group">
+      <label for="name">Ad / Kullanıcı adı</label>
+      <input type="text" id="name" name="name" value="{{ user.name or '' }}" placeholder="Adınız Soyadınız" required>
+    </div>
+    <div class="form-group">
+      <label for="email">E-posta</label>
+      <input type="email" id="email" name="email" value="{{ user.email or '' }}" placeholder="ornek@firma.com" required>
+      <small style="color:#64748b;font-size:0.85rem;">Giriş ve bildirimler (sipariş, özet vb.) bu adrese gider.</small>
+    </div>
+    <div class="form-group">
+      <label for="phone">Telefon</label>
+      <input type="tel" id="phone" name="phone" value="{{ user.phone or '' }}" placeholder="0532 123 45 67">
+      <small style="color:#64748b;font-size:0.85rem;">SMS bildirimleri için (yeni sipariş vb.)</small>
+    </div>
+    <div class="form-group">
+      <label>Bildirim Tercihleri</label>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.35rem;">
+        <label style="display:flex;align-items:center;gap:0.5rem;font-weight:normal;cursor:pointer;">
+          <input type="checkbox" name="notify_new_order" value="1" {% if notif.get('new_order') %}checked{% endif %}>
+          Yeni sipariş geldiğinde bildir
+        </label>
+        <label style="display:flex;align-items:center;gap:0.5rem;font-weight:normal;cursor:pointer;">
+          <input type="checkbox" name="notify_daily_digest" value="1" {% if notif.get('daily_digest') %}checked{% endif %}>
+          Günlük özet (e-posta)
+        </label>
+        <div style="margin-top:0.25rem;">
+          <small style="color:#64748b;">Kanallar:</small>
+          <label style="display:inline-flex;align-items:center;gap:0.35rem;margin-left:0.5rem;font-weight:normal;cursor:pointer;"><input type="checkbox" name="notify_channel_email" value="1" {% if 'email' in (notif.get('channels') or ['email']) %}checked{% endif %}> E-posta</label>
+          <label style="display:inline-flex;align-items:center;gap:0.35rem;margin-left:0.5rem;font-weight:normal;cursor:pointer;"><input type="checkbox" name="notify_channel_sms" value="1" {% if 'sms' in (notif.get('channels') or []) %}checked{% endif %}> SMS</label>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="password">Yeni Şifre</label>
+      <input type="password" id="password" name="password" placeholder="Boş bırakırsanız değişmez" autocomplete="new-password">
+    </div>
+    <div class="form-group">
+      <label for="password_confirm">Şifre Tekrar</label>
+      <input type="password" id="password_confirm" name="password_confirm" placeholder="Şifre değiştiriyorsanız tekrar girin" autocomplete="new-password">
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a href="/admin/settings" class="btn btn-secondary" style="margin-left:0.5rem;">Geri</a>
+  </form>
+</div>
+{% endblock %}

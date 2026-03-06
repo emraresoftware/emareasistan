@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Giriş Logu | Super Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --primary: #1e3a5f; --primary-light: #2d5a87; --muted: #64748b; --bg: #f1f5f9; --card: #fff; }
+    body { font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; min-height: 100vh; background: var(--bg); color: #334155; line-height: 1.5; }
+    .header { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: #fff; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(30,58,95,0.2); }
+    .header-brand { font-weight: 700; font-size: 1.15rem; }
+    .header-badge { background: rgba(255,255,255,0.2); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+    .header-links { display: flex; gap: 1rem; align-items: center; }
+    .header-links a { color: rgba(255,255,255,0.95); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: background 0.2s; }
+    .header-links a:hover { background: rgba(255,255,255,0.15); }
+    .container { max-width: 1300px; margin: 0 auto; padding: 1.5rem; }
+    .page-header { margin-bottom: 1.25rem; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .page-title { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
+    .page-subtitle { color: var(--muted); font-size: 0.9rem; margin-top: 0.2rem; }
+    .card { background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04); overflow: hidden; }
+    .table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.55rem 0.9rem; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
+    th { background: #f8fafc; color: var(--primary); font-weight: 600; white-space: nowrap; }
+    tr:hover { background: #fafafa; }
+    tr.fail-row { background: #fff5f5; }
+    tr.fail-row:hover { background: #fee2e2; }
+    .badge { display: inline-block; padding: 0.18rem 0.5rem; font-size: 0.72rem; border-radius: 5px; font-weight: 600; white-space: nowrap; }
+    .badge-super { background: #dbeafe; color: #1d4ed8; }
+    .badge-partner { background: #fef3c7; color: #92400e; }
+    .badge-user { background: #dcfce7; color: #166534; }
+    .badge-ok { background: #dcfce7; color: #166534; }
+    .badge-fail { background: #fee2e2; color: #b91c1c; }
+    .ua-cell { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #64748b; font-size: 0.78rem; }
+    .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .filter-btn { padding: 0.35rem 0.75rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; border: 1.5px solid #e2e8f0; background: #fff; color: #475569; text-decoration: none; transition: all 0.15s; }
+    .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .alert-badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.85rem; border-radius: 8px; font-size: 0.82rem; font-weight: 600; background: #fff5f5; color: #b91c1c; border: 1.5px solid #fecaca; }
+    .pagination { display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    .pagination-info { font-size: 0.82rem; color: var(--muted); }
+    .btn { display: inline-flex; align-items: center; padding: 0.4rem 0.85rem; background: var(--primary); color: #fff; border: none; border-radius: 8px; font-size: 0.82rem; font-weight: 600; cursor: pointer; text-decoration: none; font-family: inherit; }
+    .btn:hover { background: var(--primary-light); }
+    .empty-state { padding: 2.5rem; text-align: center; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="header-brand">Giriş Logu <span class="header-badge">Super Admin</span></h1>
+    <div class="header-links">
+      <a href="/admin/super">← Super Admin</a>
+      <a href="/admin/logout">Çıkış</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Giriş Kayıtları</h1>
+        <p class="page-subtitle">Tüm başarılı ve başarısız giriş denemeleri · Super admin, partner admin ve firma kullanıcıları</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        {% if fail_24h > 0 %}
+        <span class="alert-badge">⚠️ Son 24 saatte {{ fail_24h }} başarısız deneme</span>
+        {% endif %}
+        <div class="filters">
+          <a href="?filter=all&limit={{ limit }}" class="filter-btn {% if filter == 'all' %}active{% endif %}">Tümü</a>
+          <a href="?filter=success&limit={{ limit }}" class="filter-btn {% if filter == 'success' %}active{% endif %}">✅ Başarılı</a>
+          <a href="?filter=fail&limit={{ limit }}" class="filter-btn {% if filter == 'fail' %}active{% endif %}">❌ Başarısız</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Durum</th>
+              <th>Rol</th>
+              <th>E-posta</th>
+              <th>Firma</th>
+              <th>IP Adresi</th>
+              <th>Tarayıcı / Cihaz</th>
+              <th>Detay</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr {% if log.action == 'login_fail' or log.success == 0 %}class="fail-row"{% endif %}>
+              <td style="white-space:nowrap;">{{ log.created_at|to_turkey('%d.%m.%Y %H:%M:%S') if log.created_at else '-' }}</td>
+              <td>
+                {% if log.action == 'login_fail' or log.success == 0 %}
+                <span class="badge badge-fail">❌ Başarısız</span>
+                {% else %}
+                <span class="badge badge-ok">✅ Başarılı</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if log.resource == 'super_admin' %}
+                <span class="badge badge-super">Super Admin</span>
+                {% elif log.resource == 'partner_admin' %}
+                <span class="badge badge-partner">Partner Admin</span>
+                {% elif log.resource == 'user' %}
+                <span class="badge badge-user">Firma</span>
+                {% else %}
+                <span class="badge" style="background:#f1f5f9;color:#475569;">{{ log.resource or '-' }}</span>
+                {% endif %}
+              </td>
+              <td>{{ log.user_email or '-' }}</td>
+              <td>{{ tenants_map.get(log.tenant_id, '-') if log.tenant_id else '-' }}</td>
+              <td><code style="font-size:0.78rem;background:#f8fafc;padding:0.1rem 0.35rem;border-radius:4px;">{{ log.ip_address or '-' }}</code></td>
+              <td class="ua-cell" title="{{ log.user_agent or '' }}">{{ log.user_agent or '-' }}</td>
+              <td style="font-size:0.78rem;color:#94a3b8;">{{ log.details or '' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="8" class="empty-state">Henüz kayıt yok.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% if total_pages > 1 %}
+      <div class="pagination" style="padding: 1rem;">
+        <span class="pagination-info">Sayfa {{ page }} / {{ total_pages }} · Toplam {{ total }} kayıt</span>
+        {% if page > 1 %}
+        <a href="?page={{ page - 1 }}&limit={{ limit }}&filter={{ filter }}" class="btn">← Önceki</a>
+        {% endif %}
+        {% if page < total_pages %}
+        <a href="?page={{ page + 1 }}&limit={{ limit }}&filter={{ filter }}" class="btn">Sonraki →</a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

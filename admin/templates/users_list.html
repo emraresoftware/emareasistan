@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Kullanıcılar{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Kullanıcılar</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Kullanıcılar</h1>
+  <p class="page-subtitle">Temsilcileri ekleyin ve WhatsApp hesabı atayın. Her kullanıcı panelinde kendi WhatsApp durumunu görür.</p>
+</div>
+
+<div class="card">
+  <h3>Kullanıcı Ekle / Düzenle</h3>
+  <form method="post" action="/admin/users/save" style="max-width:480px;">
+    {% if edit_user %}<input type="hidden" name="id" value="{{ edit_user.id }}">{% endif %}
+    <div class="form-group">
+      <label for="user-name">Ad</label>
+      <input type="text" id="user-name" name="name" placeholder="Örn: Ahmet" value="{{ edit_user.name if edit_user else '' }}" required>
+    </div>
+    <div class="form-group">
+      <label for="user-email">E-posta</label>
+      <input type="email" id="user-email" name="email" placeholder="ahmet@firma.com" value="{{ edit_user.email if edit_user else '' }}">
+    </div>
+    <div class="form-group">
+      <label for="user-password">Şifre (panel girişi için)</label>
+      <input type="password" id="user-password" name="password" placeholder="{{ 'Yeni şifre (boş bırak = değiştirme)' if edit_user else 'En az 6 karakter' }}" autocomplete="new-password">
+      <small style="color:#64748b;">E-posta + şifre ile admin panele giriş yapabilir. Boş bırakırsanız sadece WhatsApp ataması yapılır{% if edit_user %}; mevcut şifre korunur{% endif %}.</small>
+    </div>
+    <div class="form-group">
+      <label for="user-wa">WhatsApp Hesabı</label>
+      <select id="user-wa" name="whatsapp_connection_id">
+        <option value="">— Atanmamış —</option>
+        {% for c in connections %}
+        <option value="{{ c.id }}" {% if edit_user and edit_user.whatsapp_connection_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn">Kaydet</button>
+    {% if edit_user %}<a href="/admin/users" class="btn" style="margin-left:0.5rem;">İptal</a>{% endif %}
+  </form>
+</div>
+
+<div class="card">
+  <h3>Mevcut Kullanıcılar</h3>
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Ad</th>
+        <th>E-posta</th>
+        <th>WhatsApp</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td><strong>{{ u.name }}</strong></td>
+        <td>{{ u.email or '-' }}</td>
+        <td>
+          {% if u.whatsapp_connection_id %}
+            {% for c in connections %}{% if c.id == u.whatsapp_connection_id %}{{ c.name }}{% endif %}{% endfor %}
+          {% else %}
+            <span style="color:#94a3b8;">—</span>
+          {% endif %}
+        </td>
+        <td>
+          <a href="/admin/users?edit={{ u.id }}" class="btn btn-sm" style="margin-right:0.25rem;">Düzenle</a>
+          <form method="post" action="/admin/users/save" style="display:inline;">
+            <input type="hidden" name="id" value="{{ u.id }}">
+            <input type="hidden" name="name" value="{{ u.name }}">
+            <input type="hidden" name="email" value="{{ u.email or '' }}">
+            <input type="hidden" name="password" value="">
+            <select name="whatsapp_connection_id" onchange="this.form.submit()" style="padding:0.25rem;font-size:0.8rem;">
+              <option value="">—</option>
+              {% for c in connections %}
+              <option value="{{ c.id }}" {% if u.whatsapp_connection_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+              {% endfor %}
+            </select>
+          </form>
+          <form method="post" action="/admin/users/{{ u.id }}/delete" style="display:inline;margin-left:0.25rem;" onsubmit="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?');">
+            <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty-state"><p>Henüz kullanıcı yok. Yukarıdaki formdan ekleyin.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}<a href="?page={{ page - 1 }}{% if edit %}&edit={{ edit }}{% endif %}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}{% if edit %}&edit={{ edit }}{% endif %}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Resim Albümleri{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Resim Albümleri</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Resim Albümleri</h1>
+    <p class="page-subtitle">Araç modeline göre otomatik resim gönderimi. Müşteri araç adı yazdığında ilgili albüm gönderilir.</p>
+  </div>
+  <a href="/admin/albums/new" class="btn">+ Yeni Albüm</a>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Albüm Adı</th>
+        <th>Araçlar</th>
+        <th>Resim</th>
+        <th>Öncelik</th>
+        <th>Durum</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in albums %}
+      <tr>
+        <td><strong>{{ a.name or '-' }}</strong></td>
+        <td><small style="color:#475569;">{{ (a.vehicle_models or '-')[:80] }}{% if (a.vehicle_models or '')|length > 80 %}...{% endif %}</small></td>
+        <td>{{ a._image_count }} resim</td>
+        <td>{{ a.priority }}</td>
+        <td><span class="badge {% if a.is_active %}badge-success{% else %}badge-danger{% endif %}">{{ 'Aktif' if a.is_active else 'Pasif' }}</span></td>
+        <td>
+          <a href="/admin/albums/{{ a.id }}" class="btn btn-sm">Düzenle</a>
+          <form method="post" action="/admin/albums/{{ a.id }}/delete" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henüz albüm yok.</p><a href="/admin/albums/new" class="btn btn-sm">+ Yeni Albüm</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}<a href="?page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

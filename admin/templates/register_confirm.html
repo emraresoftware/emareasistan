@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% if success %}Onaylandı{% else %}Hata{% endif %} | Emare Asistan</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 1.5rem; background: linear-gradient(160deg, #0f172a 0%, #1e293b 50%, #0f172a 100%); color: #fff; -webkit-font-smoothing: antialiased; }
+    .box { background: #fff; color: #0f172a; padding: 2.5rem 2.75rem; border-radius: 16px; width: 440px; max-width: 95vw; box-shadow: 0 25px 60px -12px rgba(0,0,0,0.35); text-align: center; }
+    .box h1 { margin: 0 0 0.5rem; font-size: 1.5rem; font-weight: 700; color: #0f172a; letter-spacing: -0.02em; }
+    .box p { margin: 0.5rem 0; color: #64748b; font-size: 0.95rem; }
+    .box .error { color: #b91c1c; background: #fee2e2; padding: 0.85rem 1.1rem; border-radius: 10px; margin: 1rem 0; font-weight: 500; }
+    .box a { display: inline-block; margin-top: 1.5rem; padding: 0.6rem 1.25rem; background: #f8fafc; color: #0f172a; text-decoration: none; font-weight: 600; border-radius: 10px; border: 1px solid #e2e8f0; transition: all 0.2s; }
+    .box a:hover { background: #f1f5f9; color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>{% if success %}Hesap Onaylandı{% else %}Onay Başarısız{% endif %}</h1>
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+    <a href="/admin">Giriş sayfasına dön</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Sohbet Denetimi{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Sohbet Denetimi</span></div>
+{% endblock %}
+{% block content %}
+{% if toggled %}
+<div class="msg msg-success">✓ Denetim durumu güncellendi.</div>
+{% endif %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Sohbet Denetimi</h1>
+    <p class="page-subtitle">AI asistan yanıtları arka planda denetlenir. Yanlış bilgi, ton ve tutarlılık kontrol edilir. Müşteriye gecikme yok.</p>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Durum</h3>
+  <div class="info-row" style="display:flex;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <strong>Denetim:</strong>
+      {% if audit_enabled %}
+      <span class="badge badge-success">Açık</span> ({{ sample_rate }}% örnekleme)
+      {% else %}
+      <span class="badge badge-danger">Kapalı</span>
+      {% endif %}
+    </div>
+    {% if is_super_admin %}
+    <form method="post" action="/admin/chat-audits/toggle" style="display:inline;">
+      {% if audit_enabled %}
+      <input type="hidden" name="enabled" value="off">
+      <button type="submit" class="btn btn-secondary btn-sm">Kapat</button>
+      {% else %}
+      <input type="hidden" name="enabled" value="on">
+      <button type="submit" class="btn btn-success btn-sm">Aç</button>
+      {% endif %}
+    </form>
+    {% endif %}
+  </div>
+  {% if audits %}
+  <div class="stats" style="margin-top:1rem;">
+    <div class="stat-card" style="padding:1rem;">
+      <h3 style="margin:0;">{{ audits|length }}</h3>
+      <p style="margin:0.3rem 0 0;">Denetlenen</p>
+    </div>
+    <div class="stat-card" style="padding:1rem;background:linear-gradient(145deg,#059669,#047857);">
+      <h3 style="margin:0;">{{ passed_count }}</h3>
+      <p style="margin:0.3rem 0 0;">Sorunsuz</p>
+    </div>
+    <div class="stat-card {% if failed_count > 0 %}alert{% endif %}" style="padding:1rem;">
+      <h3 style="margin:0;">{{ failed_count }}</h3>
+      <p style="margin:0.3rem 0 0;">Düzeltme Önerisi</p>
+    </div>
+    <div class="stat-card" style="padding:1rem;background:linear-gradient(145deg,#0369a1,#0284c7);">
+      <h3 style="margin:0;">{{ avg_score }}</h3>
+      <p style="margin:0.3rem 0 0;">Ort. Puan</p>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>Son Denetimler</h3>
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Tarih</th>
+        <th>Platform</th>
+        <th>Puan</th>
+        <th>Durum</th>
+        <th>Müşteri</th>
+        <th>Asistan</th>
+        <th>Not</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in audits %}
+      <tr>
+        <td>{{ a.created_at|to_turkey if a.created_at else '-' }}</td>
+        <td>{{ a.platform or '-' }}</td>
+        <td>{{ a.score or '-' }}</td>
+        <td>
+          {% if a.passed %}
+          <span class="badge badge-success">OK</span>
+          {% else %}
+          <span class="badge badge-warning">İncele</span>
+          {% endif %}
+        </td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ a.user_message or '' }}">{{ (a.user_message or '')[:80] }}{% if (a.user_message or '')|length > 80 %}...{% endif %}</td>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="{{ a.assistant_response or '' }}">{{ (a.assistant_response or '')[:80] }}{% if (a.assistant_response or '')|length > 80 %}...{% endif %}</td>
+        <td style="max-width:200px;font-size:0.85rem;color:var(--text-muted);">{{ (a.audit_notes or '')[:100] }}{% if (a.audit_notes or '')|length > 100 %}...{% endif %}</td>
+      </tr>
+      {% if a.issues or a.suggested_correction %}
+      <tr style="background:var(--primary-soft);">
+        <td colspan="7" style="font-size:0.85rem;padding:0.75rem 1rem;">
+          {% if a.issues %}
+          <strong>Sorunlar:</strong> {{ a.issues }}
+          {% endif %}
+          {% if a.suggested_correction %}
+          <br><strong>Öneri:</strong> {{ a.suggested_correction[:200] }}{% if (a.suggested_correction or '')|length > 200 %}...{% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% endif %}
+      {% else %}
+      <tr><td colspan="7" class="empty-state"><p>Henüz denetim kaydı yok. Denetim açıksa sohbetler otomatik incelenir.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}<a href="?page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Hatırlatıcılar{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Hatırlatıcılar</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Hatırlatıcılar</h1>
+    <p class="page-subtitle">Müşteriye dönüş takibi ve hatırlatmalar.</p>
+  </div>
+  <a href="/admin/reminders/new" class="btn btn-success">+ Yeni Hatırlatıcı</a>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <form method="get" style="display:flex;gap:0.5rem;align-items:center;">
+    <label>Durum:</label>
+    <select name="status" onchange="this.form.submit()">
+      <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Bekleyen</option>
+      <option value="done" {% if status_filter == 'done' %}selected{% endif %}>Tamamlanan</option>
+      <option value="" {% if not status_filter %}selected{% endif %}>Tümü</option>
+    </select>
+    <label>Segment:</label>
+    <select name="segment" onchange="this.form.submit()">
+      <option value="all" {% if segment_filter == 'all' %}selected{% endif %}>Tum</option>
+      <option value="new_customer" {% if segment_filter == 'new_customer' %}selected{% endif %}>Yeni musteri</option>
+      <option value="has_order" {% if segment_filter == 'has_order' %}selected{% endif %}>Siparisli</option>
+      <option value="high_value" {% if segment_filter == 'high_value' %}selected{% endif %}>Yuksek degerli</option>
+    </select>
+    <input type="number" name="min_total" value="{{ min_total or 0 }}" min="0" step="100" placeholder="Min TL">
+    <button type="submit" class="btn btn-sm">Filtrele</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Müşteri</th>
+        <th>Telefon</th>
+        <th>Tarih / Saat</th>
+        <th>Not</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reminders %}
+      <tr>
+        <td><strong>{{ r.customer_name or '-' }}</strong></td>
+        <td>{% if r.customer_phone %}<a href="tel:{{ r.customer_phone }}">{{ r.customer_phone }}</a>{% else %}-{% endif %}</td>
+        <td>{{ r.due_at|to_turkey if r.due_at else '-' }}</td>
+        <td><small>{{ r.note or '-' }}</small></td>
+        <td>
+          {% if r.conversation_id %}<a href="/admin/agent/chat/{{ r.conversation_id }}" class="btn btn-sm">Sohbet</a>{% endif %}
+          {% if r.status == 'pending' %}
+          <a href="/admin/reminders/{{ r.id }}" class="btn btn-sm">Düzenle</a>
+          <form method="post" action="/admin/reminders/{{ r.id }}/complete" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-success">Tamamla</button>
+          </form>
+          {% endif %}
+          <form method="post" action="/admin/reminders/{{ r.id }}/delete" style="display:inline;" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+            <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="empty-state"><p>Henüz hatırlatıcı yok.</p><p><a href="/admin/reminders/new">Yeni hatırlatıcı ekle</a> veya bir sohbetten "Hatırlatıcı ekle" ile oluşturun.</p></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% set qs = ('status=' ~ status_filter ~ '&' if status_filter else '') ~ ('segment=' ~ segment_filter ~ '&') ~ ('min_total=' ~ (min_total or 0) ~ '&') %}
+    {% if page > 1 %}<a href="?{{ qs }}page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?{{ qs }}page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

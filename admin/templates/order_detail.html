@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Sipariş {{ order.order_number }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/orders">Siparişler</a> <span>›</span> <span>{{ order.order_number }}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">{{ order.order_number }}</h1>
+    <p class="page-subtitle">{{ order.created_at|to_turkey if order.created_at else '' }} · {{ order.platform }}</p>
+  </div>
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+    <a href="tel:{{ order.customer_phone }}" class="btn btn-sm btn-success">📞 Ara</a>
+    {% if order.customer_phone %}
+    {% set raw = order.customer_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '')|replace('+', '') %}
+    {% set wa_num = '90' ~ raw[1:] if raw[:1] == '0' else raw %}
+    <a href="https://wa.me/{{ wa_num }}" target="_blank" class="btn btn-sm" style="background:#25D366;color:white;">WhatsApp</a>
+    {% endif %}
+    <a href="/admin/orders" class="btn btn-sm btn-secondary">← Siparişlere Dön</a>
+  </div>
+</div>
+
+<div class="card-grid">
+  <div class="card">
+    <h3>Müşteri Bilgileri</h3>
+    <div class="info-row"><strong>Ad Soyad:</strong> {{ order.customer_name }}</div>
+    <div class="info-row"><strong>Telefon:</strong> <a href="tel:{{ order.customer_phone }}">{{ order.customer_phone }}</a></div>
+    <div class="info-row"><strong>Adres:</strong> {{ order.customer_address or '-' }}</div>
+    <div class="info-row"><strong>Ödeme:</strong> {% if order.payment_option %}{% if order.payment_option == 'havale' %}Havale/EFT{% elif order.payment_option == 'kredi_karti' %}Kredi Kartı{% elif order.payment_option == 'kapida_odeme' %}Kapıda Ödeme{% else %}{{ order.payment_option }}{% endif %}{% else %}-{% endif %}</div>
+    <div class="info-row"><strong>Platform:</strong> {{ order.platform }}</div>
+  </div>
+
+  <div class="card">
+    <h3>Sipariş Kalemleri</h3>
+    {% if items %}
+    <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Ürün</th><th>Adet</th><th>Fiyat</th></tr></thead>
+      <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.get('name', item.get('product', '-')) }}</td>
+        <td>{{ item.get('quantity', 1) }}</td>
+        <td>{{ item.get('price', 0) }} TL</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    <p style="margin-top:0.75rem;"><strong>Toplam:</strong> {{ order.total_amount }} TL</p>
+    {% else %}
+    <p>{{ order.items or 'Kalem bilgisi yok' }}</p>
+    <p><strong>Toplam:</strong> {{ order.total_amount }} TL</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <h3>Kargo Bilgisi</h3>
+  <div class="info-row"><strong>Takip No:</strong> {{ order.cargo_tracking_no or '-' }}</div>
+  <div class="info-row"><strong>Kargo Firması:</strong> {{ order.cargo_company or '-' }}</div>
+</div>
+
+<div class="card">
+  <h3>İşlemler</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <h4 style="margin-bottom:0.5rem;">Durum Güncelle</h4>
+      <form method="post" action="/admin/orders/{{ order.id }}/update-status" style="display:flex;gap:0.5rem;align-items:center;">
+        <select name="status" style="width:auto;">
+          <option value="pending" {% if order.status=='pending' %}selected{% endif %}>Beklemede</option>
+          <option value="confirmed" {% if order.status=='confirmed' %}selected{% endif %}>Onaylandı</option>
+          <option value="processing" {% if order.status=='processing' %}selected{% endif %}>Hazırlanıyor</option>
+          <option value="shipped" {% if order.status=='shipped' %}selected{% endif %}>Kargoya verildi</option>
+          <option value="delivered" {% if order.status=='delivered' %}selected{% endif %}>Teslim edildi</option>
+          <option value="cancelled" {% if order.status=='cancelled' %}selected{% endif %}>İptal</option>
+        </select>
+        <button type="submit" class="btn btn-sm">Güncelle</button>
+      </form>
+    </div>
+    <div>
+      <h4 style="margin-bottom:0.5rem;">Kargo Bilgisi Ekle</h4>
+      <form method="post" action="/admin/orders/{{ order.id }}/update-cargo" style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+        <input type="text" name="tracking_no" placeholder="Takip numarası" value="{{ order.cargo_tracking_no or '' }}" style="width:140px;">
+        <input type="text" name="cargo_company" placeholder="Kargo firması" value="{{ order.cargo_company or '' }}" style="width:120px;">
+        <button type="submit" class="btn btn-sm">Kargo Ekle</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Notlar</h3>
+  <form method="post" action="/admin/orders/{{ order.id }}/update-notes">
+    <textarea name="notes" rows="3" placeholder="Sipariş notu ekleyin...">{{ order.notes or '' }}</textarea>
+    <button type="submit" class="btn btn-sm" style="margin-top:0.5rem;">Notu Kaydet</button>
+  </form>
+</div>
+{% endblock %}

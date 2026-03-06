@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ partner.name }} | Partner Yönetimi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #1e3a5f;
+      --primary-light: #2d5a87;
+      --accent: #c59b3d;
+      --success: #16a34a;
+      --muted: #64748b;
+      --bg: #f1f5f9;
+      --card: #fff;
+    }
+    body { font-family: 'DM Sans', 'Segoe UI', system-ui, sans-serif; min-height: 100vh; background: var(--bg); color: #334155; line-height: 1.5; }
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: #fff; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 12px rgba(30,58,95,0.2);
+    }
+    .header-brand { font-weight: 700; font-size: 1.15rem; }
+    .header-badge { background: rgba(255,255,255,0.2); padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
+    .header-links a { color: rgba(255,255,255,0.95); text-decoration: none; font-size: 0.9rem; font-weight: 500; padding: 0.4rem 0.8rem; border-radius: 6px; transition: background 0.2s; }
+    .header-links a:hover { background: rgba(255,255,255,0.15); }
+    .container { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+    .page-subtitle { color: var(--muted); font-size: 0.95rem; margin-top: 0.25rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .card {
+      background: var(--card); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      overflow: hidden; transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #cbd5e1; }
+    .card-header { padding: 1.25rem; border-bottom: 1px solid #f1f5f9; }
+    .card-title { font-size: 1.1rem; font-weight: 600; color: var(--primary); }
+    .card-meta { font-size: 0.85rem; color: var(--muted); margin-top: 0.35rem; }
+    .card-body { padding: 1rem 1.25rem; }
+    .card-footer { padding: 0.75rem 1.25rem; background: #f8fafc; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; background: var(--primary);
+      color: #fff; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none;
+      transition: background 0.2s; font-family: inherit;
+    }
+    .btn:hover { background: var(--primary-light); }
+    .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.85rem; }
+    .btn-block { width: 100%; }
+    .btn-accent { background: var(--accent); color: #1a1a1a; }
+    .btn-accent:hover { background: #d4ab4a; color: #0f0f0f; }
+    .badge { display: inline-block; padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 6px; font-weight: 600; }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-suspended { background: #fee2e2; color: #b91c1c; }
+    .badge-trial { background: #fef3c7; color: #92400e; }
+    .empty-state { text-align: center; padding: 2.5rem; color: var(--muted); }
+    .empty-state p { margin: 0.5rem 0; }
+    .form-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; margin-bottom: 0.5rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.25rem; }
+    .form-group label { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+    .form-group input { padding: 0.5rem 0.8rem; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 140px; }
+    .msg { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; }
+    .msg-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .msg-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="header-brand">
+      {% if partner_logo_url %}
+      <img src="{{ partner_logo_url }}" alt="{{ partner.name }}" style="height:32px;max-width:140px;object-fit:contain;vertical-align:middle;margin-right:0.5rem;">
+      {% endif %}
+      {{ partner.name }} <span class="header-badge">Partner Yönetimi</span>
+    </h1>
+    <div class="header-links">
+      <a href="/admin/partner/panel">Panelim</a>
+      <a href="/admin/partner">Firmalarım</a>
+      <a href="/admin/partner/users">Kullanıcılar</a>
+      <a href="/admin/partner/settings/branding">Kurumsal Logo</a>
+      <a href="/admin/logout">Çıkış</a>
+    </div>
+  </div>
+
+  <div class="container">
+    {% if request.query_params.get('created') %}
+    <div class="msg msg-success">✓ Müşteri eklendi.{% if request.query_params.get('with_admin') %} İlk admin kullanıcısı oluşturuldu – müşteri geçici şifre ile /admin/t/... linkinden giriş yapabilir.{% endif %}</div>
+    {% endif %}
+    {% if request.query_params.get('tenant_deleted') %}
+    <div class="msg msg-success">✓ Firma silindi.</div>
+    {% endif %}
+    {% if request.query_params.get('error') %}
+    <div class="msg msg-error">{{ request.query_params.get('error') }}</div>
+    {% endif %}
+    <div class="page-header">
+      <h1 class="page-title">Firmalarım</h1>
+      <p class="page-subtitle">Yönetebileceğiniz firmalar. Bir firmaya tıklayarak o firmaya ait panele girin.</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+      <div class="card-header">
+        <div class="card-title">Yeni müşteri ekle</div>
+        <div class="card-meta">Kendi müşteri firmalarınızı buradan ekleyebilirsiniz.</div>
+      </div>
+      <div class="card-body">
+        <form method="post" action="/admin/partner/tenants">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Firma adı *</label>
+              <input type="text" name="name" placeholder="Örn: ABC Teknoloji" required>
+            </div>
+            <div class="form-group">
+              <label>Slug (URL – boş bırakılırsa otomatik)</label>
+              <input type="text" name="slug" placeholder="abc-teknoloji">
+            </div>
+            <div class="form-group">
+              <label>Web sitesi</label>
+              <input type="url" name="website_url" placeholder="https://example.com">
+            </div>
+            <div class="form-group">
+              <label>Sektör</label>
+              <input type="text" name="sector" placeholder="genel" value="genel">
+            </div>
+            <div class="form-group" style="border-left:2px solid var(--primary);padding-left:0.75rem;margin-left:0.5rem;">
+              <label>İlk admin (opsiyonel)</label>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:flex-end;margin-top:0.25rem;">
+                <input type="email" name="admin_email" placeholder="admin@firma.com" style="min-width:160px;">
+                <input type="text" name="admin_password" placeholder="Geçici şifre (min 6 karakter)" style="min-width:180px;" autocomplete="new-password">
+              </div>
+              <span style="font-size:0.75rem;color:var(--muted);">Müşteri ilk girişte bu linkten yapmalı: /admin/t/firma-slug</span>
+            </div>
+            <button type="submit" class="btn btn-sm" style="align-self: flex-end;">Ekle</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    {% if tenants %}
+    <div class="grid">
+      {% for t in tenants %}
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">{{ t.name or t.slug }}</div>
+          <div class="card-meta">{{ t.sector or '-' }} • {{ (t.website_url or '-')[:40] }}{% if t.website_url and t.website_url|length > 40 %}…{% endif %}</div>
+        </div>
+        <div class="card-body">
+          <span class="badge {% if (t.status or 'active') == 'active' %}badge-active{% elif (t.status or '') == 'suspended' %}badge-suspended{% else %}badge-trial{% endif %}">
+            {{ t.status or 'active' }}
+          </span>
+        </div>
+        <div class="card-footer" style="display:flex;flex-direction:column;gap:0.5rem;">
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.25rem;">
+            Giriş: <a href="/admin/t/{{ t.slug }}" target="_blank" style="color:var(--primary);">/admin/t/{{ t.slug }}</a>
+          </div>
+          <a href="/admin/partner/modules/{{ t.id }}" class="btn btn-sm btn-secondary" style="text-align:center;">Modülleri Yönet</a>
+          <a href="/admin/partner/tenant/{{ t.id }}/branding" class="btn btn-sm btn-secondary" style="text-align:center;">Marka & Logo</a>
+          <form method="post" action="/admin/partner/enter/{{ t.id }}" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-block btn-accent">Panele gir →</button>
+          </form>
+          <form method="post" action="/admin/partner/tenants/{{ t.id }}/delete" style="display:inline;margin-top:0.5rem;" onsubmit="return confirm('Bu firmayı silmek istediğinize emin misiniz?');">
+            <button type="submit" class="btn btn-sm btn-block" style="background:#dc2626;color:#fff;">Sil</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="card">
+      <div class="empty-state">
+        <p>Henüz bu partner’a ait firma yok.</p>
+        <p>Yukarıdaki form ile yeni müşteri ekleyebilirsiniz.</p>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Veri Aktarım Şablonları{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/settings">Ayarlar</a> <span>›</span> <span>Veri Aktarımı</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Veri Aktarım Şablonları</h1>
+    <p class="page-subtitle">Asistan verisini CRM, ERP veya diğer yazılımlara belirlediğiniz formatta gönderin.</p>
+  </div>
+  <a href="/admin/export-templates/new" class="btn btn-success">+ Yeni Şablon</a>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Ad</th>
+        <th>Kaynak</th>
+        <th>Tetikleyici</th>
+        <th>Format</th>
+        <th>Webhook</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in templates %}
+      <tr>
+        <td><strong>{{ t.name }}</strong></td>
+        <td>
+          {% if t.source == 'orders' %}Siparişler{% elif t.source == 'contacts' %}Kişiler{% elif t.source == 'reminders' %}Hatırlatıcılar{% else %}{{ t.source }}{% endif %}
+        </td>
+        <td>
+          {% if t.trigger == 'webhook' %}Anlık (webhook){% else %}Manuel{% endif %}
+        </td>
+        <td>{{ t.output_format|upper }}</td>
+        <td><small>{% if t.webhook_url %}{{ t.webhook_url[:40] }}...{% else %}-{% endif %}</small></td>
+        <td>
+          <a href="/admin/export-templates/{{ t.id }}" class="btn btn-sm">Düzenle</a>
+          <a href="/admin/export-templates/{{ t.id }}/export" class="btn btn-sm btn-secondary" target="_blank">İndir</a>
+          <form method="post" action="/admin/export-templates/{{ t.id }}/delete" style="display:inline;" onsubmit="return confirm('Bu şablonu silmek istediğinize emin misiniz?');">
+            <button type="submit" class="btn btn-sm btn-danger">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state">
+        <p>Henüz şablon yok.</p>
+        <p>Yeni şablon ekleyerek sipariş, kişi veya hatırlatıcı verilerini dış sistemlere (CRM, ERP) belirlediğiniz formatta aktarabilirsiniz.</p>
+        <p><a href="/admin/export-templates/new" class="btn btn-success">+ Yeni Şablon Ekle</a></p>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <h3 style="margin-top:0;">Nasıl çalışır?</h3>
+  <ul>
+    <li><strong>Kaynak:</strong> Hangi veriyi aktaracağınız (Siparişler, Kişiler, Hatırlatıcılar)</li>
+    <li><strong>Tetikleyici:</strong> Anlık = yeni sipariş/kişi oluşunca webhook URL'e POST. Manuel = İndir butonu ile CSV/JSON indir</li>
+    <li><strong>Alan eşlemesi:</strong> Asistan alan adlarını hedef sisteminizin alan adlarına eşleyin (örn: customer_name → musteri_adi)</li>
+    <li><strong>Webhook URL:</strong> Veri gönderilecek adres (CRM, Zapier, Make vb.)</li>
+  </ul>
+</div>
+{% endblock %}

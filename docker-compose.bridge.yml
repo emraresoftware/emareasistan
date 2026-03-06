@@ -1,0 +1,51 @@
+# Emare WhatsApp Bridge - Docker Compose (Standalone)
+# API systemd üzerinden çalışıyor, bridge Docker'da çalışacak
+# Kullanım: cd /opt/asistan && docker compose -f docker-compose.bridge.yml up -d --build
+# Loglar:  docker compose -f docker-compose.bridge.yml logs -f
+# Durdur:  docker compose -f docker-compose.bridge.yml down
+
+services:
+  whatsapp-bridge:
+    build:
+      context: ./whatsapp-bridge
+      dockerfile: Dockerfile
+    container_name: emare-whatsapp-bridge
+    hostname: emare-whatsapp
+    restart: always
+    # Host network: localhost:8000 doğrudan erişim (port mapping gereksiz)
+    network_mode: host
+    environment:
+      - ASISTAN_API_URL=http://127.0.0.1:8000
+      - QR_PORT=3100
+      - LAZY_LOADING=true
+      - MAX_CONCURRENT_CHROME=3
+      - NODE_OPTIONS=--max-old-space-size=512
+      - AUTH_BASE_DIR=/app/auth_data
+    volumes:
+      # Tek bind-mount: tüm auth (.wwebjs_auth*) verilerini koru
+      - ./whatsapp-bridge:/app/auth_data
+      # JS kodunu da mount et (rebuild gerektirmeden güncelleme)
+      - ./whatsapp-bridge/index-multi.js:/app/index-multi.js:ro
+      - ./whatsapp-bridge/index.js:/app/index.js:ro
+    # Chrome paylaşımlı bellek (default 64MB Chrome'a yetmez)
+    shm_size: '256m'
+    deploy:
+      resources:
+        limits:
+          memory: 1536M
+          cpus: '2'
+        reservations:
+          memory: 256M
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http');const r=http.get('http://127.0.0.1:3100/api/connections',{timeout:5000},s=>{process.exit(s.statusCode===200?0:1)});r.on('error',()=>process.exit(1));"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

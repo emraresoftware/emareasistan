@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Partner Paneli{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/partner">Partner Paneli</a></div>
+{% endblock %}
+{% block content %}
+{% if request.query_params.get('created') %}
+<div class="msg msg-success">✓ Müşteri eklendi.{% if request.query_params.get('with_admin') %} İlk admin kullanıcısı oluşturuldu – müşteri geçici şifre ile /admin/t/... linkinden giriş yapabilir.{% endif %}</div>
+{% endif %}
+{% if request.query_params.get('tenant_deleted') %}
+<div class="msg msg-success">✓ Firma silindi.</div>
+{% endif %}
+{% if request.query_params.get('error') %}
+<div class="msg msg-error">{{ request.query_params.get('error') }}</div>
+{% endif %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Firmalarım</h1>
+    <p class="page-subtitle">Yönetebileceğiniz firmalar. Bir firmaya tıklayarak o firmaya ait panele girin.</p>
+  </div>
+  <a href="/admin/partner/settings/branding" class="btn btn-sm btn-secondary">Kurumsal Logo</a>
+</div>
+
+<div class="card" style="margin-bottom: 1.5rem;">
+  <div class="card-header">
+    <h3>Yeni müşteri ekle</h3>
+    <p class="card-meta" style="margin-top:0.35rem;">Kendi müşteri firmalarınızı buradan ekleyebilirsiniz.</p>
+  </div>
+  <div class="card-body">
+    <form method="post" action="/admin/partner/tenants" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end;">
+      <div class="form-group" style="min-width:180px;">
+        <label>Firma adı *</label>
+        <input type="text" name="name" placeholder="Örn: ABC Teknoloji" required>
+      </div>
+      <div class="form-group" style="min-width:140px;">
+        <label>Slug (URL – boş bırakılırsa otomatik)</label>
+        <input type="text" name="slug" placeholder="abc-teknoloji">
+      </div>
+      <div class="form-group" style="min-width:200px;">
+        <label>Web sitesi</label>
+        <input type="url" name="website_url" placeholder="https://example.com">
+      </div>
+      <div class="form-group" style="min-width:120px;">
+        <label>Sektör</label>
+        <input type="text" name="sector" placeholder="genel" value="genel">
+      </div>
+      <div class="form-group" style="min-width:280px;border-left:2px solid var(--primary);padding-left:1rem;">
+        <label>İlk admin (opsiyonel)</label>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:flex-end;margin-top:0.25rem;">
+          <input type="email" name="admin_email" placeholder="admin@firma.com" style="min-width:160px;">
+          <input type="text" name="admin_password" placeholder="Geçici şifre (min 6)" style="min-width:140px;" autocomplete="new-password">
+        </div>
+        <span style="font-size:0.75rem;color:var(--text-muted);">Müşteri ilk girişte: /admin/t/firma-slug</span>
+      </div>
+      <button type="submit" class="btn btn-sm">Ekle</button>
+    </form>
+  </div>
+</div>
+
+{% if tenants %}
+<div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+  {% for t in tenants %}
+  <div class="card">
+    <div class="card-header">
+      <h3>{{ t.name or t.slug }}</h3>
+      <p class="card-meta" style="margin-top:0.35rem;">{{ t.sector or '-' }} • {{ (t.website_url or '-')[:40] }}{% if t.website_url and t.website_url|length > 40 %}…{% endif %}</p>
+    </div>
+    <div class="card-body">
+      <span class="badge {% if (t.status or 'active') == 'active' %}badge-success{% elif (t.status or '') == 'suspended' %}badge-danger{% else %}badge-warning{% endif %}">
+        {{ t.status or 'active' }}
+      </span>
+    </div>
+    <div class="card-footer" style="display:flex;flex-direction:column;gap:0.5rem;">
+      <div style="font-size:0.8rem;color:var(--text-muted);">
+        Giriş: <a href="/admin/t/{{ t.slug }}" target="_blank" style="color:var(--primary);">/admin/t/{{ t.slug }}</a>
+      </div>
+      <a href="/admin/partner/modules/{{ t.id }}" class="btn btn-sm btn-secondary" style="text-align:center;">Modülleri Yönet</a>
+      <a href="/admin/partner/tenant/{{ t.id }}/branding" class="btn btn-sm btn-secondary" style="text-align:center;">Marka & Logo</a>
+      <form method="post" action="/admin/partner/enter/{{ t.id }}" style="display:inline;">
+        <button type="submit" class="btn btn-sm btn-block">Panele gir →</button>
+      </form>
+      <form method="post" action="/admin/partner/tenants/{{ t.id }}/delete" style="display:inline;margin-top:0.5rem;" onsubmit="return confirm('Bu firmayı silmek istediğinize emin misiniz?');">
+        <button type="submit" class="btn btn-sm btn-block btn-danger">Sil</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p>Henüz bu partner'a ait firma yok.</p>
+    <p>Yukarıdaki form ile yeni müşteri ekleyebilirsiniz.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Yanıt Kuralları{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Kurallar</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">Yanıt Kuralları</h1>
+    <p class="page-subtitle">Müşteri belirli kelimeleri yazınca otomatik ürün veya resim gönderilir. Sağ alttaki yardım sohbetinden "bu kuralı oluştur" da diyebilirsiniz.</p>
+  </div>
+  <a href="/admin/rules/new" class="btn">+ Yeni Kural</a>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Ad</th>
+        <th>Tetikleyici</th>
+        <th>Ürünler / Resimler</th>
+        <th>Öncelik</th>
+        <th>Durum</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rules %}
+      <tr>
+        <td><strong>{{ r.name or '-' }}</strong></td>
+        <td><span class="badge badge-info">{{ r.trigger_type }}</span> {{ (r.trigger_value or '-')[:40] }}{% if (r.trigger_value or '')|length > 40 %}...{% endif %}</td>
+        <td><small>{% if r.product_ids %}{{ r.product_ids[:50] }}{% elif r.image_urls %}{{ r.image_urls[:50] }}{% else %}-{% endif %}{% if (r.product_ids or r.image_urls or '')|length > 50 %}...{% endif %}</small></td>
+        <td>{{ r.priority }}</td>
+        <td><span class="badge {% if r.is_active %}badge-success{% else %}badge-danger{% endif %}">{{ 'Aktif' if r.is_active else 'Pasif' }}</span></td>
+        <td>
+          <a href="/admin/rules/{{ r.id }}" class="btn btn-sm">Düzenle</a>
+          <form method="post" action="/admin/rules/{{ r.id }}/delete" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henüz kural yok.</p><a href="/admin/rules/new" class="btn btn-sm">+ Yeni Kural</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} kayıt — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}<a href="?page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

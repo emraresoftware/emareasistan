@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}İş Akışları{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>İş Akışları</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">İş Akışları</h1>
+    <p class="page-subtitle">Kurum bazlı iş akışları — Trigger → Action → Condition. Platform ve süreçlerinizi görsel olarak tasarlayın.</p>
+  </div>
+  <a href="/admin/workflows/new" class="btn">+ Yeni İş Akışı</a>
+</div>
+
+<div class="action-bar">
+  <form method="get" action="/admin/workflows" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+    <select name="platform">
+      <option value="">Tüm platformlar</option>
+      <option value="whatsapp" {% if platform_filter=='whatsapp' %}selected{% endif %}>WhatsApp</option>
+      <option value="telegram" {% if platform_filter=='telegram' %}selected{% endif %}>Telegram</option>
+      <option value="instagram" {% if platform_filter=='instagram' %}selected{% endif %}>Instagram</option>
+    </select>
+    <button type="submit" class="btn btn-sm">Filtrele</button>
+  </form>
+</div>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Akış Adı</th>
+        <th>Platform</th>
+        <th>Açıklama</th>
+        <th>Durum</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for w in workflows %}
+      <tr>
+        <td><strong>{{ w.workflow_name }}</strong></td>
+        <td><span class="badge badge-info">{{ w.platform }}</span></td>
+        <td><small>{{ (w.description or '-')[:60] }}{% if (w.description or '')|length > 60 %}...{% endif %}</small></td>
+        <td><span class="badge {% if w.is_active %}badge-success{% else %}badge-danger{% endif %}">{{ 'Aktif' if w.is_active else 'Pasif' }}</span></td>
+        <td>
+          <a href="/admin/workflows/{{ w.id }}/builder" class="btn btn-sm">Görsel</a>
+          <a href="/admin/workflows/{{ w.id }}" class="btn btn-sm">Düzenle</a>
+          <a href="/admin/workflows/{{ w.id }}/builder" class="btn btn-sm">Görsel</a>
+          <form method="post" action="/admin/workflows/{{ w.id }}/delete" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Bu iş akışını silmek istediğinize emin misiniz?')">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" class="empty-state">
+        <p>Henüz iş akışı yok.</p>
+        <a href="/admin/workflows/new" class="btn btn-sm">+ Yeni İş Akışı</a>
+      </td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:1rem;">
+  <h3 style="margin-top:0;">💡 İpucu</h3>
+  <p>İş akışı oluşturduktan sonra <strong>Düzenle</strong> ile adımlar ekleyin: Trigger (tetikleyici), Action (eylem), Condition (koşul).</p>
+  <p><a href="/admin/process-config" class="btn btn-secondary">Süreç Konfigürasyonu (SLA, Escalation)</a></p>
+</div>
+{% endblock %}

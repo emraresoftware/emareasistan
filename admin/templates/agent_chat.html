@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+{% block title %}Sohbet - {{ conversation.customer_name or conversation.platform_user_id }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/agent">Temsilci Paneli</a> <span>›</span> <span>{{ conversation.customer_name or conversation.platform_user_id or 'Sohbet' }}</span></div>
+{% endblock %}
+{% block extra_css %}
+<style>
+  .chat-container { display:flex; flex-direction:column; height:calc(100vh - 220px); min-height:400px; }
+  .chat-messages { flex:1; overflow-y:auto; padding:1.5rem; background:#f8fafc; border-radius:14px; margin-bottom:1.25rem; border:1px solid #e2e8f0; }
+  .chat-msg { margin-bottom:1.15rem; max-width:85%; }
+  .chat-msg.user { margin-left:0; margin-right:auto; background:linear-gradient(135deg,#e0f2fe,#f0f9ff); padding:1rem 1.25rem; border-radius:16px 16px 16px 4px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .chat-msg.assistant { margin-left:auto; margin-right:0; background:linear-gradient(135deg,#dcfce7,#f0fdf4); padding:1rem 1.25rem; border-radius:16px 16px 4px 16px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+  .chat-msg small { display:block; color:#64748b; font-size:0.75rem; margin-bottom:0.35rem; font-weight:500; }
+  .chat-input-area { display:flex; gap:0.75rem; align-items:flex-end; }
+  .chat-input-area textarea { flex:1; min-height:68px; resize:vertical; padding:0.9rem 1.1rem; border:1px solid #e2e8f0; border-radius:12px; font-size:0.95rem; font-family:inherit; transition:all 0.2s; }
+  .chat-input-area textarea:focus { outline:none; border-color:#0f172a; box-shadow:0 0 0 3px rgba(15,23,42,0.08); }
+  .album-dropdown { position:relative; }
+  .album-dropdown-menu { position:absolute; bottom:100%; left:0; margin-bottom:0.5rem; background:#fff; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 10px 32px rgba(0,0,0,0.12); min-width:240px; max-height:320px; overflow-y:auto; z-index:100; display:none; }
+  .album-dropdown-menu.show { display:block; }
+  .album-item { padding:0.7rem 1rem; cursor:pointer; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; font-size:0.9rem; transition:background 0.15s; }
+  .album-item:hover { background:#f0fdf4; }
+  .album-item:last-child { border-bottom:none; }
+  .album-item small { color:#64748b; font-size:0.75rem; }
+  .agent-bar { background:linear-gradient(135deg,#059669 0%,#047857 100%); color:#fff; padding:0.85rem 1.35rem; border-radius:12px; margin-bottom:1.25rem; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 16px rgba(5,150,105,0.28); }
+  .agent-bar span { font-size:0.9rem; font-weight:500; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">{{ conversation.customer_name or conversation.platform_user_id or 'Müşteri' }}</h1>
+    <p class="page-subtitle">
+      <span class="badge badge-info">{{ conversation.platform }}</span>
+      {% if conversation.customer_phone %}<a href="tel:{{ conversation.customer_phone }}">{{ conversation.customer_phone }}</a>{% endif %}
+      {% if conversation.agent_taken_over_at %}
+        · <span class="badge badge-success">Temsilci: {{ conversation.agent_name or 'Siz' }}</span>
+        {% if conversation.agent_name == agent_name %}
+        <button type="button" id="release-btn" class="btn btn-sm btn-secondary" style="margin-left:0.5rem;" onclick="releaseAndReturn()">AI'a Bırak</button>
+        {% endif %}
+      {% endif %}
+    </p>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <a href="/admin/reminders/new?conv_id={{ conversation.id }}" class="btn btn-sm">⏰ Hatırlatıcı</a>
+    <a href="/admin/agent" class="btn btn-sm btn-secondary">← Panele Dön</a>
+  </div>
+</div>
+
+{% if not conversation.agent_taken_over_at %}
+<div class="agent-bar">
+  <span>Bu sohbeti devralmadınız. Mesaj göndermek için sohbeti devralın.</span>
+  <button type="button" class="btn" style="background:rgba(255,255,255,0.3);color:#fff;border:1px solid rgba(255,255,255,0.5);" onclick="takeoverAndReload()">Devral</button>
+</div>
+{% elif conversation.agent_name != agent_name %}
+<div class="agent-bar" style="background:linear-gradient(135deg,#64748b 0%,#475569 100%);">
+  <span>Bu sohbet {{ conversation.agent_name }} tarafından devralındı. Mesaj gönderemezsiniz.</span>
+</div>
+{% endif %}
+
+<div class="card" style="margin-bottom:1rem;">
+  <h3>Sohbet Notu</h3>
+  <p style="font-size:0.85rem;color:#64748b;margin:0 0 0.5rem;">Bu müşteri hakkında not ekleyin (sadece sizin için görünür).</p>
+  <textarea id="conv-notes" rows="2" placeholder="Örn: Yarına kadar dönüş bekliyor..." style="width:100%;padding:0.5rem;border:1px solid #cbd5e1;border-radius:6px;font-size:0.9rem;">{{ conversation.notes or '' }}</textarea>
+  <button type="button" class="btn btn-sm" style="margin-top:0.5rem;" onclick="saveNotes()">Kaydet</button>
+  <span id="notes-saved" style="margin-left:0.5rem;font-size:0.8rem;color:#16a34a;display:none;">Kaydedildi</span>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <h3>Premium Sales Playbook</h3>
+  <p style="margin:0 0 0.5rem;font-size:0.9rem;">
+    Lead Skoru:
+    {% if sales_insight.tier == 'vip' %}
+      <span class="badge badge-danger">VIP {{ sales_insight.score }}</span>
+    {% elif sales_insight.tier == 'warm' %}
+      <span class="badge badge-warning">SICAK {{ sales_insight.score }}</span>
+    {% else %}
+      <span class="badge" style="background:#e2e8f0;color:#475569;">NORMAL {{ sales_insight.score }}</span>
+    {% endif %}
+  </p>
+  <p style="font-size:0.85rem;color:#64748b;margin:0 0 0.5rem;">Sinyaller: {{ (sales_insight.reasons or [])|join(' • ') if sales_insight.reasons else 'Temel takip gerekli' }}</p>
+  <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:0.5rem;">
+    {% for t in sales_insight.playbook %}
+      <button type="button" class="btn btn-sm btn-secondary playbook-btn" data-text="{{ t|e }}">+ Yanit Taslagi</button>
+    {% endfor %}
+  </div>
+  <div style="display:flex;gap:0.5rem;align-items:center;">
+    <button type="button" class="btn btn-sm" onclick="createSmartFollowup({{ sales_insight.followup_minutes }})">Akilli Follow-up Olustur ({{ sales_insight.followup_minutes }} dk)</button>
+    <span id="followup-status" style="font-size:0.85rem;color:#16a34a;display:none;">Olusturuldu</span>
+  </div>
+</div>
+
+<div class="chat-container">
+  <div class="chat-messages" id="chat-messages">
+    {% for m in messages %}
+    <div class="chat-msg {{ m.role }}">
+      <small>{{ 'Müşteri' if m.role=='user' else 'Asistan' }} · {{ m.created_at|to_turkey }}</small>
+      <div style="white-space:pre-wrap;">{{ (m.content or '')|replace('\n[Ürün resimleri gönderildi]', '')|replace('[Ürün resimleri gönderildi]', '') }}</div>
+    </div>
+    {% else %}
+    <p style="color:#94a3b8;text-align:center;">Henüz mesaj yok.</p>
+    {% endfor %}
+  </div>
+
+  {% if conversation.agent_taken_over_at and conversation.agent_name == agent_name %}
+  {% if quick_replies %}
+  <div class="quick-replies-bar" style="margin-bottom:0.5rem;display:flex;flex-wrap:wrap;gap:0.35rem;">
+    {% for qr in quick_replies %}
+    <button type="button" class="btn btn-sm btn-secondary quick-reply-btn" data-idx="{{ loop.index0 }}" title="{{ qr.text|e }}">{{ qr.label }}</button>
+    {% endfor %}
+  </div>
+  {% endif %}
+  <div class="chat-input-area">
+    <div class="album-dropdown">
+      <button type="button" class="btn btn-sm btn-secondary" id="album-btn" title="Resim veya albüm gönder">📷 Resim / Albüm</button>
+      <div class="album-dropdown-menu" id="album-menu">
+        <div id="album-list" style="padding:0.5rem;color:#94a3b8;font-size:0.85rem;">Yükleniyor...</div>
+      </div>
+    </div>
+    <textarea id="msg-input" placeholder="Mesajınızı yazın..." rows="2"></textarea>
+    <button type="button" class="btn" id="send-btn" onclick="sendMessage()">Gönder</button>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const convId = {{ conversation.id }};
+let lastMsgId = {{ last_msg_id }};
+
+function scrollBottom() {
+  const el = document.getElementById('chat-messages');
+  if (el) el.scrollTop = el.scrollHeight;
+}
+
+function pollMessages() {
+  fetch('/admin/api/agent/messages/' + convId + '?since_id=' + lastMsgId)
+    .then(r => r.json())
+    .then(msgs => {
+      if (msgs.length) {
+        const container = document.getElementById('chat-messages');
+        const empty = container.querySelector('p[style*="color:#94a3b8"]');
+        if (empty) empty.remove();
+        msgs.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'chat-msg ' + (m.role === 'user' ? 'user' : 'assistant');
+          const d = m.created_at ? new Date(m.created_at) : new Date();
+          const timeStr = d.toLocaleDateString('tr-TR') + ' ' + d.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
+          div.innerHTML = '<small>' + (m.role === 'user' ? 'Müşteri' : 'Asistan') + ' · ' + timeStr + '</small><div style="white-space:pre-wrap;">' + (m.content || '').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</div>';
+          container.appendChild(div);
+          lastMsgId = Math.max(lastMsgId, m.id);
+        });
+        scrollBottom();
+      }
+    });
+}
+
+function sendMessage() {
+  const ta = document.getElementById('msg-input');
+  const text = (ta && ta.value || '').trim();
+  if (!text) return;
+  const btn = document.getElementById('send-btn');
+  if (btn) btn.disabled = true;
+  fetch('/admin/api/agent/send-message', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+    body: JSON.stringify({conversation_id: convId, text: text})
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.ok) {
+      ta.value = '';
+      pollMessages();
+    } else {
+      alert('Gönderilemedi: ' + (d.detail || 'Hata'));
+    }
+  })
+  .catch(e => alert('Hata: ' + e.message))
+  .finally(() => { if (btn) btn.disabled = false; });
+}
+
+var msgInput = document.getElementById('msg-input');
+if (msgInput) {
+  msgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+}
+
+function saveNotes() {
+  var ta = document.getElementById('conv-notes');
+  var span = document.getElementById('notes-saved');
+  if (!ta) return;
+  fetch('/admin/api/agent/conversation-notes/' + convId, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+    body: JSON.stringify({notes: ta.value})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if (d.ok && span) {
+      span.style.display = 'inline';
+      setTimeout(function(){ span.style.display = 'none'; }, 2000);
+    }
+  });
+}
+function releaseAndReturn() {
+  if (!confirm('Sohbeti AI\'a devretmek istediğinize emin misiniz? Müşteri mesajlarına artık AI yanıt verecek.')) return;
+  var btn = document.getElementById('release-btn');
+  if (btn) btn.disabled = true;
+  fetch('/admin/api/agent/release/' + convId, { method: 'POST', headers: {'X-Requested-With':'XMLHttpRequest'} })
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if (d.ok) location.href = '/admin/agent';
+      else alert('İşlem başarısız.');
+    })
+    .catch(function(e){ alert('Hata: ' + e.message); })
+    .finally(function(){ if (btn) btn.disabled = false; });
+}
+function takeoverAndReload() {
+  fetch('/admin/api/agent/takeover/' + convId, { method: 'POST', headers: {'X-Requested-With':'XMLHttpRequest'} })
+    .then(function(r){return r.json();})
+    .then(function(d){ if (d.ok) location.reload(); });
+}
+var quickRepliesData = {{ quick_replies|tojson }};
+document.querySelectorAll('.quick-reply-btn').forEach(function(btn){
+  var idx = parseInt(btn.getAttribute('data-idx'), 10);
+  btn.onclick = function(){ useQuickReply(quickRepliesData[idx] && quickRepliesData[idx].text); };
+});
+
+// Albüm dropdown + tek tıkla gönder
+var albumsData = [];
+document.getElementById('album-btn').onclick = function(e) {
+  e.stopPropagation();
+  var menu = document.getElementById('album-menu');
+  menu.classList.toggle('show');
+};
+document.addEventListener('click', function() { document.getElementById('album-menu').classList.remove('show'); });
+document.getElementById('album-menu').onclick = function(e) { e.stopPropagation(); };
+
+fetch('/admin/api/agent/albums').then(function(r){return r.json();}).then(function(albums){
+  albumsData = albums;
+  var list = document.getElementById('album-list');
+  if (!albums.length) {
+    list.innerHTML = '<p style="margin:0;padding:0.5rem;">Henüz albüm yok. <a href="/admin/albums">Albüm ekle</a></p>';
+    return;
+  }
+  list.innerHTML = albums.map(function(a){
+    return '<div class="album-item" data-id="' + a.id + '">' + (a.name || 'Albüm') + ' <small>(' + a.image_count + ' resim)</small></div>';
+  }).join('');
+  list.querySelectorAll('.album-item').forEach(function(el){
+    el.onclick = function(){ sendAlbum(parseInt(el.getAttribute('data-id'),10)); };
+  });
+}).catch(function(){ document.getElementById('album-list').innerHTML = '<p style="margin:0;color:#dc2626;">Albümler yüklenemedi</p>'; });
+
+function sendAlbum(albumId) {
+  document.getElementById('album-menu').classList.remove('show');
+  var btn = document.getElementById('album-btn');
+  btn.disabled = true;
+  fetch('/admin/api/agent/send-image', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+    body: JSON.stringify({conversation_id: convId, album_id: albumId})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if (d.ok) { pollMessages(); }
+    else { alert('Gönderilemedi: ' + (d.detail || 'Hata')); }
+  })
+  .catch(function(e){ alert('Hata: ' + e.message); })
+  .finally(function(){ btn.disabled = false; });
+}
+
+function useQuickReply(text) {
+  if (!text) return;
+  var ta = document.getElementById('msg-input');
+  var btn = document.getElementById('send-btn');
+  if (btn) btn.disabled = true;
+  fetch('/admin/api/agent/send-message', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+    body: JSON.stringify({conversation_id: convId, text: text})
+  })
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if (d.ok) pollMessages();
+    else alert('Gönderilemedi: ' + (d.detail || 'Hata'));
+  })
+  .catch(function(e){ alert('Hata: ' + e.message); })
+  .finally(function(){ if (btn) btn.disabled = false; });
+}
+
+setInterval(pollMessages, 3000);
+scrollBottom();
+
+document.querySelectorAll('.playbook-btn').forEach(function(btn){
+  btn.onclick = function() {
+    var text = btn.getAttribute('data-text') || '';
+    var ta = document.getElementById('msg-input');
+    if (!ta) return;
+    ta.value = text;
+    ta.focus();
+  };
+});
+
+function createSmartFollowup(minutes) {
+  var status = document.getElementById('followup-status');
+  fetch('/admin/api/agent/followup/' + convId, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Requested-With':'XMLHttpRequest'},
+    body: JSON.stringify({minutes: minutes})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.ok) {
+      if (status) {
+        status.textContent = 'Olusturuldu: ' + (d.note || '') + ' (' + (d.due_at || '').replace('T',' ').slice(0,16) + ')';
+        status.style.display = 'inline';
+      }
+      return;
+    }
+    alert('Follow-up olusturulamadi');
+  })
+  .catch(function(e){ alert('Hata: ' + e.message); });
+}
+
+{% if auto_takeover and not conversation.agent_taken_over_at %}
+(function(){ var btn = document.querySelector('.agent-bar button[onclick="takeoverAndReload()"]'); if(btn) takeoverAndReload(); })();
+{% endif %}
+</script>
+{% endblock %}

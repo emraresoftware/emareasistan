@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Emare Asistan – AI Destekli Müşteri Hizmetleri</title>
+  <meta name="description" content="WhatsApp, Telegram ve Web üzerinden yapay zeka destekli 7/24 müşteri hizmetleri asistanı. Sipariş, randevu, kargo takibi tek panelden.">
+  <meta name="keywords" content="whatsapp bot, chatbot, yapay zeka asistan, müşteri hizmetleri, ai asistan, sohbet botu, emare asistan">
+  <meta property="og:title" content="Emare Asistan – AI Destekli Müşteri Hizmetleri">
+  <meta property="og:description" content="İşletmeniz için 7/24 akıllı müşteri asistanı. WhatsApp, Telegram ve Web.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%230d9488'/><stop offset='100%25' stop-color='%23059669'/></linearGradient></defs><rect rx='20' width='100' height='100' fill='url(%23g)'/><text x='50' y='68' text-anchor='middle' fill='white' font-size='52' font-weight='bold' font-family='Inter,sans-serif'>EA</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: {
+              50:'#effefb',100:'#c8fff4',200:'#93fce8',300:'#5cf2d8',400:'#2ad8c2',
+              500:'#10b8a6',600:'#0d9e91',700:'#0c7f76',800:'#0a655f',900:'#094f4b',950:'#032e2b'
+            }
+          },
+          animation: {
+            'float':'float 6s ease-in-out infinite',
+            'float-delayed':'float 6s ease-in-out 2s infinite',
+            'float-slow':'float 8s ease-in-out 1s infinite',
+            'gradient':'gradient 8s ease infinite',
+            'fade-up':'fadeUp 0.6s ease-out forwards',
+            'slide-right':'slideRight 0.6s ease-out forwards',
+            'pulse-soft':'pulseSoft 3s ease-in-out infinite',
+          },
+          keyframes: {
+            float:{'0%,100%':{transform:'translateY(0px)'},'50%':{transform:'translateY(-20px)'}},
+            gradient:{'0%,100%':{backgroundPosition:'0% 50%'},'50%':{backgroundPosition:'100% 50%'}},
+            fadeUp:{'0%':{opacity:'0',transform:'translateY(30px)'},'100%':{opacity:'1',transform:'translateY(0)'}},
+            slideRight:{'0%':{opacity:'0',transform:'translateX(-30px)'},'100%':{opacity:'1',transform:'translateX(0)'}},
+            pulseSoft:{'0%,100%':{opacity:'1'},'50%':{opacity:'0.7'}},
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #2dd4bf 0%, #10b8a6 30%, #059669 70%, #047857 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-bg {
+      background: linear-gradient(-45deg, #010f0d, #021c19, #062824, #0a3330, #041e1c);
+      background-size: 500% 500%;
+      animation: gradient 12s ease infinite;
+    }
+    .hero-pattern {
+      background-image:
+        radial-gradient(ellipse 600px 500px at 75% 20%, rgba(16,184,166,0.28) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 600px at 25% 75%, rgba(5,150,105,0.22) 0%, transparent 70%),
+        radial-gradient(circle 400px at 50% 50%, rgba(45,212,191,0.08) 0%, transparent 70%),
+        radial-gradient(circle 200px at 90% 80%, rgba(52,211,153,0.12) 0%, transparent 70%);
+    }
+    .hero-pattern::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .section-pastel-mint { background: linear-gradient(180deg, #f0fdf8 0%, #ecfdf5 50%, #f0fdf8 100%); }
+    .section-pastel-sky  { background: linear-gradient(180deg, #f0f9ff 0%, #ecfeff 50%, #f0f9ff 100%); }
+    .section-pastel-warm { background: linear-gradient(180deg, #fefce8 0%, #fef9c3 30%, #fefce8 100%); }
+    .section-pastel-lav  { background: linear-gradient(180deg, #faf5ff 0%, #f3e8ff 50%, #faf5ff 100%); }
+    .section-pastel-rose { background: linear-gradient(180deg, #fff1f2 0%, #ffe4e6 50%, #fff1f2 100%); }
+    .section-pastel-slate{ background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 50%, #f8fafc 100%); }
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(16,184,166,0.2), rgba(5,150,105,0.15), transparent);
+    }
+    .card-glow {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-glow:hover {
+      box-shadow: 0 8px 40px -8px rgba(16,184,166,0.2), 0 0 0 1px rgba(16,184,166,0.1);
+    }
+    @keyframes gradient {
+      0%,100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    @keyframes morph {
+      0%,100% { border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%; }
+      33% { border-radius: 70% 30% 46% 54% / 30% 29% 71% 70%; }
+      66% { border-radius: 30% 70% 70% 30% / 58% 42% 58% 42%; }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    .scroll-reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .scroll-reveal.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a1a18; }
+    ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #0d9e91, #059669); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: linear-gradient(180deg, #10b8a6, #059669); }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="font-sans antialiased text-gray-800 bg-[#fafcfb]">
+
+<!-- ── NAVBAR ── -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-2xl border-b border-gray-100/80 shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all duration-500" x-data="{ open: false }">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+    <!-- Logo -->
+    <a href="#" class="flex items-center gap-3 no-underline">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
+        <span class="text-white font-bold text-lg">EA</span>
+      </div>
+      <span class="text-xl font-bold text-gray-900">Emare <span class="gradient-text">Asistan</span></span>
+    </a>
+    <!-- Desktop Links -->
+    <div class="hidden lg:flex items-center gap-1">
+      <a href="#ozellikler" class="text-sm font-medium text-gray-600 hover:text-brand-600 hover:bg-brand-500/10 px-4 py-2 rounded-lg transition-all duration-300">Özellikler</a>
+      <a href="#nasil" class="text-sm font-medium text-gray-600 hover:text-brand-600 hover:bg-brand-500/10 px-4 py-2 rounded-lg transition-all duration-300">Nasıl Çalışır</a>
+      <a href="#senaryolar" class="text-sm font-medium text-gray-600 hover:text-brand-600 hover:bg-brand-500/10 px-4 py-2 rounded-lg transition-all duration-300">Senaryolar</a>
+      <a href="#platformlar" class="text-sm font-medium text-gray-600 hover:text-brand-600 hover:bg-brand-500/10 px-4 py-2 rounded-lg transition-all duration-300">Platformlar</a>
+      <a href="#fiyat" class="text-sm font-medium text-gray-600 hover:text-brand-600 hover:bg-brand-500/10 px-4 py-2 rounded-lg transition-all duration-300">Fiyatlar</a>
+      <a href="#sss" class="text-sm font-medium text-gray-600 hover:text-brand-600 hover:bg-brand-500/10 px-4 py-2 rounded-lg transition-all duration-300">SSS</a>
+    </div>
+    <!-- Desktop CTA -->
+    <div class="hidden lg:flex items-center gap-3">
+      <a href="/admin" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-brand-700 border-2 border-brand-200 hover:border-brand-500 hover:bg-brand-50 transition-all duration-300">
+        <i class="fas fa-sign-in-alt mr-1.5"></i> Giriş Yap
+      </a>
+      <a href="/admin/register" class="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-brand-500 via-teal-500 to-emerald-600 shadow-lg shadow-teal-500/25 hover:shadow-teal-400/40 hover:scale-105 transition-all duration-300">
+        Ücretsiz Dene
+      </a>
+    </div>
+    <!-- Mobile Hamburger -->
+    <button @click="open = !open" class="lg:hidden p-2 text-gray-700 hover:text-brand-600 transition-colors">
+      <i class="fas fa-bars text-xl"></i>
+    </button>
+  </div>
+  <!-- Mobile Menu -->
+  <div x-show="open" x-transition class="lg:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 shadow-xl px-4 pb-4">
+    <a href="#ozellikler" @click="open=false" class="block py-3 text-sm font-medium text-gray-700 hover:text-brand-600">Özellikler</a>
+    <a href="#nasil" @click="open=false" class="block py-3 text-sm font-medium text-gray-700 hover:text-brand-600">Nasıl Çalışır</a>
+    <a href="#senaryolar" @click="open=false" class="block py-3 text-sm font-medium text-gray-700 hover:text-brand-600">Senaryolar</a>
+    <a href="#platformlar" @click="open=false" class="block py-3 text-sm font-medium text-gray-700 hover:text-brand-600">Platformlar</a>
+    <a href="#fiyat" @click="open=false" class="block py-3 text-sm font-medium text-gray-700 hover:text-brand-600">Fiyatlar</a>
+    <a href="#sss" @click="open=false" class="block py-3 text-sm font-medium text-gray-700 hover:text-brand-600">SSS</a>
+    <div class="flex gap-3 mt-4 pt-4 border-t border-gray-100">
+      <a href="/admin" class="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold text-brand-700 border-2 border-brand-200">Giriş Yap</a>
+      <a href="/admin/register" class="flex-1 text-center py-2.5 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-brand-500 to-emerald-600">Ücretsiz Dene</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero-bg hero-pattern relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+  <!-- Decorative blobs -->
+  <div class="absolute top-10 left-[5%] w-[500px] h-[500px] bg-teal-400/20 rounded-full blur-[120px] animate-float"></div>
+  <div class="absolute bottom-10 right-[5%] w-[600px] h-[600px] bg-emerald-500/15 rounded-full blur-[140px] animate-float-delayed"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-cyan-400/8 blur-[100px]" style="animation: morph 10s ease-in-out infinite;"></div>
+  <div class="absolute top-[30%] right-[20%] w-[200px] h-[200px] bg-emerald-300/10 rounded-full blur-[80px] animate-float-slow"></div>
+
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-24 lg:py-32">
+    <!-- Badge -->
+    <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/[0.07] border border-white/[0.12] backdrop-blur-md mb-8 shadow-lg shadow-black/10">
+      <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse-soft shadow-[0_0_8px_rgba(52,211,153,0.6)]"></span>
+      <span class="text-sm font-medium text-gray-100">Şu an aktif — 7/24 çalışıyor</span>
+    </div>
+
+    <h1 class="text-5xl lg:text-7xl font-extrabold text-white leading-[1.05] mb-6 tracking-tight">
+      Müşterilerinize<br>
+      <span class="gradient-text" style="filter: brightness(1.3);">7/24 Akıllı Asistan</span>
+    </h1>
+    <p class="text-lg lg:text-xl text-gray-100/90 max-w-2xl mx-auto mb-12 leading-relaxed">
+      WhatsApp, Telegram ve Web sitenizde yapay zeka destekli müşteri hizmetleri. Sipariş alın, randevu yönetin, satışlarınızı artırın.
+    </p>
+
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="/admin/register" class="px-8 py-4 rounded-2xl text-lg font-semibold text-white bg-gradient-to-r from-brand-500 via-teal-500 to-emerald-600 shadow-xl shadow-teal-500/25 hover:shadow-teal-400/40 hover:scale-105 transition-all duration-300 ring-1 ring-white/10">
+        <i class="fas fa-rocket mr-2"></i> Ücretsiz Başla
+      </a>
+      <a href="#nasil" class="px-8 py-4 rounded-2xl text-lg font-semibold text-white bg-white/[0.08] border border-white/[0.18] hover:bg-white/[0.14] backdrop-blur-sm transition-all duration-300">
+        <i class="fas fa-play-circle mr-2"></i> Nasıl Çalışır?
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 max-w-3xl mx-auto">
+      <div class="text-center p-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm">
+        <div class="text-3xl lg:text-4xl font-extrabold text-white">7/24</div>
+        <div class="text-sm text-teal-200/90 mt-1 font-medium">Kesintisiz Hizmet</div>
+      </div>
+      <div class="text-center p-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm">
+        <div class="text-3xl lg:text-4xl font-extrabold text-white">&lt;3sn</div>
+        <div class="text-sm text-teal-200/90 mt-1 font-medium">Yanıt Süresi</div>
+      </div>
+      <div class="text-center p-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm">
+        <div class="text-3xl lg:text-4xl font-extrabold text-white">56+</div>
+        <div class="text-sm text-teal-200/90 mt-1 font-medium">Modül</div>
+      </div>
+      <div class="text-center p-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm">
+        <div class="text-3xl lg:text-4xl font-extrabold text-white">30+</div>
+        <div class="text-sm text-teal-200/90 mt-1 font-medium">Sektör Desteği</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── ÖZELLİKLER ── -->
+<div class="section-divider"></div>
+<section id="ozellikler" class="py-24 lg:py-32 section-pastel-mint">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16 scroll-reveal">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-xs font-bold tracking-wider uppercase mb-4">Özellikler</span>
+      <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">İşletmeniz İçin <span class="gradient-text">Her Şey Tek Yerde</span></h2>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">Müşteri iletişiminden siparişe, kargo takibinden randevuya — tüm süreçleri otomatikleştirin.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-comments"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">AI Sohbet Asistanı</h3>
+        <p class="text-gray-600">Müşteri sorularına anında, profesyonel ve kurumsal dilde yanıt. Ürün önerisi, fiyat bilgisi, kampanya duyurusu otomatik.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-box"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Sipariş & Kargo</h3>
+        <p class="text-gray-600">Sohbet içinde sipariş toplama. Ad, adres, ödeme bilgisi AI tarafından alınır. Kargo takip numarası ile anlık durum sorgulama.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-calendar-check"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Randevu Yönetimi</h3>
+        <p class="text-gray-600">Müşteriler sohbet üzerinden randevu alabilir. Takvim entegrasyonu, hatırlatma ve onay mesajları otomatik gönderilir.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-bullseye"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Akıllı Kurallar</h3>
+        <p class="text-gray-600">Araç modeli, anahtar kelime veya müşteri segmentine göre otomatik ürün/resim gönderme kuralları tanımlayın.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-headset"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Temsilci Devralma</h3>
+        <p class="text-gray-600">AI yanıt verirken istediğiniz an sohbeti devralın. İşiniz bitince AI'a bırakın. Müşteri fark etmez.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-building"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Çoklu Firma (Multi-Tenant)</h3>
+        <p class="text-gray-600">Her firma kendi hesabı, WhatsApp bağlantısı, ürün kataloğu ve AI eğitimiyle bağımsız çalışır.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-microphone"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Sesli Mesaj Desteği</h3>
+        <p class="text-gray-600">Müşteri sesli mesaj gönderdiğinde otomatik metne çevrilir, AI yanıt verir ve isterseniz sesli yanıt döner.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-chart-line"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Analitik & Raporlar</h3>
+        <p class="text-gray-600">Sohbet sayıları, yanıt süreleri, müşteri memnuniyeti, sipariş dönüşümleri — tüm metrikler dashboard'da.</p>
+      </div>
+      <div class="group bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100/80 shadow-lg shadow-gray-100/30 card-glow scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mb-5 transition-all duration-300 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white group-hover:scale-110 group-hover:rotate-[-5deg]"><i class="fas fa-shield-halved"></i></div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Güvenlik & İzolasyon</h3>
+        <p class="text-gray-600">Tenant verileri birbirinden tamamen izole. API anahtarları şifreli. Rate limiting ve güvenlik header'ları dahil.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── NASIL ÇALIŞIR ── -->
+<div class="section-divider"></div>
+<section id="nasil" class="py-24 lg:py-32 section-pastel-sky">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16 scroll-reveal">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-xs font-bold tracking-wider uppercase mb-4">Nasıl Çalışır</span>
+      <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">3 Adımda <span class="gradient-text">Başlayın</span></h2>
+      <p class="text-lg text-gray-600 max-w-xl mx-auto">Kurulum 5 dakika. Teknik bilgi gerekmez.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+      <div class="text-center scroll-reveal">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-600 via-brand-500 to-emerald-600 flex items-center justify-center text-white text-2xl font-extrabold mx-auto mb-5 shadow-xl shadow-teal-500/25">1</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Kayıt Olun</h3>
+        <p class="text-gray-600">Web sitenizi girin, sektörünüzü seçin. Sistem sitenizi otomatik analiz eder ve AI'ı yapılandırır.</p>
+      </div>
+      <div class="text-center scroll-reveal">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-600 via-brand-500 to-emerald-600 flex items-center justify-center text-white text-2xl font-extrabold mx-auto mb-5 shadow-xl shadow-teal-500/25">2</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">WhatsApp'ı Bağlayın</h3>
+        <p class="text-gray-600">QR kodu telefonunuzla tarayın. 30 saniyede WhatsApp bağlanır. Meta Business hesabı gerekmez.</p>
+      </div>
+      <div class="text-center scroll-reveal">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-600 via-brand-500 to-emerald-600 flex items-center justify-center text-white text-2xl font-extrabold mx-auto mb-5 shadow-xl shadow-teal-500/25">3</div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Müşterilerinizi Karşılayın</h3>
+        <p class="text-gray-600">AI 7/24 müşterilerinize profesyonel yanıt verir. Panelden sohbetleri izler, gerektiğinde devralırsınız.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SEKTÖREL SENARYOLAR ── -->
+<div class="section-divider"></div>
+<section id="senaryolar" class="py-24 lg:py-32 section-pastel-warm" x-data="{ tab: 'karsilama' }">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-12 scroll-reveal">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-xs font-bold tracking-wider uppercase mb-4">Sektörel Senaryolar</span>
+      <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Her Sektöre <span class="gradient-text">Uygun Çözümler</span></h2>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">Gerçek sohbet örnekleriyle AI asistanınızın neler yapabileceğini keşfedin.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex justify-center flex-wrap gap-2 mb-12">
+      <button @click="tab='karsilama'" :class="tab==='karsilama' ? 'bg-gradient-to-r from-teal-600 via-brand-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-300 hover:text-brand-600'" class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+        <i class="fas fa-hand-wave"></i> Müşteri Karşılama
+      </button>
+      <button @click="tab='siparis'" :class="tab==='siparis' ? 'bg-gradient-to-r from-teal-600 via-brand-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-300 hover:text-brand-600'" class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+        <i class="fas fa-cart-shopping"></i> Sipariş Alma
+      </button>
+      <button @click="tab='kargo'" :class="tab==='kargo' ? 'bg-gradient-to-r from-teal-600 via-brand-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-300 hover:text-brand-600'" class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+        <i class="fas fa-box"></i> Kargo Takibi
+      </button>
+      <button @click="tab='randevu'" :class="tab==='randevu' ? 'bg-gradient-to-r from-teal-600 via-brand-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-300 hover:text-brand-600'" class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+        <i class="fas fa-scissors"></i> Randevu
+      </button>
+      <button @click="tab='restoran'" :class="tab==='restoran' ? 'bg-gradient-to-r from-teal-600 via-brand-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25' : 'bg-white text-gray-600 border border-gray-200 hover:border-brand-300 hover:text-brand-600'" class="px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+        <i class="fas fa-utensils"></i> Restoran
+      </button>
+    </div>
+
+    <!-- Panel: Karşılama -->
+    <div x-show="tab==='karsilama'" x-transition class="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+      <div class="pt-3">
+        <span class="inline-block px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold mb-4">E-Ticaret</span>
+        <h3 class="text-2xl font-extrabold text-gray-900 mb-3">Profesyonel Müşteri Karşılama</h3>
+        <p class="text-gray-600 leading-relaxed mb-6">Müşterileriniz ilk mesaj attığında AI asistanınız onları sıcak ve profesyonel bir dille karşılar. Firma adınız, sektörünüz ve üslubunuz öğretilmiş AI, müşteriye özel deneyim sunar.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-bullseye"></i></span> Firma adı ve kurumsal tonla karşılama</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-bolt"></i></span> 3 saniyede otomatik yanıt</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-bag-shopping"></i></span> İhtiyaca göre ürün/hizmet yönlendirmesi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-moon"></i></span> Mesai dışında bile aktif</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xl">
+        <div class="bg-gradient-to-r from-teal-600 via-brand-600 to-emerald-700 text-white px-5 py-3.5 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg">👕</div>
+          <div><div class="font-semibold text-sm">Moda Butik</div><div class="text-xs text-white/95">çevrimiçi</div></div>
+        </div>
+        <div class="bg-gray-50 p-4 space-y-2 min-h-[220px]">
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Merhaba <span class="text-xs text-white/80 float-right ml-2 mt-1">14:02</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">Merhaba! 👋 Moda Butik'e hoş geldiniz. Ben yapay zeka asistanınızım.<br><br>• Yeni sezon ürünleri<br>• Kampanya & fırsatlar<br>• Sipariş durumu sorgulama <span class="text-xs text-gray-400 float-right ml-2 mt-1">14:02</span></div>
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Yeni sezon elbiselere bakmak istiyorum <span class="text-xs text-white/80 float-right ml-2 mt-1">14:02</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">Harika tercih! 🌸 Yeni sezon yazlık elbise koleksiyonumuz geldi. Beden ve renk tercihiniz var mı? <span class="text-xs text-gray-400 float-right ml-2 mt-1">14:02</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Sipariş -->
+    <div x-show="tab==='siparis'" x-transition class="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+      <div class="pt-3">
+        <span class="inline-block px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold mb-4">Oto Aksesuar</span>
+        <h3 class="text-2xl font-extrabold text-gray-900 mb-3">Sohbet İçinde Sipariş Toplama</h3>
+        <p class="text-gray-600 leading-relaxed mb-6">AI asistanınız müşteriden ürün, adet, teslimat adresi ve ödeme bilgilerini doğal şekilde toplar. Sipariş otomatik panele düşer.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-clipboard-list"></i></span> Ad, adres, telefon otomatik toplanır</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-credit-card"></i></span> Ödeme yöntemi seçimi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-check-circle"></i></span> Sipariş onay mesajı gönderilir</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-chart-bar"></i></span> Sipariş panele otomatik düşer</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xl">
+        <div class="bg-gradient-to-r from-teal-600 via-brand-600 to-emerald-700 text-white px-5 py-3.5 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg">🚗</div>
+          <div><div class="font-semibold text-sm">AutoStyle Aksesuar</div><div class="text-xs text-white/95">çevrimiçi</div></div>
+        </div>
+        <div class="bg-gray-50 p-4 space-y-2 min-h-[220px]">
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Passat için koltuk kılıfı sipariş vermek istiyorum <span class="text-xs text-white/80 float-right ml-2 mt-1">10:15</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">GT Premium Serisi Passat'ta harika! 🎉 Fiyatı 5.499₺. Ad soyad ve teslimat adresinizi paylaşır mısınız? <span class="text-xs text-gray-400 float-right ml-2 mt-1">10:15</span></div>
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Ahmet Yılmaz, Ankara Çankaya <span class="text-xs text-white/80 float-right ml-2 mt-1">10:16</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">Teşekkürler Ahmet Bey! Ödeme:<br>1️⃣ Havale/EFT<br>2️⃣ Kredi Kartı<br>3️⃣ Kapıda Ödeme (+50₺) <span class="text-xs text-gray-400 float-right ml-2 mt-1">10:16</span></div>
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Kapıda ödeme olsun <span class="text-xs text-white/80 float-right ml-2 mt-1">10:17</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">✅ Sipariş oluşturuldu!<br>📦 GT Premium x1 — 5.549₺<br>📍 Ankara<br>🚚 2-3 iş günü <span class="text-xs text-gray-400 float-right ml-2 mt-1">10:17</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Kargo -->
+    <div x-show="tab==='kargo'" x-transition class="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+      <div class="pt-3">
+        <span class="inline-block px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold mb-4">E-Ticaret</span>
+        <h3 class="text-2xl font-extrabold text-gray-900 mb-3">Kargo Takip Numarası Paylaşımı</h3>
+        <p class="text-gray-600 leading-relaxed mb-6">Sipariş kargoya verildiğinde müşteriye otomatik bilgilendirme gönderilir. Müşteri kargo durumunu sorgulayabilir.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-bell"></i></span> Kargoya çıkınca otomatik bildirim</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-search"></i></span> Takip numarasıyla anlık sorgulama</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-map-marker-alt"></i></span> Kargo durumu ve konum bilgisi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-mobile-alt"></i></span> Takip linki ile kolay erişim</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xl">
+        <div class="bg-gradient-to-r from-teal-600 via-brand-600 to-emerald-700 text-white px-5 py-3.5 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg">📦</div>
+          <div><div class="font-semibold text-sm">HızlıKargo Mağaza</div><div class="text-xs text-white/95">çevrimiçi</div></div>
+        </div>
+        <div class="bg-gray-50 p-4 space-y-2 min-h-[220px]">
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">Merhaba Ahmet Bey! 🎉 Siparişiniz (#1847) kargoya verildi.<br>🚚 Yurtiçi Kargo<br>📋 Takip No: 3456 7890 1234 <span class="text-xs text-gray-400 float-right ml-2 mt-1">09:30</span></div>
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Teşekkürler! Tahmini ne zaman gelir? <span class="text-xs text-white/80 float-right ml-2 mt-1">12:45</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">📍 Durum: Dağıtımda<br>🏢 Ankara Transfer Merkezi'nden çıkış yaptı<br>📅 Tahmini: Bugün 14:00-18:00<br><br>Kargonuz bugün kapınıza gelecek! 🎉 <span class="text-xs text-gray-400 float-right ml-2 mt-1">12:45</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Randevu -->
+    <div x-show="tab==='randevu'" x-transition class="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+      <div class="pt-3">
+        <span class="inline-block px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold mb-4">Güzellik & Bakım</span>
+        <h3 class="text-2xl font-extrabold text-gray-900 mb-3">Online Randevu Alma</h3>
+        <p class="text-gray-600 leading-relaxed mb-6">Müşteriler WhatsApp üzerinden kolayca randevu alabilir. AI mevcut saatleri kontrol eder ve randevuyu oluşturur.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-calendar"></i></span> Müsait tarih ve saat önerisi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-clock"></i></span> Otomatik hatırlatma mesajı</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-scissors"></i></span> Hizmet seçimi ve süre bilgisi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-rotate"></i></span> İptal ve değişiklik desteği</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xl">
+        <div class="bg-gradient-to-r from-teal-600 via-brand-600 to-emerald-700 text-white px-5 py-3.5 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg">💇</div>
+          <div><div class="font-semibold text-sm">Güzel Saçlar Stüdyo</div><div class="text-xs text-white/95">çevrimiçi</div></div>
+        </div>
+        <div class="bg-gray-50 p-4 space-y-2 min-h-[220px]">
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Saç kesimi için randevu almak istiyorum <span class="text-xs text-white/80 float-right ml-2 mt-1">18:20</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">Tabii! ✂️ Müsait saatler:<br>📅 Yarın (Cumartesi):<br>• 10:00 - 11:00<br>• 14:30 - 15:30<br>• 16:00 - 17:00 <span class="text-xs text-gray-400 float-right ml-2 mt-1">18:20</span></div>
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">14:30 uygun olur <span class="text-xs text-white/80 float-right ml-2 mt-1">18:21</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">✅ Randevunuz oluşturuldu!<br>✂️ Saç Kesimi — Cumartesi 14:30<br>⏱️ ~45 dk<br>📍 Bağdat Cad. No:120 <span class="text-xs text-gray-400 float-right ml-2 mt-1">18:21</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Restoran -->
+    <div x-show="tab==='restoran'" x-transition class="grid grid-cols-1 lg:grid-cols-2 gap-10 max-w-5xl mx-auto items-start">
+      <div class="pt-3">
+        <span class="inline-block px-3 py-1 rounded-full bg-brand-50 text-brand-600 text-xs font-semibold mb-4">Restoran & Kafe</span>
+        <h3 class="text-2xl font-extrabold text-gray-900 mb-3">WhatsApp'tan Yemek Siparişi</h3>
+        <p class="text-gray-600 leading-relaxed mb-6">Müşteriler menüye göz atıp direkt sipariş verebilir. AI sipariş detaylarını toplar ve mutfağa iletir.</p>
+        <ul class="space-y-3">
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-scroll"></i></span> Güncel menü ve fiyat bilgisi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-house"></i></span> Adres ve paket/gel-al seçimi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-stopwatch"></i></span> Tahmini teslimat süresi</li>
+          <li class="flex items-center gap-3 text-sm text-gray-600"><span class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600"><i class="fas fa-fire"></i></span> Özel istek ve not ekleme</li>
+        </ul>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-xl">
+        <div class="bg-gradient-to-r from-teal-600 via-brand-600 to-emerald-700 text-white px-5 py-3.5 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-lg">🍕</div>
+          <div><div class="font-semibold text-sm">Lezzet Durağı</div><div class="text-xs text-white/95">çevrimiçi</div></div>
+        </div>
+        <div class="bg-gray-50 p-4 space-y-2 min-h-[220px]">
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">Merhaba, sipariş vermek istiyorum <span class="text-xs text-white/80 float-right ml-2 mt-1">20:10</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">Hoş geldiniz! 🍕 Menü:<br>🍔 Klasik Burger — 189₺<br>🍕 Karışık Pizza — 229₺<br>🥗 Sezar Salata — 129₺<br>🍝 Makarna — 169₺ <span class="text-xs text-gray-400 float-right ml-2 mt-1">20:10</span></div>
+          <div class="max-w-[82%] ml-auto bg-brand-500 text-white px-3 py-2 rounded-xl rounded-br-sm text-sm">1 pizza, 1 burger, 2 ayran <span class="text-xs text-white/80 float-right ml-2 mt-1">20:11</span></div>
+          <div class="max-w-[82%] bg-white px-3 py-2 rounded-xl rounded-bl-sm text-sm shadow-sm border border-gray-100">🍕 Pizza x1 — 229₺<br>🍔 Burger x1 — 189₺<br>🥛 Ayran x2 — 40₺<br>💰 Toplam: 458₺<br><br>Paket mi, gel-al mı? <span class="text-xs text-gray-400 float-right ml-2 mt-1">20:11</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PLATFORMLAR ── -->
+<div class="section-divider"></div>
+<section id="platformlar" class="py-24 lg:py-32 section-pastel-lav">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16 scroll-reveal">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-xs font-bold tracking-wider uppercase mb-4">Platformlar</span>
+      <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">Tüm Kanallarınızda <span class="gradient-text">Aktif</span></h2>
+      <p class="text-lg text-gray-600">Müşterileriniz neredeyse, orada olun.</p>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-4xl mx-auto">
+      <div class="group bg-white rounded-2xl p-6 border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:border-brand-200 transition-all duration-500 text-center scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/10 to-green-600/10 flex items-center justify-center text-green-600 text-2xl mx-auto mb-4 group-hover:from-green-500 group-hover:to-green-600 group-hover:text-white transition-all duration-300"><i class="fab fa-whatsapp"></i></div>
+        <h3 class="font-bold text-gray-900 mb-1">WhatsApp</h3>
+        <p class="text-xs text-gray-500 mb-2">QR ile kolay bağlantı</p>
+        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-600">✓ Aktif</span>
+      </div>
+      <div class="group bg-white rounded-2xl p-6 border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:border-brand-200 transition-all duration-500 text-center scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/10 flex items-center justify-center text-blue-600 text-2xl mx-auto mb-4 group-hover:from-blue-500 group-hover:to-blue-600 group-hover:text-white transition-all duration-300"><i class="fab fa-telegram"></i></div>
+        <h3 class="font-bold text-gray-900 mb-1">Telegram</h3>
+        <p class="text-xs text-gray-500 mb-2">Bot API entegrasyonu</p>
+        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-600">✓ Aktif</span>
+      </div>
+      <div class="group bg-white rounded-2xl p-6 border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:border-brand-200 transition-all duration-500 text-center scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500/10 to-emerald-500/10 flex items-center justify-center text-brand-600 text-2xl mx-auto mb-4 group-hover:from-brand-500 group-hover:to-emerald-600 group-hover:text-white transition-all duration-300"><i class="fas fa-globe"></i></div>
+        <h3 class="font-bold text-gray-900 mb-1">Web Sohbet</h3>
+        <p class="text-xs text-gray-500 mb-2">Sitenize iframe ile ekleyin</p>
+        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-600">✓ Aktif</span>
+      </div>
+      <div class="group bg-white rounded-2xl p-6 border border-gray-100 shadow-lg shadow-gray-100/50 hover:shadow-xl hover:border-brand-200 transition-all duration-500 text-center scroll-reveal">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500/10 to-fuchsia-500/10 flex items-center justify-center text-rose-500 text-2xl mx-auto mb-4 group-hover:from-rose-500 group-hover:to-fuchsia-600 group-hover:text-white transition-all duration-300"><i class="fab fa-instagram"></i></div>
+        <h3 class="font-bold text-gray-900 mb-1">Instagram DM</h3>
+        <p class="text-xs text-gray-500 mb-2">Meta Graph API webhook</p>
+        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-50 text-green-600">✓ Aktif</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DEMO ── -->
+<section class="hero-bg hero-pattern py-24 lg:py-32 relative overflow-hidden">
+  <div class="absolute top-10 right-20 w-80 h-80 bg-teal-400/12 rounded-full blur-[120px] animate-float"></div>
+  <div class="absolute bottom-20 left-10 w-64 h-64 bg-emerald-500/10 rounded-full blur-[100px] animate-float-delayed"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <div class="text-center mb-12">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-white/10 border border-white/20 text-teal-200 text-xs font-bold tracking-wider uppercase mb-4">Canlı Önizleme</span>
+      <h2 class="text-4xl lg:text-5xl font-bold text-white mb-4">AI Asistanınızı Görün</h2>
+      <p class="text-lg text-gray-200">Müşterileriniz bu deneyimi yaşayacak.</p>
+    </div>
+    <div class="max-w-md mx-auto bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 overflow-hidden shadow-2xl">
+      <div class="bg-gradient-to-r from-teal-600 via-brand-600 to-emerald-700 px-5 py-3.5 flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-bold">EA</div>
+        <div><div class="text-white font-semibold text-sm">Emare Asistan</div><div class="text-xs text-emerald-200">● Çevrimiçi</div></div>
+      </div>
+      <div class="p-4 space-y-2.5 min-h-[200px]" id="demoMessages">
+        <div class="max-w-[85%] ml-auto bg-brand-600 text-white px-3.5 py-2.5 rounded-2xl rounded-br-sm text-sm shadow-md">Merhaba, koltuk kılıfı arıyorum</div>
+        <div class="max-w-[85%] bg-white/20 text-white px-3.5 py-2.5 rounded-2xl rounded-bl-sm text-sm backdrop-blur-sm border border-white/10">Merhaba! Size yardımcı olmaktan memnuniyet duyarım. Araç modelinizi paylaşır mısınız? 😊</div>
+        <div class="max-w-[85%] ml-auto bg-brand-600 text-white px-3.5 py-2.5 rounded-2xl rounded-br-sm text-sm shadow-md">Volkswagen Passat 2022</div>
+        <div class="max-w-[85%] bg-white/20 text-white px-3.5 py-2.5 rounded-2xl rounded-bl-sm text-sm backdrop-blur-sm border border-white/10">Passat 2022 için Elit Serisi ve GT Premium serimiz çok tercih ediliyor. Fiyat: 4.999₺ – 7.499₺. Görselleri göndermemi ister misiniz?</div>
+      </div>
+      <div class="p-3 border-t border-white/10 flex gap-2">
+        <input type="text" placeholder="Mesajınızı yazın..." id="demoInput" onkeydown="if(event.key==='Enter')sendDemo()" class="flex-1 px-4 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white text-sm placeholder-gray-300 outline-none focus:border-brand-400">
+        <button onclick="sendDemo()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-emerald-600 text-white text-sm font-semibold hover:scale-105 transition-all">Gönder</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FİYATLANDIRMA ── -->
+<div class="section-divider"></div>
+<section id="fiyat" class="py-24 lg:py-32 section-pastel-mint">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16 scroll-reveal">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-xs font-bold tracking-wider uppercase mb-4">Fiyatlandırma</span>
+      <h2 class="text-4xl lg:text-5xl font-bold text-gray-900 mb-4">İşletmenize <span class="gradient-text">Uygun Plan</span></h2>
+      <p class="text-lg text-gray-600">14 gün ücretsiz deneyin, kredi kartı gerekmez.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-start">
+      <!-- Başlangıç -->
+      <div class="bg-white rounded-3xl p-8 border border-gray-200 shadow-xl scroll-reveal">
+        <h3 class="text-xl font-bold text-gray-900 mb-1">Başlangıç</h3>
+        <p class="text-sm text-gray-500 mb-6">Küçük işletmeler için</p>
+        <div class="mb-6"><span class="text-5xl font-extrabold text-gray-900">₺999</span><span class="text-gray-500 ml-1">/ay</span></div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> 1 WhatsApp bağlantısı</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> AI sohbet asistanı</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> 500 mesaj/ay</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> Ürün kataloğu</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> Sipariş yönetimi</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> E-posta destek</li>
+        </ul>
+        <a href="/admin/register" class="block w-full text-center px-6 py-3.5 rounded-2xl text-sm font-semibold text-brand-700 border-2 border-brand-200 hover:border-brand-500 hover:bg-brand-50 transition-all duration-300">Ücretsiz Dene</a>
+      </div>
+      <!-- Profesyonel (Featured) -->
+      <div class="bg-gradient-to-br from-teal-600 via-brand-500 to-emerald-700 rounded-3xl p-8 shadow-2xl shadow-teal-900/30 text-white ring-2 ring-teal-400/30 scale-105 relative scroll-reveal">
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-400 to-yellow-300 text-gray-900 text-xs font-bold shadow-lg shadow-amber-500/30">En Popüler</div>
+        <h3 class="text-xl font-bold mb-1">Profesyonel</h3>
+        <p class="text-sm text-white/70 mb-6">Büyüyen işletmeler için</p>
+        <div class="mb-6"><span class="text-5xl font-extrabold">₺2.499</span><span class="text-white/70 ml-1">/ay</span></div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-sm text-white/90"><i class="fas fa-check"></i> 3 WhatsApp bağlantısı</li>
+          <li class="flex items-center gap-2 text-sm text-white/90"><i class="fas fa-check"></i> AI sohbet + sesli mesaj</li>
+          <li class="flex items-center gap-2 text-sm text-white/90"><i class="fas fa-check"></i> Sınırsız mesaj</li>
+          <li class="flex items-center gap-2 text-sm text-white/90"><i class="fas fa-check"></i> Temsilci devralma</li>
+          <li class="flex items-center gap-2 text-sm text-white/90"><i class="fas fa-check"></i> Randevu yönetimi</li>
+          <li class="flex items-center gap-2 text-sm text-white/90"><i class="fas fa-check"></i> Analitik dashboard</li>
+          <li class="flex items-center gap-2 text-sm text-white/90"><i class="fas fa-check"></i> Öncelikli destek</li>
+        </ul>
+        <a href="/admin/register" class="block w-full text-center px-6 py-3.5 rounded-2xl text-sm font-semibold bg-white text-brand-600 shadow-xl hover:shadow-brand-500/50 hover:scale-[1.02] transition-all duration-300">Ücretsiz Dene</a>
+      </div>
+      <!-- Kurumsal -->
+      <div class="bg-white rounded-3xl p-8 border border-gray-200 shadow-xl scroll-reveal">
+        <h3 class="text-xl font-bold text-gray-900 mb-1">Kurumsal</h3>
+        <p class="text-sm text-gray-500 mb-6">Büyük operasyonlar için</p>
+        <div class="mb-6"><span class="text-5xl font-extrabold text-gray-900">Özel</span><span class="text-gray-500 ml-1"> teklif</span></div>
+        <ul class="space-y-3 mb-8">
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> Sınırsız bağlantı</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> Tüm özellikler</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> Özel AI eğitimi</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> API erişimi</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> Partner paneli</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> SLA garantisi</li>
+          <li class="flex items-center gap-2 text-sm text-gray-600"><i class="fas fa-check text-brand-500"></i> Dedicated destek</li>
+        </ul>
+        <a href="mailto:emre@emareas.com" class="block w-full text-center px-6 py-3.5 rounded-2xl text-sm font-semibold text-brand-700 border-2 border-brand-200 hover:border-brand-500 hover:bg-brand-50 transition-all duration-300">İletişime Geç</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SSS ── -->
+<div class="section-divider"></div>
+<section id="sss" class="py-24 lg:py-32 section-pastel-slate" x-data="{ open: null }">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="text-center mb-16 scroll-reveal">
+      <span class="inline-block px-4 py-1.5 rounded-full bg-brand-50 text-brand-600 text-xs font-bold tracking-wider uppercase mb-4">SSS</span>
+      <h2 class="text-4xl lg:text-5xl font-bold text-gray-900">Sıkça Sorulan <span class="gradient-text">Sorular</span></h2>
+    </div>
+    <div class="max-w-3xl mx-auto space-y-4">
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden scroll-reveal">
+        <button @click="open === 1 ? open = null : open = 1" class="w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-gray-900">Kurulum zor mu? Teknik bilgi gerekiyor mu?</span>
+          <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300" :class="open === 1 && 'rotate-180 text-brand-500'"></i>
+        </button>
+        <div x-show="open === 1" x-collapse class="px-6 pb-5 text-gray-600 text-sm leading-relaxed">Hayır. Web sitenizi girip QR kodu taramanız yeterli. Sistem sektörünüzü otomatik algılar ve AI'ı yapılandırır. 5 dakikada hazırsınız.</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden scroll-reveal">
+        <button @click="open === 2 ? open = null : open = 2" class="w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-gray-900">WhatsApp Business hesabına ihtiyacım var mı?</span>
+          <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300" :class="open === 2 && 'rotate-180 text-brand-500'"></i>
+        </button>
+        <div x-show="open === 2" x-collapse class="px-6 pb-5 text-gray-600 text-sm leading-relaxed">Hayır. Normal WhatsApp hesabınızla QR kodu tarayarak bağlanabilirsiniz. Opsiyonel olarak WhatsApp Business Cloud API de desteklenir.</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden scroll-reveal">
+        <button @click="open === 3 ? open = null : open = 3" class="w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-gray-900">Müşterim AI ile konuştuğunu anlar mı?</span>
+          <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300" :class="open === 3 && 'rotate-180 text-brand-500'"></i>
+        </button>
+        <div x-show="open === 3" x-collapse class="px-6 pb-5 text-gray-600 text-sm leading-relaxed">AI, firmanızın adı ve kurumsal diliyle yanıt verir. Profesyonel ve doğal. İstediğiniz an temsilci olarak devralabilirsiniz.</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden scroll-reveal">
+        <button @click="open === 4 ? open = null : open = 4" class="w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-gray-900">Verilerim güvende mi?</span>
+          <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300" :class="open === 4 && 'rotate-180 text-brand-500'"></i>
+        </button>
+        <div x-show="open === 4" x-collapse class="px-6 pb-5 text-gray-600 text-sm leading-relaxed">Evet. Her firma (tenant) izole çalışır. API anahtarları şifreli saklanır. HTTPS, rate limiting, güvenlik header'ları varsayılan olarak aktiftir.</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden scroll-reveal">
+        <button @click="open === 5 ? open = null : open = 5" class="w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-gray-900">Hangi sektörlere uygun?</span>
+          <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300" :class="open === 5 && 'rotate-180 text-brand-500'"></i>
+        </button>
+        <div x-show="open === 5" x-collapse class="px-6 pb-5 text-gray-600 text-sm leading-relaxed">E-ticaret, otomotiv, sağlık, eğitim, turizm, perakende, hizmet sektörü ve daha fazlası. 30+ sektör tanımı hazır. Özel sektörler de eklenebilir.</div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden scroll-reveal">
+        <button @click="open === 6 ? open = null : open = 6" class="w-full px-6 py-5 flex items-center justify-between text-left">
+          <span class="font-semibold text-gray-900">Deneme süresi var mı?</span>
+          <i class="fas fa-chevron-down text-gray-400 transition-transform duration-300" :class="open === 6 && 'rotate-180 text-brand-500'"></i>
+        </button>
+        <div x-show="open === 6" x-collapse class="px-6 pb-5 text-gray-600 text-sm leading-relaxed">Evet, 14 gün ücretsiz. Kredi kartı gerekmez. Kayıt olup hemen WhatsApp'ınızı bağlayabilirsiniz.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="hero-bg hero-pattern py-24 lg:py-32 relative overflow-hidden">
+  <div class="absolute bottom-10 left-20 w-96 h-96 bg-emerald-500/12 rounded-full blur-[140px] animate-float-slow"></div>
+  <div class="absolute top-20 right-10 w-72 h-72 bg-teal-400/10 rounded-full blur-[100px] animate-float"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6">Müşterilerinizi <span class="gradient-text" style="filter: brightness(1.3);">Bekletmeyin</span></h2>
+    <p class="text-lg text-gray-200 max-w-xl mx-auto mb-10">Şimdi kaydolun, 5 dakikada AI asistanınız çalışmaya başlasın. 14 gün ücretsiz.</p>
+    <a href="/admin/register" class="inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-lg font-semibold text-white bg-gradient-to-r from-brand-500 via-teal-500 to-emerald-600 shadow-xl shadow-teal-500/25 hover:shadow-teal-400/40 hover:scale-105 transition-all duration-300">
+      <i class="fas fa-rocket"></i> Ücretsiz Başla
+    </a>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer class="bg-gray-950 text-gray-300">
+  <div class="h-px bg-gradient-to-r from-transparent via-teal-500/40 to-transparent"></div>
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
+            <span class="text-white font-bold text-lg">EA</span>
+          </div>
+          <span class="text-xl font-bold text-white">Emare Asistan</span>
+        </div>
+        <p class="text-sm text-gray-400 max-w-xs">İşletmeniz için yapay zeka destekli 7/24 müşteri hizmetleri asistanı.</p>
+        <div class="flex gap-3 mt-6">
+          <a href="mailto:emre@emareas.com" class="w-10 h-10 rounded-lg bg-white/10 hover:bg-brand-500/20 flex items-center justify-center text-gray-300 hover:text-brand-400 transition-all duration-300"><i class="fas fa-envelope"></i></a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Ürün</h4>
+        <ul class="space-y-2.5">
+          <li><a href="#ozellikler" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">Özellikler</a></li>
+          <li><a href="#fiyat" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">Fiyatlandırma</a></li>
+          <li><a href="#platformlar" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">Platformlar</a></li>
+          <li><a href="#sss" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">SSS</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Şirket</h4>
+        <ul class="space-y-2.5">
+          <li><a href="mailto:emre@emareas.com" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">İletişim</a></li>
+          <li><a href="/admin/register" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">Kayıt Ol</a></li>
+          <li><a href="/admin" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">Giriş Yap</a></li>
+          <li><a href="/docs" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">API Docs</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Destek</h4>
+        <ul class="space-y-2.5">
+          <li><a href="mailto:emre@emareas.com" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">E-posta Destek</a></li>
+          <li><a href="#sss" class="text-sm text-gray-400 hover:text-brand-400 transition-colors">Sıkça Sorulan Sorular</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <span class="text-sm text-gray-400">© 2026 Emare Asistan. Tüm hakları saklıdır.</span>
+      <span class="text-sm text-gray-400">emre@emareas.com</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Alpine.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<script>
+// Scroll reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('revealed');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
+});
+
+// Demo chat
+const demoReplies = [
+  "Ürün görsellerini hemen paylaşıyorum. Elit Serisi çok şık duruyor Passat'ta! 📸",
+  "Montaj mağazamızda yapılıyor. Süre ~2-2.5 saat. Randevu almak ister misiniz?",
+  "Kargo ile tüm Türkiye'ye gönderim. Teslimat 1-3 iş günü.",
+  "Havale, kredi kartı ve kapıda ödeme seçeneklerimiz mevcut.",
+  "Siparişiniz için ad soyad, telefon ve adres bilgilerinizi paylaşır mısınız?",
+  "Teşekkürler! Başka sorunuz var mı? 😊"
+];
+let demoIdx = 0;
+
+function sendDemo() {
+  const input = document.getElementById('demoInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const msgs = document.getElementById('demoMessages');
+  const userMsg = document.createElement('div');
+  userMsg.className = 'max-w-[85%] ml-auto bg-brand-500 text-white px-3.5 py-2.5 rounded-2xl rounded-br-sm text-sm';
+  userMsg.textContent = text;
+  msgs.appendChild(userMsg);
+  input.value = '';
+  setTimeout(() => {
+    const botMsg = document.createElement('div');
+    botMsg.className = 'max-w-[85%] bg-white/20 text-white px-3.5 py-2.5 rounded-2xl rounded-bl-sm text-sm backdrop-blur-sm';
+    botMsg.textContent = demoReplies[demoIdx % demoReplies.length];
+    msgs.appendChild(botMsg);
+    demoIdx++;
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 800);
+}
+</script>
+
+</body>
+</html>

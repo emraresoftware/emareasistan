@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0fdfa"/>
+      <stop offset="100%" stop-color="#d1faf4"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9e91"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10b8a6"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Arka plan -->
+  <rect width="800" height="800" fill="url(#bg)"/>
+
+  <!-- Üst renkli bant -->
+  <rect width="800" height="320" fill="url(#card)" rx="0"/>
+  <circle cx="700" cy="60" r="200" fill="white" fill-opacity="0.05"/>
+  <circle cx="100" cy="280" r="150" fill="white" fill-opacity="0.05"/>
+
+  <!-- İkon dairesi -->
+  <circle cx="400" cy="140" r="72" fill="white" fill-opacity="0.2"/>
+  <circle cx="400" cy="140" r="60" fill="white"/>
+  <!-- Chat icon -->
+  <text x="400" y="162" font-family="'Helvetica Neue', Arial" font-size="48" text-anchor="middle" fill="#0d9e91">💬</text>
+
+  <!-- Başlık -->
+  <text x="400" y="248" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="36" fill="white" text-anchor="middle">AI Sohbet Asistanı</text>
+  <text x="400" y="286" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="20" fill="white" fill-opacity="0.85" text-anchor="middle">7/24 Otomatik Müşteri Yanıtı</text>
+
+  <!-- Alt kart bölümü -->
+  <rect x="40" y="350" width="720" height="110" rx="20" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="96" cy="405" r="28" fill="#f0fdfa"/>
+  <text x="96" y="414" font-family="'Helvetica Neue', Arial" font-size="24" text-anchor="middle">🤖</text>
+  <text x="140" y="394" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="19" fill="#0f172a">Anında Yanıt</text>
+  <text x="140" y="416" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#64748b">Her soruya saniyeler içinde profesyonel yanıt</text>
+  <text x="140" y="436" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#10b8a6">Gemini AI · OpenAI · Özel Model</text>
+
+  <rect x="40" y="476" width="720" height="110" rx="20" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="96" cy="531" r="28" fill="#f0fdfa"/>
+  <text x="96" y="540" font-family="'Helvetica Neue', Arial" font-size="24" text-anchor="middle">🎯</text>
+  <text x="140" y="520" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="19" fill="#0f172a">Akıllı Yönlendirme</text>
+  <text x="140" y="542" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#64748b">Soruları kategorize eder, doğru yanıtı bulur</text>
+  <text x="140" y="562" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#10b8a6">Ürün önerisi · Fiyat · Kampanya</text>
+
+  <rect x="40" y="602" width="720" height="110" rx="20" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="96" cy="657" r="28" fill="#f0fdfa"/>
+  <text x="96" y="666" font-family="'Helvetica Neue', Arial" font-size="24" text-anchor="middle">👥</text>
+  <text x="140" y="646" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="19" fill="#0f172a">Temsilci Devralma</text>
+  <text x="140" y="668" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#64748b">İstediğin an AI'dan konuşmayı devral</text>
+  <text x="140" y="688" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#10b8a6">Sorunsuz geçiş · Müşteri fark etmez</text>
+
+  <!-- Alt badge -->
+  <rect x="40" y="730" width="720" height="48" rx="14" fill="url(#badge)"/>
+  <text x="400" y="761" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="18" fill="white" text-anchor="middle">asistan.emarecloud.tr · 14 Gün Ücretsiz Deneyin</text>
+</svg>

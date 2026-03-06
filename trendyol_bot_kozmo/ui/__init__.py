@@ -1,0 +1,1 @@
+"""ui — Tkinter arayuz modulleri."""

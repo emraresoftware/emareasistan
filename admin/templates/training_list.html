@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}AI Eğitim{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>AI Eğitim</span></div>
+{% endblock %}
+{% block content %}
+{% if request.query_params.get('synced') %}
+<div class="msg msg-success">✓ {{ request.query_params.get('synced') }} örnek için embedding oluşturuldu.</div>
+{% endif %}
+{% if request.query_params.get('from_chat') %}
+<div class="msg msg-success">✓ Sohbetten eğitim örneği eklendi.</div>
+{% endif %}
+{% if welcome_saved %}
+<div class="msg msg-success">✓ Karşılama senaryoları kaydedildi.</div>
+{% endif %}
+{% if rules_saved %}
+<div class="msg msg-success">✓ AI yanıt kuralları kaydedildi.</div>
+{% endif %}
+{% if options_saved %}
+<div class="msg msg-success">✓ Soru seçenekleri kaydedildi.</div>
+{% endif %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">AI Eğitim</h1>
+    <p class="page-subtitle">Örnek soru-cevap çiftleri ekleyerek yapay zekayı eğitin. Benzer sorularda bu örnekleri takip eder.</p>
+  </div>
+  <a href="/admin/training/new" class="btn">+ Yeni Örnek</a>
+  <a href="/admin/training/import" class="btn btn-secondary">Toplu Import (CSV)</a>
+  <form method="post" action="/admin/training/sync-embeddings" style="display:inline;">
+    <button type="submit" class="btn btn-secondary">Benzerlik Araması İçin Embedding Oluştur</button>
+  </form>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <h3 style="margin-top:0;">AI Yanıt Kuralları</h3>
+  <p style="color:#64748b;margin-top:0.25rem;">
+    Yapay zeka (API veya lokal) her cevap vermeden önce bu kuralları okur. Nasıl cevap vereceğini belirleyen talimatlar ekleyin.
+    Her satır bir kuraldır. Örn: "Fiyat sorulduğunda önce teklif ver, sonra siparişe yönlendir"
+  </p>
+  <form method="post" action="/admin/training/response-rules/save">
+    <div class="form-group">
+      <textarea name="ai_response_rules" rows="8" style="width:100%;font-family:inherit;" placeholder="Müşteri fiyat sorduğunda önce teklif ver, sonra siparişe yönlendir.&#10;İlk mesajda selamlamayı tekrarlama.&#10;Bilmediğin konularda kibarca yönlendir.">{{ ai_response_rules_text or '' }}</textarea>
+    </div>
+    <button type="submit" class="btn">Kuralları Kaydet</button>
+  </form>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <h3 style="margin-top:0;">Soru Seçenekleri</h3>
+  <p style="color:#64748b;margin-top:0.25rem;">
+    Müşteriye gösterilecek tıklanabilir seçenekleri buradan tasarlayın. Müşteri numara yazarak (1, 2, 3...) seçim yapar; seçtiğinde "Gönderilecek metin" otomatik iletilir.
+  </p>
+  <form method="post" action="/admin/training/quick-reply-options/save">
+    <div class="form-group">
+      <label style="display:flex;align-items:center;gap:0.5rem;font-weight:600;">
+        <input type="checkbox" name="options_enabled" value="on" {% if quick_reply_enabled %}checked{% endif %}>
+        Soru seçenekleri aktif
+      </label>
+    </div>
+    <div class="table-wrapper" style="margin-top:0.5rem;">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:25%;">Etiket (müşteriye görünen)</th>
+            <th>Gönderilecek metin (tıklayınca iletilir)</th>
+            <th style="width:60px;"></th>
+          </tr>
+        </thead>
+        <tbody id="options-tbody">
+          {% for opt in quick_reply_options %}
+          <tr>
+            <td><input type="text" name="opt_label" value="{{ opt.label|e }}" placeholder="Örn: Ürünler" style="width:100%;"></td>
+            <td><input type="text" name="opt_text" value="{{ opt.text|e }}" placeholder="Örn: Ürünler hakkında bilgi almak istiyorum" style="width:100%;"></td>
+            <td><button type="button" class="btn btn-sm btn-danger opt-remove" title="Sil">×</button></td>
+          </tr>
+          {% else %}
+          <tr>
+            <td><input type="text" name="opt_label" placeholder="Örn: Ürünler" style="width:100%;"></td>
+            <td><input type="text" name="opt_text" placeholder="Örn: Ürünler hakkında bilgi almak istiyorum" style="width:100%;"></td>
+            <td><button type="button" class="btn btn-sm btn-danger opt-remove" title="Sil">×</button></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <button type="button" id="opt-add" class="btn btn-secondary btn-sm" style="margin-top:0.5rem;">+ Seçenek Ekle</button>
+    <button type="submit" class="btn" style="margin-top:0.5rem;margin-left:0.5rem;">Seçenekleri Kaydet</button>
+  </form>
+</div>
+
+<div class="card" style="margin-bottom:1rem;">
+  <h3 style="margin-top:0;">Karşılama Senaryoları</h3>
+  <p style="color:#64748b;margin-top:0.25rem;">
+    İlk mesajda kullanılan tanıtım metinlerini ve sektör bazlı örnek soruları buradan yönetebilirsiniz.
+    Her satır ayrı bir varyasyon olarak değerlendirilir.
+  </p>
+  <form method="post" action="/admin/training/welcome-scenarios/save">
+    <div style="margin-bottom:0.75rem;">
+      <label style="display:flex;align-items:center;gap:0.5rem;font-weight:600;">
+        <input type="checkbox" name="welcome_enabled" {% if welcome_enabled %}checked{% endif %}>
+        Karşılama senaryoları aktif
+      </label>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:0.75rem;">
+      <div>
+        <label style="font-weight:600;">Tanıtım Metni Varyasyonları (her satır ayrı)</label>
+        <textarea name="welcome_intro_variants" rows="7" style="width:100%;margin-top:0.35rem;" placeholder="Emare Asistan ...">{{ welcome_intro_variants_text or '' }}</textarea>
+      </div>
+      <div>
+        <label style="font-weight:600;">Genel Örnek Sorular (her satır ayrı)</label>
+        <textarea name="welcome_examples_general" rows="7" style="width:100%;margin-top:0.35rem;" placeholder="Musterilerime nasil daha iyi hizmet verebilirim?">{{ welcome_examples_general_text or '' }}</textarea>
+      </div>
+      <div>
+        <label style="font-weight:600;">Otomotiv Örnekleri</label>
+        <textarea name="welcome_examples_automotive" rows="6" style="width:100%;margin-top:0.35rem;">{{ welcome_examples_automotive_text or '' }}</textarea>
+      </div>
+      <div>
+        <label style="font-weight:600;">E-Ticaret Örnekleri</label>
+        <textarea name="welcome_examples_ecommerce" rows="6" style="width:100%;margin-top:0.35rem;">{{ welcome_examples_ecommerce_text or '' }}</textarea>
+      </div>
+      <div>
+        <label style="font-weight:600;">Sağlık Örnekleri</label>
+        <textarea name="welcome_examples_health" rows="6" style="width:100%;margin-top:0.35rem;">{{ welcome_examples_health_text or '' }}</textarea>
+      </div>
+      <div>
+        <label style="font-weight:600;">Eğitim Örnekleri</label>
+        <textarea name="welcome_examples_education" rows="6" style="width:100%;margin-top:0.35rem;">{{ welcome_examples_education_text or '' }}</textarea>
+      </div>
+      <div>
+        <label style="font-weight:600;">Turizm/Rezervasyon Örnekleri</label>
+        <textarea name="welcome_examples_tourism" rows="6" style="width:100%;margin-top:0.35rem;">{{ welcome_examples_tourism_text or '' }}</textarea>
+      </div>
+    </div>
+
+    <div style="margin-top:0.9rem;display:flex;flex-wrap:wrap;gap:0.5rem;align-items:center;">
+      <button type="submit" class="btn">Karşılama Senaryolarını Kaydet</button>
+      <span style="display:inline-flex;align-items:center;gap:0.5rem;">
+        <label style="font-weight:500;">Sektör:</label>
+        <select id="preview-sector" style="padding:0.4rem 0.6rem;border-radius:6px;">
+          <option value="genel">Genel</option>
+          <option value="otomotiv">Otomotiv</option>
+          <option value="e_ticaret">E-Ticaret</option>
+          <option value="saglik">Sağlık</option>
+          <option value="egitim">Eğitim</option>
+          <option value="turizm">Turizm</option>
+        </select>
+        <button type="button" id="btn-preview" class="btn btn-secondary">Önizle</button>
+      </span>
+    </div>
+    <div id="preview-result" style="display:none;margin-top:1rem;padding:1rem;background:#f1f5f9;border-radius:8px;white-space:pre-wrap;font-size:0.9rem;"></div>
+  </form>
+</div>
+<script>
+(function(){
+  var btn = document.getElementById('btn-preview');
+  var result = document.getElementById('preview-result');
+  if (!btn || !result) return;
+  btn.onclick = function(){
+    var form = btn.closest('form');
+    var sector = (document.getElementById('preview-sector') || {}).value || 'genel';
+    var intro = (form.querySelector('[name="welcome_intro_variants"]') || {}).value || '';
+    var payload = {
+      sector: sector,
+      user_message: sector === 'genel' ? 'merhaba' : (sector === 'otomotiv' ? 'servis randevu' : (sector === 'e_ticaret' ? 'siparis kargo' : 'merhaba')),
+      intro_variants: intro,
+      sector_examples: {
+        genel: (form.querySelector('[name="welcome_examples_general"]') || {}).value || '',
+        otomotiv: (form.querySelector('[name="welcome_examples_automotive"]') || {}).value || '',
+        e_ticaret: (form.querySelector('[name="welcome_examples_ecommerce"]') || {}).value || '',
+        saglik: (form.querySelector('[name="welcome_examples_health"]') || {}).value || '',
+        egitim: (form.querySelector('[name="welcome_examples_education"]') || {}).value || '',
+        turizm: (form.querySelector('[name="welcome_examples_tourism"]') || {}).value || ''
+      }
+    };
+    result.style.display = 'block';
+    result.textContent = 'Yükleniyor...';
+    fetch('/admin/training/welcome-scenarios/preview', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function(r){ return r.json(); }).then(function(data){
+      result.textContent = data.preview || '(Önizleme alınamadı)';
+    }).catch(function(){
+      result.textContent = 'Önizleme alınırken hata oluştu.';
+    });
+  };
+})();
+</script>
+<script>
+(function(){
+  var tbody = document.getElementById('options-tbody');
+  var addBtn = document.getElementById('opt-add');
+  if (!tbody || !addBtn) return;
+  addBtn.onclick = function(){
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td><input type="text" name="opt_label" placeholder="Örn: Ürünler" style="width:100%;"></td><td><input type="text" name="opt_text" placeholder="Örn: Ürünler hakkında bilgi almak istiyorum" style="width:100%;"></td><td><button type="button" class="btn btn-sm btn-danger opt-remove" title="Sil">×</button></td>';
+    tbody.appendChild(tr);
+    tr.querySelector('.opt-remove').onclick = function(){ tr.remove(); };
+  };
+  tbody.querySelectorAll('.opt-remove').forEach(function(btn){
+    btn.onclick = function(){ btn.closest('tr').remove(); };
+  });
+})();
+</script>
+
+<div class="card">
+  <div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>Soru</th>
+        <th>Beklenen Cevap</th>
+        <th>Kategori</th>
+        <th>Öncelik</th>
+        <th>Durum</th>
+        <th>İşlem</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ex in examples %}
+      <tr>
+        <td><strong>{{ (ex.question or '-')[:60] }}{% if (ex.question or '')|length > 60 %}...{% endif %}</strong></td>
+        <td><small>{{ (ex.expected_answer or '-')[:50] }}{% if (ex.expected_answer or '')|length > 50 %}...{% endif %}</small></td>
+        <td><span class="badge badge-info">{{ ex.category or '-' }}</span></td>
+        <td>{{ ex.priority }}</td>
+        <td><span class="badge {% if ex.is_active %}badge-success{% else %}badge-danger{% endif %}">{{ 'Aktif' if ex.is_active else 'Pasif' }}</span></td>
+        <td>
+          <a href="/admin/training/{{ ex.id }}" class="btn btn-sm">Düzenle</a>
+          <form method="post" action="/admin/training/{{ ex.id }}/delete" style="display:inline;">
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Silmek istediğinize emin misiniz?')">Sil</button>
+          </form>
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="6" class="empty-state"><p>Henüz eğitim örneği yok.</p><p style="font-size:0.9rem;color:#94a3b8;">"Montaj fiyatı ne kadar?" → "Montaj ücreti 500 TL'dir." gibi örnekler ekleyin.</p><a href="/admin/training/new" class="btn btn-sm">+ Yeni Örnek</a></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if total_pages > 1 %}
+  <div class="pagination" style="margin-top:1rem;">
+    <span class="pagination-info">Toplam {{ total }} örnek — Sayfa {{ page }}/{{ total_pages }}</span>
+    {% if page > 1 %}<a href="?page={{ page - 1 }}" class="btn btn-sm">← Önceki</a>{% endif %}
+    {% if page < total_pages %}<a href="?page={{ page + 1 }}" class="btn btn-sm">Sonraki →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

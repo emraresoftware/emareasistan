@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Ayarlar{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <span>Ayarlar</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Ayarlar</h1>
+  <p class="page-subtitle">Hesap, yapay zeka ve entegrasyon ayarlarınızı buradan yönetebilirsiniz.</p>
+</div>
+
+<div class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+  <a href="/admin/settings/account" class="settings-card">
+    <div class="settings-card-icon">👤</div>
+    <h3>Hesap Sahibi</h3>
+    <p>Adınızı, e-posta adresinizi ve şifrenizi güncelleyin.</p>
+  </a>
+  <a href="/admin/settings/branding" class="settings-card">
+    <div class="settings-card-icon">🎨</div>
+    <h3>Görünüm & Marka</h3>
+    <p>Renkler ve logo ile admin panelini özelleştirin.</p>
+  </a>
+  <a href="/admin/settings/ai" class="settings-card">
+    <div class="settings-card-icon">🤖</div>
+    <h3>Yapay Zeka</h3>
+    <p>Gemini, OpenAI ve lokal model ayarları.</p>
+  </a>
+  <a href="/admin/settings/api" class="settings-card">
+    <div class="settings-card-icon">🔌</div>
+    <h3>Entegrasyonlar</h3>
+    <p>Modül API bağlantıları ve harici sistemler.</p>
+  </a>
+</div>
+
+<style>
+.settings-card {
+  display: block;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.75rem;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.settings-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(15,23,42,0.1);
+  transform: translateY(-2px);
+}
+.settings-card-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+.settings-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+.settings-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+</style>
+{% endblock %}

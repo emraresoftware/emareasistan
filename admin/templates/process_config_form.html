@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Süreç Konfigürasyonu — {{ config.platform }} / {{ config.process_type }}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/workflows">İş Akışları</a> <span>›</span> <a href="/admin/process-config">Süreç Konfigürasyonu</a> <span>›</span> <span>{{ config.platform }} / {{ config.process_type }}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <div>
+    <h1 class="page-title">{{ config.platform }} — {{ config.process_type }}</h1>
+    <p class="page-subtitle">SLA, escalation ve bildirim ayarları.</p>
+  </div>
+  <a href="/admin/process-config" class="btn btn-secondary">← Listeye Dön</a>
+</div>
+
+<form method="post" action="/admin/process-config/save">
+  <input type="hidden" name="config_id" value="{{ config.id }}">
+  <div class="card">
+    <h3 style="margin-top:0;">Temel Ayarlar</h3>
+    <div class="form-group">
+      <label><input type="checkbox" name="auto_response" value="on" {% if config.auto_response %}checked{% endif %}> Otomatik AI yanıtı etkin</label>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1rem;">
+    <h3 style="margin-top:0;">Escalation (Yönlendirme)</h3>
+    <p style="color:var(--text-muted);font-size:0.9rem;">Belirtilen süre içinde yanıt verilmezse temsilciye yönlendir.</p>
+    <div class="form-group">
+      <label for="escalation_after_seconds">Yönlendirme süresi (saniye)</label>
+      <input type="number" id="escalation_after_seconds" name="escalation_after_seconds" value="{{ escalation.after_seconds|default(300) }}" min="60" placeholder="300">
+    </div>
+  </div>
+  <div class="card" style="margin-top:1rem;">
+    <h3 style="margin-top:0;">SLA Ayarları</h3>
+    <div class="form-group">
+      <label for="sla_response_seconds">İlk yanıt süresi (saniye)</label>
+      <input type="number" id="sla_response_seconds" name="sla_response_seconds" value="{{ sla.response_time_seconds|default(60) }}" min="0" placeholder="60">
+    </div>
+    <div class="form-group">
+      <label for="sla_resolution_hours">Çözüm süresi (saat)</label>
+      <input type="number" id="sla_resolution_hours" name="sla_resolution_hours" value="{{ sla.resolution_hours|default(24) }}" min="0" placeholder="24">
+    </div>
+  </div>
+  <div style="margin-top:1.25rem;">
+    <button type="submit" class="btn">Kaydet</button>
+    <a href="/admin/process-config" class="btn btn-secondary">İptal</a>
+  </div>
+</form>
+{% endblock %}

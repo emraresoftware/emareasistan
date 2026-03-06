@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{% if template %}Şablon Düzenle{% else %}Yeni Şablon{% endif %}{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/export-templates">Veri Aktarımı</a> <span>›</span> <span>{% if template %}Düzenle{% else %}Yeni{% endif %}</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{% if template %}Şablon Düzenle{% else %}Yeni Veri Aktarım Şablonu{% endif %}</h1>
+</div>
+
+<form method="post" action="/admin/export-templates/save" class="card" style="max-width:640px;">
+  {% if template %}
+  <input type="hidden" name="id" value="{{ template.id }}">
+  {% endif %}
+  <div class="form-group">
+    <label>Şablon adı</label>
+    <input type="text" name="name" value="{{ template.name if template else '' }}" placeholder="Örn: CRM Sipariş Aktarımı" required>
+  </div>
+  <div class="form-group">
+    <label>Kaynak veri</label>
+    <select name="source" required>
+      <option value="orders" {% if template and template.source == 'orders' %}selected{% endif %}>Siparişler</option>
+      <option value="contacts" {% if template and template.source == 'contacts' %}selected{% endif %}>Kişiler</option>
+      <option value="reminders" {% if template and template.source == 'reminders' %}selected{% endif %}>Hatırlatıcılar</option>
+    </select>
+    <small>Mevcut alanlar: {{ source_fields.orders if not template or template.source == 'orders' else (source_fields.contacts if template and template.source == 'contacts' else source_fields.reminders) }}</small>
+  </div>
+  <div class="form-group">
+    <label>Tetikleyici</label>
+    <select name="trigger">
+      <option value="webhook" {% if not template or template.trigger == 'webhook' %}selected{% endif %}>Anlık (webhook) - Oluşunca POST at</option>
+      <option value="manual" {% if template and template.trigger == 'manual' %}selected{% endif %}>Manuel - İndir butonu ile</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Çıktı formatı</label>
+    <select name="output_format">
+      <option value="json" {% if not template or template.output_format == 'json' %}selected{% endif %}>JSON</option>
+      <option value="csv" {% if template and template.output_format == 'csv' %}selected{% endif %}>CSV</option>
+    </select>
+  </div>
+  <div class="form-group" id="webhook-group">
+    <label>Webhook URL</label>
+    <input type="url" name="webhook_url" value="{{ template.webhook_url if template else '' }}" placeholder="https://..."
+           {% if template and template.trigger == 'manual' %}style="display:none"{% endif %}>
+    <small>Yeni kayıt oluşunca bu adrese JSON POST gönderilir. Zapier, Make, n8n veya kendi API'niz.</small>
+  </div>
+  <div class="form-group">
+    <label>Alan eşlemesi (JSON, opsiyonel)</label>
+    <textarea name="field_mapping" rows="6" placeholder='{"order.customer_name": "musteri_adi", "order.customer_phone": "telefon", "order.total_amount": "tutar"}
+Boş bırakırsanız varsayılan alan adları kullanılır.'>{{ template.field_mapping if template and template.field_mapping else '' }}</textarea>
+    <small>Asistan alanı → Hedef sistem alanı. Örn: customer_name → musteri_adi. Boş = aynen gönder.</small>
+  </div>
+  <div style="display:flex;gap:0.5rem;">
+    <button type="submit" class="btn btn-success">Kaydet</button>
+    <a href="/admin/export-templates" class="btn btn-secondary">İptal</a>
+  </div>
+</form>
+
+<script>
+document.querySelector('select[name="trigger"]').addEventListener('change', function() {
+  var g = document.getElementById('webhook-group');
+  g.style.display = this.value === 'webhook' ? 'block' : 'none';
+  g.querySelector('input').required = this.value === 'webhook';
+});
+</script>
+{% endblock %}

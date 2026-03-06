@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eef2ff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10b8a6"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <rect width="800" height="320" fill="url(#card)"/>
+  <circle cx="700" cy="60" r="200" fill="white" fill-opacity="0.05"/>
+  <circle cx="100" cy="280" r="150" fill="white" fill-opacity="0.05"/>
+
+  <circle cx="400" cy="140" r="72" fill="white" fill-opacity="0.2"/>
+  <circle cx="400" cy="140" r="60" fill="white"/>
+  <text x="400" y="162" font-family="'Helvetica Neue', Arial" font-size="48" text-anchor="middle">📅</text>
+
+  <text x="400" y="248" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="800" font-size="36" fill="white" text-anchor="middle">Randevu Yönetimi</text>
+  <text x="400" y="286" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="20" fill="white" fill-opacity="0.85" text-anchor="middle">WhatsApp'tan Randevu Al, AI Yönetsin</text>
+
+  <rect x="40" y="350" width="720" height="110" rx="20" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="96" cy="405" r="28" fill="#eef2ff"/>
+  <text x="96" y="414" font-family="'Helvetica Neue', Arial" font-size="24" text-anchor="middle">✅</text>
+  <text x="140" y="394" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="19" fill="#0f172a">Kolay Randevu Alma</text>
+  <text x="140" y="416" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#64748b">Sohbet üzerinden tarih, saat ve hizmet seçimi</text>
+  <text x="140" y="436" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#6366f1">Kuaför · Klinik · Servis · Danışmanlık</text>
+
+  <rect x="40" y="476" width="720" height="110" rx="20" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="96" cy="531" r="28" fill="#eef2ff"/>
+  <text x="96" y="540" font-family="'Helvetica Neue', Arial" font-size="24" text-anchor="middle">🔔</text>
+  <text x="140" y="520" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="19" fill="#0f172a">Otomatik Hatırlatma</text>
+  <text x="140" y="542" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#64748b">Randevu öncesi WhatsApp ile otomatik bildirim</text>
+  <text x="140" y="562" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#6366f1">1 gün önce · 1 saat önce · Onay mesajı</text>
+
+  <rect x="40" y="602" width="720" height="110" rx="20" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="96" cy="657" r="28" fill="#eef2ff"/>
+  <text x="96" y="666" font-family="'Helvetica Neue', Arial" font-size="24" text-anchor="middle">🗓️</text>
+  <text x="140" y="646" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="19" fill="#0f172a">Takvim Entegrasyonu</text>
+  <text x="140" y="668" font-family="'Helvetica Neue', Arial, sans-serif" font-size="15" fill="#64748b">Müsait slotlar otomatik kontrol edilir</text>
+  <text x="140" y="688" font-family="'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#6366f1">Çakışma önleme · Çoklu personel desteği</text>
+
+  <rect x="40" y="730" width="720" height="48" rx="14" fill="url(#badge)"/>
+  <text x="400" y="761" font-family="'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="18" fill="white" text-anchor="middle">asistan.emarecloud.tr · 14 Gün Ücretsiz Deneyin</text>
+</svg>

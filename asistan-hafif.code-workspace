@@ -1,0 +1,31 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "name": "Asistan (hafif)"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "venv": true,
+      ".venv": true,
+      "**/node_modules": true,
+      "scripts/local_llm": true,
+      "data": true,
+      "uploads": true,
+      "**/artifacts": true,
+      "*.db": true,
+      "*.log": true,
+      "**/.wwebjs_auth*": true,
+      "**/.wwebjs_cache": true
+    },
+    "search.exclude": {
+      "**/venv": true,
+      "**/node_modules": true,
+      "**/scripts/local_llm": true,
+      "**/data": true,
+      "**/uploads": true,
+      "**/artifacts": true
+    }
+  }
+}

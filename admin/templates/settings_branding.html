@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Görünüm & Marka{% endblock %}
+{% block breadcrumb %}
+<div class="breadcrumb"><a href="/admin/dashboard">Dashboard</a> <span>›</span> <a href="/admin/settings">Ayarlar</a> <span>›</span> <span>Görünüm & Marka</span></div>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Görünüm & Marka</h1>
+  <p class="page-subtitle">Admin panelinizin renklerini ve logosunu özelleştirin. Boş bırakırsanız varsayılan tema kullanılır.</p>
+</div>
+
+{% if saved %}
+<div class="msg msg-success">✓ Kaydedildi.</div>
+{% endif %}
+
+<div class="card" style="max-width: 520px;">
+  <form method="post" action="/admin/settings/branding" enctype="multipart/form-data">
+    <div class="form-group">
+      <label for="primary_color">Ana renk (hex)</label>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="color" id="primary_color_picker" value="{{ primary_color or '#0f172a' }}" style="width:48px;height:40px;padding:2px;cursor:pointer;border-radius:var(--radius-sm);" title="Renk seçin">
+        <input type="text" id="primary_color" name="primary_color" value="{{ primary_color or '' }}" placeholder="#0f172a" pattern="^#[0-9A-Fa-f]{6}$" style="flex:1;">
+      </div>
+      <small style="color:var(--text-muted);font-size:0.8rem;">Navbar, butonlar ve vurgular için</small>
+    </div>
+    <div class="form-group">
+      <label for="accent_color">Vurgu rengi (hex)</label>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <input type="color" id="accent_color_picker" value="{{ accent_color or '#f59e0b' }}" style="width:48px;height:40px;padding:2px;cursor:pointer;border-radius:var(--radius-sm);" title="Renk seçin">
+        <input type="text" id="accent_color" name="accent_color" value="{{ accent_color or '' }}" placeholder="#f59e0b" pattern="^#[0-9A-Fa-f]{6}$" style="flex:1;">
+      </div>
+      <small style="color:var(--text-muted);font-size:0.8rem;">Hover, link ve ikincil vurgular için</small>
+    </div>
+    <div class="form-group">
+      <label for="logo_url">Logo URL</label>
+      <input type="url" id="logo_url" name="logo_url" value="{{ logo_url or '' }}" placeholder="https://example.com/logo.png">
+      <small style="color:var(--text-muted);font-size:0.8rem;">Navbar'da görünecek logo. Boş bırakırsanız metin gösterilir.</small>
+    </div>
+    <div class="form-group">
+      <label for="logo_file">veya logo resmi yükle</label>
+      <input type="file" id="logo_file" name="logo_file" accept="image/*">
+      <small style="color:var(--text-muted);font-size:0.8rem;">PNG, JPG, SVG (max 10 MB). Yüklerseniz URL yerine kullanılır.</small>
+    </div>
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a href="/admin/settings" class="btn btn-secondary" style="margin-left:0.5rem;">Geri</a>
+  </form>
+</div>
+
+<script>
+(function(){
+  var pc = document.getElementById('primary_color');
+  var pcp = document.getElementById('primary_color_picker');
+  var ac = document.getElementById('accent_color');
+  var acp = document.getElementById('accent_color_picker');
+  function hex(v){ return v ? (v.startsWith('#') ? v : '#'+v) : null; }
+  if(pcp){ pcp.addEventListener('input', function(){ pc.value = pcp.value; }); }
+  if(pc){ pc.addEventListener('input', function(){ var h=hex(pc.value); if(h) pcp.value=h; }); }
+  if(acp){ acp.addEventListener('input', function(){ ac.value = acp.value; }); }
+  if(ac){ ac.addEventListener('input', function(){ var h=hex(ac.value); if(h) acp.value=h; }); }
+})();
+</script>
+{% endblock %}
