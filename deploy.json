@@ -1,0 +1,22 @@
+{
+  "slug": "emareasistan",
+  "name": "Emare Asistan",
+  "github_repo": "emraresoftware/emareasistan",
+  "branch": "main",
+  "dc": "dc2",
+  "server_host": "77.92.152.3",
+  "server_ssh_port": 2222,
+  "remote_path": "/var/www/emareasistan",
+  "stack": "python-gunicorn",
+  "port": 8201,
+  "domain": "asistan.emarecloud.tr",
+  "deploy_commands": [
+    "cd /var/www/emareasistan",
+    "git pull origin main",
+    "source venv/bin/activate && pip install -r requirements.txt -q",
+    "sudo systemctl restart emareasistan"
+  ],
+  "restart_command": "systemctl status emareasistan --no-pager",
+  "auto_deploy_on_push": true,
+  "health_check_url": "https://asistan.emarecloud.tr/api/health"
+}
