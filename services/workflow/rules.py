@@ -2,6 +2,7 @@
 RuleEngine - Yönetim kurallarına göre ürün/resim eşleştirme.
 ResponseRule tablosundan tenant bazlı kuralları değerlendirir.
 """
+from __future__ import annotations
 import json
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession

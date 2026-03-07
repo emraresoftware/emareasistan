@@ -15,6 +15,7 @@ Harici uygulamalar bu endpoint'e POST atarak anlık WhatsApp bildirimi alır.
                "trace": "File payments.py line 87 in charge\\n  raise TimeoutError"
              }'
 """
+from __future__ import annotations
 import logging
 from datetime import datetime
 

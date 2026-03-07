@@ -3,6 +3,7 @@ AI Asistan - Çekirdek mantık (tenant bağımsız)
 Müşteri sorularına cevap, ürün önerisi, sipariş ve kargo bilgisi
 OpenAI veya Gemini API destekler
 """
+from __future__ import annotations
 import asyncio
 import json
 import logging

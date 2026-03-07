@@ -3,6 +3,7 @@ Birleşik sohbet işleyici - WhatsApp, Telegram vb. platformlardan gelen mesajla
 AI asistanı ile entegre, ürün resmi gönderimi, sipariş, kargo takibi, konum paylaşımı
 Yönetim paneli kuralları (ResponseRule) ile araç modeli/anahtar kelimeye göre otomatik ürün gönderimi
 """
+from __future__ import annotations
 import asyncio
 
 from services.core.time_utils import now_turkey

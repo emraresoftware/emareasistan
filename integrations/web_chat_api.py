@@ -3,6 +3,7 @@ Web Sohbet API - Firmaların sitelerine gömülebilen AI destekli sohbet
 POST /api/chat/web - mesaj gönder, AI yanıtı al
 GET /chat/{tenant_slug} - iframe için tam sayfa sohbet arayüzü
 """
+from __future__ import annotations
 import logging
 import uuid
 from pathlib import Path

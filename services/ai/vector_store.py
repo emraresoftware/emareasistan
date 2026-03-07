@@ -2,6 +2,7 @@
 Vector store - RAG / semantik arama için embedding saklama ve arama.
 Sadece PostgreSQL + pgvector ile çalışır.
 """
+from __future__ import annotations
 import json
 from typing import Optional
 

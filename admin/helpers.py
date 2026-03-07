@@ -1,6 +1,7 @@
 """
 Admin paneli ortak yardımcılar - route modülleri ve routes.py buradan import eder.
 """
+from __future__ import annotations
 import json
 import re
 import smtplib

@@ -2,6 +2,7 @@
 Genel web sitesi analiz servisi - herhangi bir e-ticaret sitesinden
 ürün kataloğu, firma bilgisi ve sektör tespiti
 """
+from __future__ import annotations
 import re
 import json
 import asyncio

@@ -3,6 +3,7 @@ IntentDetector - Mesaj niyetini kural ve anahtar kelime ile sınıflandırır.
 AI çağrısı yapmadan %70-80 oranında doğru tespit → maliyet düşer.
 ChatHandler ile uyumlu: product_inquiry, order, cargo_tracking, appointment, general
 """
+from __future__ import annotations
 import re
 from typing import Optional
 import logging

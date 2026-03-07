@@ -8,6 +8,7 @@ Kullanım:
   uv run python scripts/create_piramit_vpn_workflow.py
   uv run python scripts/create_piramit_vpn_workflow.py --tenant-id 2
 """
+from __future__ import annotations
 import asyncio
 import argparse
 from sqlalchemy import select

@@ -2,6 +2,7 @@
 Cron API - Arka plan işleri için endpoint'ler.
 Sistem cron'u ile periyodik çağrılır (örn. */10 * * * * curl .../api/cron/abandoned-cart?key=SECRET)
 """
+from __future__ import annotations
 from fastapi import APIRouter, HTTPException, Query
 
 from config import get_settings

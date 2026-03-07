@@ -4,6 +4,7 @@ services/trendyol/api.py — Trendyol Seller API İstemcisi
 Tenant bazında API kimlik bilgilerini kullanarak Trendyol Seller API'sine
 istek atar: Soru-Cevap, Sipariş, İade/Talep, Ürün Yorumları.
 """
+from __future__ import annotations
 
 import logging
 from datetime import datetime, timedelta

@@ -3,6 +3,7 @@ Modul bazli API ayarlari.
 Firma admin panelinden her modul icin API URL, anahtar ve baglanti
 parametreleri girilebilir.
 """
+from __future__ import annotations
 
 
 def _cargo_fields() -> list[dict]:

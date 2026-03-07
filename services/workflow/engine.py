@@ -2,6 +2,7 @@
 Workflow Engine - ChatHandler'da mesaj geldiğinde tenant workflow'larını çalıştırır.
 Trigger → Condition → Action yapısı ile akışları değerlendirir.
 """
+from __future__ import annotations
 import json
 import logging
 from typing import Any

@@ -1,6 +1,7 @@
 """
 Admin paneli – Ayarlar, entegrasyonlar, Yapay Zeka, api/ai-status.
 """
+from __future__ import annotations
 import json
 import re
 from datetime import datetime, timedelta

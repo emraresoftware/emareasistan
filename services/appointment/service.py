@@ -2,6 +2,7 @@
 Randevu servisi - Müsait slot hesaplama, randevu oluşturma.
 tenant_settings: appointment_work_hours (09:00-18:00), appointment_slot_minutes (30), appointment_work_days (1,2,3,4,5)
 """
+from __future__ import annotations
 from datetime import datetime, timedelta
 import re
 from typing import Optional

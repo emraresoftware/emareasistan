@@ -30,5 +30,16 @@
     "**/data": true,
     "**/*.log": true,
     "**/artifacts": true
-  }
+  },
+  "chat.tools.autoApprove": true,
+  "github.copilot.chat.agent.autoApprove": true,
+  "chat.commandCenter.enabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": true
+  },
+  "github.copilot.chat.runCommand.enabled": true,
+  "chat.agent.maxRequests": 100
 }

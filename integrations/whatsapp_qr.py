@@ -2,6 +2,7 @@
 WhatsApp QR Bridge API - Node.js bridge için endpoint
 QR ile giriş yapan WhatsApp client bu endpoint'e mesaj gönderir
 """
+from __future__ import annotations
 import logging
 from time import perf_counter
 from fastapi import APIRouter, HTTPException

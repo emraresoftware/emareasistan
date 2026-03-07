@@ -7,6 +7,7 @@ Akış:
 3. Sonraki güncellemelerde anahtar kullanılır, şifre istenmez.
 4. Deploy scripti arka planda çalışır; log ve durum panelden izlenir.
 """
+from __future__ import annotations
 
 from fastapi import APIRouter, Request, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse

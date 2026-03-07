@@ -1,4 +1,5 @@
 """Telegram kanalı - Update veya chat_id + bot ile"""
+from __future__ import annotations
 import logging
 from typing import Union, TYPE_CHECKING
 

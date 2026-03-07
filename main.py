@@ -55,6 +55,12 @@ async def lifespan(app):
 
 app = FastAPI(title="Emare Asistan", docs_url="/docs", redoc_url="/redoc", lifespan=lifespan)
 
+# === Emare Feedback ===
+from feedback_router import router as feedback_router
+app.include_router(feedback_router, prefix="/api/feedback", tags=["feedback"])
+# ======================
+
+
 
 # Path -> modül eşlemesi (admin route koruması için)
 _PATH_MODULES = {

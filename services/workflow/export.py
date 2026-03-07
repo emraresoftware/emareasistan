@@ -1,6 +1,7 @@
 """
 Veri aktarım servisi - ExportTemplate ile formatlı veri oluşturma ve webhook gönderme.
 """
+from __future__ import annotations
 import json
 import logging
 from typing import Any

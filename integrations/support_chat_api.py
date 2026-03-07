@@ -8,6 +8,7 @@ için yardım sunar. API anahtarları Emare Asistan tenant ayarlarından alını
 Kullanıcı "bu kuralı oluştur" derse AI create_rule JSON döndürebilir; bu endpoint parse edip
 oturum açık kullanıcının tenant'ına kural yazar.
 """
+from __future__ import annotations
 import json
 import logging
 import re

@@ -2,6 +2,7 @@
 Kanal yöneticisi - platforma göre kanal döndürür.
 Yeni platform eklemek: CHANNELS dict'e ekleyin.
 """
+from __future__ import annotations
 from typing import Any
 
 from .base import BaseChannel, ChatResponse

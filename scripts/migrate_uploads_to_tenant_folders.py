@@ -10,6 +10,7 @@ DB'deki ImageAlbum.image_urls, ResponseRule.image_urls ve Video.video_url günce
 Çalıştırma: Proje kökünden, venv aktifken:
   python scripts/migrate_uploads_to_tenant_folders.py
 """
+from __future__ import annotations
 import asyncio
 import json
 import re

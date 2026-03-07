@@ -1,6 +1,7 @@
 """
 Temsilci mesajlarını müşteriye iletme - WhatsApp Cloud API veya Bridge
 """
+from __future__ import annotations
 import logging
 import httpx
 

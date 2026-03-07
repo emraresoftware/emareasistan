@@ -1,4 +1,5 @@
 """ProductHandler - Ürün arama, vision, albüm, kural eşleşmesi"""
+from __future__ import annotations
 import json
 from sqlalchemy import select
 

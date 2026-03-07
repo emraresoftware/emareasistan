@@ -4,6 +4,7 @@ services/trendyol/questions.py — Trendyol Soru İşleme Zinciri
 Kozmopol'ün soru işleme mantığının web-tabanlı, multi-tenant versiyonu.
 Anahtar kelime, bulanık eşleştirme, Gemini AI ve bekleyen soru kuyruğu.
 """
+from __future__ import annotations
 
 import re
 import logging

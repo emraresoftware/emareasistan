@@ -2,6 +2,7 @@
 Instagram Messaging API - Webhook handler
 Meta Graph API üzerinden gelen Instagram DM mesajlarını işler
 """
+from __future__ import annotations
 import logging
 from time import perf_counter
 

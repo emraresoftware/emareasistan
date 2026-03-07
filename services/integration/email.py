@@ -1,6 +1,7 @@
 """E-posta gönderim servisi - kayıt onayı, bildirimler
 Firma SMTP (Entegrasyonlar > E-posta) tanımlıysa kullanılır, yoksa .env SMTP.
 """
+from __future__ import annotations
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart

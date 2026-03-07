@@ -1,4 +1,5 @@
 """OrderHandler - Ürün seçimi, sipariş oluşturma, state machine"""
+from __future__ import annotations
 import json
 import re
 from sqlalchemy import select

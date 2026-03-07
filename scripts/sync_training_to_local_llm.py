@@ -3,6 +3,7 @@
 AITrainingExample (veritabanı) → sample_train.jsonl senkronizasyonu.
 Panelden eklenen örnekleri lokal LoRA eğitimi için export eder.
 """
+from __future__ import annotations
 import asyncio
 import json
 import sys

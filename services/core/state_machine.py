@@ -2,6 +2,7 @@
 OrderStateMachine - Sipariş akışı state yönetimi.
 INIT → PRODUCT_SELECTED → CUSTOMER_INFO → ADDRESS → PAYMENT → CONFIRMED
 """
+from __future__ import annotations
 import json
 from typing import Any
 

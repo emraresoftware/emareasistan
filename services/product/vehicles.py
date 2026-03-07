@@ -2,6 +2,7 @@
 Türkiye'de 2000 sonrası satılan araç modelleri
 Ürün araması ve AI bağlamı için
 """
+from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Optional
