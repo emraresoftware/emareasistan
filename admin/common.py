@@ -1,6 +1,8 @@
 """
 Admin paneli ortak yardımcılar ve template — route modülleri buradan import eder.
 """
+from __future__ import annotations
+
 from pathlib import Path
 
 from fastapi import Request
