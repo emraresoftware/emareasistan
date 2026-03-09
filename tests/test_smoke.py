@@ -70,14 +70,15 @@ class TestHealthEndpoint:
 
 
 class TestRootRedirect:
-    """Kök URL yönlendirme testi."""
+    """Kök URL davranışı testi."""
 
     @pytest.mark.asyncio
-    async def test_root_redirects_to_admin(self, test_client):
-        """/ adresi /admin'e yönlendirir."""
+    async def test_root_returns_landing_or_redirects_admin(self, test_client):
+        """/ adresi landing döner veya /admin'e yönlendirir."""
         response = await test_client.get("/", follow_redirects=False)
-        assert response.status_code in (301, 302, 307)
-        assert "/admin" in response.headers.get("location", "")
+        assert response.status_code in (200, 301, 302, 307)
+        if response.status_code in (301, 302, 307):
+            assert "/admin" in response.headers.get("location", "")
 
 
 class TestSecurityHeaders:

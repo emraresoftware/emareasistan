@@ -47,6 +47,34 @@ from services.core.tenant import get_tenant_settings
 
 logger = logging.getLogger(__name__)
 
+IMPORTANT_KEYWORDS = {
+    "acil", "urgent", "ivedi", "şikayet", "sikayet", "iptal", "iade",
+    "ödeme", "odeme", "hukuk", "yasal", "tehdit", "problem", "sorun",
+    "çalışmıyor", "calismiyor", "arıza", "ariza", "hata", "uyarı", "uyari",
+}
+
+SOCIAL_KEYWORDS = {
+    "duyuru", "announcement", "bulten", "bülten", "kampanya", "newsletter",
+    "social", "sosyal", "instagram", "facebook", "linkedin", "twitter",
+    "x.com", "tiktok", "youtube", "post", "icerik", "içerik",
+}
+
+
+def _categorize_inbound_email(subject: str, body: str, sender: str) -> tuple[str, bool]:
+    """Gelen e-postayı kategoriye ayırır ve önem derecesi döndürür."""
+    text = f"{subject or ''}\n{body or ''}\n{sender or ''}".lower()
+
+    if any(k in text for k in IMPORTANT_KEYWORDS):
+        return "onemli", True
+
+    if any(k in text for k in SOCIAL_KEYWORDS):
+        return "sosyal_duyuru", False
+
+    if sender and any(k in sender.lower() for k in ("noreply", "no-reply", "mailer-daemon")):
+        return "otomatik_bildirim", False
+
+    return "genel", False
+
 # ──────────────────────────────────────────────────────────────────────────────
 
 _SEEN_DIR = Path(__file__).resolve().parent.parent / "data" / "tenants"
@@ -324,8 +352,34 @@ async def _process_tenant_inbox(tenant: Tenant, settings: dict) -> int:
                 seen.add(uid)
                 continue
 
+            category, is_important = _categorize_inbound_email(
+                parsed.get("subject", ""),
+                parsed.get("body", ""),
+                parsed.get("from_addr", ""),
+            )
+
+            if is_important:
+                try:
+                    from services.notifications.user_notifier import notify_important_message
+
+                    await notify_important_message(
+                        db=db,
+                        tenant_id=tenant.id,
+                        tenant_name=tenant.name or tenant.slug or "Tenant",
+                        source="e-posta",
+                        sender=parsed.get("from_addr", ""),
+                        subject=parsed.get("subject", ""),
+                        preview=parsed.get("body", "")[:220],
+                    )
+                except Exception as e:
+                    logger.warning("Önemli e-posta bildirimi atlanıyor (tenant=%s): %s", tenant.id, e)
+
             # Konu + gövde birleştir → ChatHandler'a gönder
-            user_text = f"[Konu: {parsed['subject']}]\n\n{parsed['body']}"
+            user_text = (
+                f"[Kategori: {category}]\n"
+                f"[Konu: {parsed['subject']}]\n\n"
+                f"{parsed['body']}"
+            )
 
             try:
                 response = await handler.process_message(

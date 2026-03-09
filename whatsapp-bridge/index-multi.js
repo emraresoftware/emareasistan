@@ -380,27 +380,10 @@ async function createClient(connId, name, authPath, fallbackPhone = null) {
             return false;
           });
 
-          // Fallback: LID bilinmiyorsa ve sadece @lid formatlı mention varsa bot'a aittir
-          // (Yeni WhatsApp format - grup için @c.us yerine @lid kullanılır)
-          if (!botMentioned && !conn.lidSerialized) {
-            const hasLidMention = mentions.some(mid => {
-              const midStr = (mid._serialized || String(mid)).toString();
-              return midStr.endsWith('@lid');
-            });
-            if (hasLidMention) {
-              botMentioned = true;
-              // LID'i öğren ve kaydet (kendini öğrenen sistem)
-              const lidMention = mentions.find(mid => {
-                const s = (mid._serialized || String(mid)).toString();
-                return s.endsWith('@lid');
-              });
-              if (lidMention) {
-                conn.lidSerialized = lidMention._serialized || String(lidMention);
-                conn.lidUser = conn.lidSerialized.split('@')[0];
-                console.log(`[${connId}] 💡 Bot LID öğrenildi: ${conn.lidSerialized}`);
-              }
-            }
-          }
+          // NOT: Herhangi bir @lid mention'ını bot mention'ı saymıyoruz.
+          // Bu, grupta başkası etiketlendiğinde false-positive üretip botun yanlış yanıt
+          // vermesine neden oluyordu. Sadece botun bilinen phone/WID/LID kimliği eşleşirse
+          // mention kabul edilir.
         }
 
         // Ek: body'de @{phone} veya @{lidUser} var mı? (mentionedIds boş gelse bile)

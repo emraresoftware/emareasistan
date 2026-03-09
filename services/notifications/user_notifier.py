@@ -34,6 +34,8 @@ def _parse_notification_settings(settings_json: Optional[str]) -> dict:
 def _user_wants_notification(user: User, event_type: str) -> bool:
     """Kullanıcı bu olay için bildirim istiyor mu?"""
     s = _parse_notification_settings(user.notification_settings)
+    if event_type == NOTIFY_NEW_MESSAGE and event_type not in s:
+        return True
     return bool(s.get(event_type, False))
 
 
@@ -261,3 +263,66 @@ async def send_daily_digest(db: AsyncSession) -> int:
             logger.exception("Daily digest failed for %s: %s", user.email, e)
 
     return sent
+
+
+async def notify_important_message(
+    db: AsyncSession,
+    tenant_id: int,
+    tenant_name: str,
+    source: str,
+    sender: str,
+    subject: str,
+    preview: str,
+) -> None:
+    """
+    Önemli gelen mesaj bildirimi (email/sms).
+    Kullanıcının notification_settings içinde new_message etkinse gönderilir.
+    """
+    users = await _get_tenant_users_for_notify(db, tenant_id)
+    smtp_config = await get_smtp_config_for_tenant(tenant_id)
+    if not smtp_config:
+        s = get_settings()
+        smtp_config = {
+            "host": s.smtp_host or "",
+            "port": s.smtp_port or 587,
+            "user": s.smtp_user or "",
+            "password": s.smtp_password or "",
+            "from_addr": s.smtp_from or "",
+            "from_name": "Emare Asistan",
+        }
+
+    safe_subject = (subject or "(Konu yok)").strip()[:180]
+    safe_sender = (sender or "-").strip()[:180]
+    safe_preview = (preview or "").strip().replace("\n", " ")[:220]
+    source_name = (source or "mesaj").strip()[:40]
+
+    mail_subject = f"🚨 Önemli {source_name} mesajı - {tenant_name}"
+    mail_html = f"""
+    <html><head><meta charset=\"utf-8\"></head><body style=\"font-family:system-ui;line-height:1.6;color:#334155;\">
+    <h2 style=\"color:#dc2626;\">Önemli Gelen Mesaj</h2>
+    <p><strong>Kaynak:</strong> {source_name}</p>
+    <p><strong>Gönderen:</strong> {safe_sender}</p>
+    <p><strong>Konu:</strong> {safe_subject}</p>
+    <p><strong>Önizleme:</strong> {safe_preview}</p>
+    <p style=\"margin-top:1.2rem;\"><a href=\"{get_settings().app_base_url.rstrip('/')}/admin/conversations\" style=\"background:#dc2626;color:#fff;padding:0.5rem 1rem;text-decoration:none;border-radius:8px;\">Sohbetlere Git</a></p>
+    </body></html>
+    """
+
+    sms_text = f"Onemli {source_name} mesaji: {safe_subject} | {safe_sender}"[:160]
+
+    for user in users:
+        if not _user_wants_notification(user, NOTIFY_NEW_MESSAGE):
+            continue
+        channels = _get_user_channels(user.notification_settings)
+
+        if "email" in channels and user.email and smtp_config.get("host") and smtp_config.get("user"):
+            try:
+                _send_with_config(smtp_config, user.email, mail_subject, mail_html)
+            except Exception as e:
+                logger.exception("Important message email notify failed for %s: %s", user.email, e)
+
+        if "sms" in channels and user.phone:
+            try:
+                await send_sms(user.phone, sms_text)
+            except Exception as e:
+                logger.exception("Important message SMS notify failed for %s: %s", user.phone, e)
