@@ -93,4 +93,31 @@ class Settings(BaseSettings):
 @lru_cache
 def get_settings() -> Settings:
     """Uygulama ayarlarını döner, önbelleğe alınmış singleton."""
-    return Settings()
+    ayarlar = Settings()
+
+    # Merkezi EmareAPI kasası fallback'i: .env boşsa anahtarı kasadan çek
+    try:
+        from anahtarlar import anahtar
+
+        if not (ayarlar.gemini_api_key or "").strip():
+            for isim in ("GEMINI_API_KEY", "GOOGLE_API_KEY"):
+                try:
+                    deger = (anahtar(isim) or "").strip()
+                    if deger:
+                        ayarlar.gemini_api_key = deger
+                        break
+                except Exception:
+                    pass
+
+        if not (ayarlar.openai_api_key or "").strip():
+            try:
+                deger = (anahtar("OPENAI_API_KEY") or "").strip()
+                if deger:
+                    ayarlar.openai_api_key = deger
+            except Exception:
+                pass
+    except Exception:
+        # EmareAPI hazır değilse mevcut .env davranışıyla devam et
+        pass
+
+    return ayarlar

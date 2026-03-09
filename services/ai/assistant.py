@@ -298,6 +298,18 @@ class AIAssistant:
                 content = await self._chat_openai(messages, overrides)
         except Exception as e:
             logger.error("AI API hatası (support/müşteri sohbeti): %s", e, exc_info=True)
+
+            # Gemini geçici olarak erişilemezse OpenAI'a otomatik düş
+            if use_gemini:
+                has_openai_key = bool((overrides.get("openai_api_key") or "").strip())
+                if has_openai_key or self._openai_client is not None:
+                    try:
+                        logger.warning("Gemini hatası sonrası OpenAI fallback deneniyor")
+                        content = await self._chat_openai(messages, overrides)
+                        return self._parse_response(content)
+                    except Exception as openai_e:
+                        logger.error("OpenAI fallback de başarısız: %s", openai_e, exc_info=True)
+
             if local_error:
                 if str(local_error).startswith("low_confidence:"):
                     content = (
