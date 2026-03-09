@@ -19,6 +19,7 @@ const fs = require('fs');
 const API_URL = process.env.ASISTAN_API_URL || 'http://localhost:8000';
 const API_TIMEOUT = parseInt(process.env.ASISTAN_API_TIMEOUT_MS || '120000', 10); // 120 sn
 const QR_PORT = parseInt(process.env.QR_PORT || '3100', 10);
+const QR_HOST = (process.env.QR_HOST || '0.0.0.0').trim() || '0.0.0.0';
 const MAX_QR_ATTEMPTS = 15; // ~5 dakika sonra QR üretmeyi durdur (bellek koruma)
 const CHROME_MAX_HEAP_MB = 512; // Chrome JS heap limiti
 const MAX_RECONNECT_ATTEMPTS = 3; // Bağlantı kopunca max yeniden deneme
@@ -34,10 +35,11 @@ const connections = new Map();
 // Orphan Chrome süreçlerini temizle
 function killOrphanChromeProcesses() {
   try {
-    const result = execSync('pgrep -f "chrome.*whatsapp" || true', { encoding: 'utf8' }).trim();
+    const pattern = '((Google Chrome|Chromium|chrome).*(wwebjs_auth|whatsapp))|((wwebjs_auth|whatsapp).*(Google Chrome|Chromium|chrome))';
+    const result = execSync(`pgrep -f "${pattern}" || true`, { encoding: 'utf8' }).trim();
     if (result) {
       console.log('[Chrome] Orphan süreçler temizleniyor:', result.split('\n').length, 'adet');
-      execSync('pkill -f "chrome.*whatsapp" || true');
+      execSync(`pkill -f "${pattern}" || true`);
     }
   } catch (e) { /* ignore */ }
 }
@@ -898,9 +900,22 @@ async function main() {
   logMemoryUsage();
   cleanChromeLocks();
   await initConnections();
-  server.listen(QR_PORT, '0.0.0.0', () => {
-    console.log(`\n📱 http://0.0.0.0:${QR_PORT}\n`);
+  const startServer = (host) => {
+    server.listen(QR_PORT, host, () => {
+      console.log(`\n📱 http://${host}:${QR_PORT}\n`);
+    });
+  };
+
+  server.once('error', (err) => {
+    if (err && err.code === 'EPERM' && QR_HOST === '0.0.0.0') {
+      console.warn('[HTTP] 0.0.0.0 bind EPERM, 127.0.0.1 ile yeniden deneniyor...');
+      startServer('127.0.0.1');
+      return;
+    }
+    throw err;
   });
+
+  startServer(QR_HOST);
 }
 
 main().catch(err => {

@@ -44,10 +44,14 @@ Type=simple
 User=root
 WorkingDirectory=$INSTALL_DIR/whatsapp-bridge
 Environment=ASISTAN_API_URL=http://127.0.0.1:8000
+Environment=QR_HOST=0.0.0.0
 Environment=PATH=/usr/local/bin:/usr/bin
+ExecStartPre=-/usr/bin/pkill -f [n]ode.*index-multi.js
+ExecStartPre=-/usr/bin/fuser -k 3100/tcp
 ExecStart=/usr/bin/env node index-multi.js
+ExecStopPost=-/usr/bin/pkill -f chrome.*whatsapp
 Restart=always
-RestartSec=10
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target

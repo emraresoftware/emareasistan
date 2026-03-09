@@ -41,9 +41,25 @@ if __name__ == "__main__":
     print("=" * 50)
     print("Emare Asistan")
     print("=" * 50)
-    print("1. Python API başlatılıyor (port 8000)...")
+    api_host = os.getenv("API_HOST", "127.0.0.1").strip() or "127.0.0.1"
+    try:
+        api_port = int((os.getenv("API_PORT", "8000") or "8000").strip())
+    except ValueError:
+        api_port = 8000
+    skip_bridge = (os.getenv("SKIP_WHATSAPP_BRIDGE", "0") or "0").strip().lower() in ("1", "true", "yes", "on")
+
+    print(f"1. Python API başlatılıyor ({api_host}:{api_port})...")
     p1 = subprocess.Popen(
-        [sys.executable, "main.py"],
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "main:app",
+            "--host",
+            api_host,
+            "--port",
+            str(api_port),
+        ],
         cwd=root,
         stdout=sys.stdout,
         stderr=sys.stderr,
@@ -54,26 +70,30 @@ if __name__ == "__main__":
         print("API başlatılamadı.")
         sys.exit(1)
 
-    bridge_dir = os.path.join(root, "whatsapp-bridge")
-    if not os.path.exists(os.path.join(bridge_dir, "node_modules")):
-        print("   WhatsApp bridge bağımlılıkları yükleniyor (npm install)...")
-        subprocess.run(["npm", "install"], cwd=bridge_dir, shell=(os.name == "nt"), check=True)
-    print("2. WhatsApp Bridge başlatılıyor (port 3100)...")
-    bridge_env = os.environ.copy()
-    bridge_env.setdefault("ASISTAN_API_URL", "http://localhost:8000")
-    p2 = subprocess.Popen(
-        ["npm", "start"],
-        cwd=bridge_dir,
-        shell=(os.name == "nt"),
-        stdout=sys.stdout,
-        stderr=sys.stderr,
-        env=bridge_env,
-    )
-    procs.append(p2)
+    if not skip_bridge:
+        bridge_dir = os.path.join(root, "whatsapp-bridge")
+        if not os.path.exists(os.path.join(bridge_dir, "node_modules")):
+            print("   WhatsApp bridge bağımlılıkları yükleniyor (npm install)...")
+            subprocess.run(["npm", "install"], cwd=bridge_dir, shell=(os.name == "nt"), check=True)
+        print("2. WhatsApp Bridge başlatılıyor (port 3100)...")
+        bridge_env = os.environ.copy()
+        bridge_env.setdefault("ASISTAN_API_URL", f"http://{api_host}:{api_port}")
+        p2 = subprocess.Popen(
+            ["npm", "start"],
+            cwd=bridge_dir,
+            shell=(os.name == "nt"),
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+            env=bridge_env,
+        )
+        procs.append(p2)
+    else:
+        print("2. WhatsApp Bridge atlandı (SKIP_WHATSAPP_BRIDGE=1)")
 
     print()
-    print("Hazır! Admin: http://localhost:8000/admin")
-    print("WhatsApp QR: http://localhost:3100")
+    print(f"Hazır! Admin: http://{api_host}:{api_port}/admin")
+    if not skip_bridge:
+        print("WhatsApp QR: http://localhost:3100")
     print("Durdurmak için Ctrl+C")
     print("=" * 50)
 
