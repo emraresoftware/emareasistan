@@ -37,10 +37,10 @@
 | Servis | Teknoloji | Port | Yönetim |
 |--------|-----------|------|---------|
 | **Python API** | FastAPI + Uvicorn | 8000 | `systemctl restart asistan-api` |
-| **WhatsApp Bridge** | Node.js 18 + Docker | 3100 | `docker compose -f docker-compose.bridge.yml restart` |
+| **WhatsApp Bridge** | Node.js (systemd) | 3100 | `systemctl restart asistan-whatsapp` |
 
-- `asistan-whatsapp` systemd servisi **DEVRE DIŞI** (Docker'a taşındı)
-- Docker CE v29.2.1, Docker Compose v5.1.0
+- **Güncel kalıcı çalışma modu:** `asistan-whatsapp` systemd servisi
+- Docker bridge dosyaları yedek/alternatif olarak repo içinde tutuluyor
 
 ### 2.2 Deploy Akışı
 
@@ -60,6 +60,17 @@ sshpass -e ssh -o StrictHostKeyChecking=no root@77.92.152.3 "cd /opt/asistan && 
 # --- Dockerfile/package.json değişikliği varsa rebuild ---
 sshpass -e ssh -o StrictHostKeyChecking=no root@77.92.152.3 "cd /opt/asistan && docker compose -f docker-compose.bridge.yml up -d --build"
 ```
+
+### 2.3 WhatsApp Stabilizasyon (9 Mart 2026)
+
+- Kök neden: aynı anda hem manuel `node index-multi.js` hem de `asistan-whatsapp` servisi çalışınca `3100` port çakışması (`EADDRINUSE`) oluştu.
+- Yeni operasyon kuralı: WhatsApp Bridge **tek sahipli** çalıştırılır (tercih: systemd servisi).
+- Kalıcı koruma (servis şablonuna eklendi):
+  - `ExecStartPre`: eski `index-multi.js` süreçlerini temizler
+  - `ExecStartPre`: `fuser -k 3100/tcp` ile portu serbestler
+  - `Restart=always`, `RestartSec=5`
+- Ek kök neden/fix (9 Mart 2026): `pkill -f` deseninin kontrol sürecini öldürmesiyle systemd `signal/TERM` hatasına düşüldü. Çözüm olarak shell tabanlı pre-start yerine güvenli systemd komutları (`-/usr/bin/pkill -f [n]ode.*index-multi.js`) kullanıldı.
+- Manuel `npm start` sadece arıza anında kısa teşhis için; kalıcı çalışma modu değildir.
 
 ---
 
